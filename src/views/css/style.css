@@ -1,0 +1,63 @@
+/* Use local Lato font*/
+
+@font-face {
+    font-family: 'Lato';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/lato/Lato-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Lato Regular';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/lato/Lato-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Lato Bold';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/lato/Lato-Bold.ttf');
+}
+
+@font-face {
+    font-family: 'Lato Italic';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/lato/Lato-Italic.ttf');
+}
+
+@font-face {
+    font-family: 'Lato Bold Italic';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/lato/Lato-BoldItalic.ttf');
+}
+
+.glv-container {
+    padding: 20px;
+}
+
+.glv-commit-msg {
+    margin: 0;
+}
+
+.glv-grid {
+    margin-top: 0 !important;
+}
+
+.glv-row {
+    padding-top: 0 !important;
+}
+
+.glv-column {
+    margin: 0 !important;
+    padding-bottom: 0.5rem !important;
+}
+
+.glv-column-btn {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0 !important;
+
+}
