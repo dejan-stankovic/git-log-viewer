@@ -4125,6 +4125,93 @@
 	        value: function showErrorBox(title, content) {
 	            _electron.ipcRenderer.send(AppConst.CHANNEL_SHOW_ERR_BOX, title, content);
 	        }
+
+	        /**
+	         * Return pagination array
+	         * @param  Integer   current    Current page
+	         * @param  Integer   total      Total page
+	         * @return Array
+	         */
+
+	    }, {
+	        key: 'getPagination',
+	        value: function getPagination(current, total) {
+	            current = parseInt(current);
+	            total = parseInt(total);
+	            if (current > total || current < 1 || total < 1) return [];
+	            var before = [{
+	                text: "<",
+	                disabled: current == 1 ? true : false,
+	                target: current == 1 ? 0 : current - 1
+	            }];
+	            if (current > 5) {
+	                before = before.concat([{
+	                    text: 1,
+	                    disabled: false,
+	                    target: 1
+	                }, {
+	                    text: 2,
+	                    disabled: false,
+	                    href: 2
+	                }, {
+	                    text: "...",
+	                    disabled: true,
+	                    target: 0
+	                }, {
+	                    text: current - 1,
+	                    disabled: false,
+	                    target: current - 1
+	                }]);
+	            } else {
+	                for (var i = 1; i < current; i++) {
+	                    before.push({
+	                        text: i,
+	                        disabled: false,
+	                        target: i
+	                    });
+	                }
+	            }
+	            var diff = total - current;
+	            var after = [{
+	                text: current,
+	                disabled: true,
+	                active: true,
+	                target: 0
+	            }];
+	            if (diff > 4) {
+	                after = after.concat([{
+	                    text: current + 1,
+	                    disabled: false,
+	                    target: current + 1
+	                }, {
+	                    text: "...",
+	                    disabled: true,
+	                    target: 0
+	                }, {
+	                    text: total - 1,
+	                    disabled: false,
+	                    target: total - 1
+	                }, {
+	                    text: total,
+	                    disabled: false,
+	                    target: total
+	                }]);
+	            } else {
+	                for (var i = current + 1; i <= total; i++) {
+	                    after.push({
+	                        text: i,
+	                        disabled: false,
+	                        target: i
+	                    });
+	                }
+	            }
+	            after.push({
+	                text: ">",
+	                disabled: current == total ? true : false,
+	                target: current == total ? 0 : current + 1
+	            });
+	            return before.concat(after);
+	        }
 	    }]);
 
 	    return Common;
@@ -22033,7 +22120,7 @@
 /* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -22044,6 +22131,10 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
+
+	var _common = __webpack_require__(33);
+
+	var _common2 = _interopRequireDefault(_common);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -22069,76 +22160,86 @@
 	    }
 
 	    _createClass(Pager, [{
-	        key: "render",
+	        key: 'render',
 	        value: function render() {
 	            var _this2 = this;
 
 	            var currentPage = this.state.currentPage;
-	            if (currentPage === 1) {
-	                var leftArrow = _react2.default.createElement(
-	                    "div",
-	                    { className: "disabled item" },
-	                    _react2.default.createElement("i", { className: "left chevron icon" })
-	                );
-	                var pageOne = _react2.default.createElement(
-	                    "div",
-	                    { className: "disabled item" },
-	                    "1"
-	                );
-	            } else {
-	                var _leftArrow = _react2.default.createElement(
-	                    "a",
-	                    { className: "icon item", onClick: function onClick() {
-	                            return _this2.toPage(currentPage - 1);
+	            var tmpArray = _common2.default.getPagination(currentPage, this.props.totalPage);
+	            var pagers = tmpArray.map(function (tmp, i) {
+	                if (tmp.text === '<') {
+	                    if (tmp.disabled) {
+	                        return _react2.default.createElement(
+	                            'div',
+	                            { key: i, className: 'disabled item' },
+	                            _react2.default.createElement('i', { className: 'left chevron icon' })
+	                        );
+	                    } else {
+	                        return _react2.default.createElement(
+	                            'a',
+	                            { key: i, className: 'icon item', onClick: function onClick() {
+	                                    return _this2.toPage(tmp.target);
+	                                } },
+	                            _react2.default.createElement('i', { className: 'left chevron icon' })
+	                        );
+	                    }
+	                }
+	                if (tmp.text === '>') {
+	                    if (tmp.disabled) {
+	                        return _react2.default.createElement(
+	                            'div',
+	                            { key: i, className: 'disabled item' },
+	                            _react2.default.createElement('i', { className: 'right chevron icon' })
+	                        );
+	                    } else {
+	                        return _react2.default.createElement(
+	                            'a',
+	                            { key: i, className: 'icon item', onClick: function onClick() {
+	                                    return _this2.toPage(tmp.target);
+	                                } },
+	                            _react2.default.createElement('i', { className: 'right chevron icon' })
+	                        );
+	                    }
+	                }
+	                if (tmp.active) {
+	                    return _react2.default.createElement(
+	                        'div',
+	                        { key: i, className: 'active item' },
+	                        tmp.text
+	                    );
+	                }
+	                if (tmp.disabled) {
+	                    return _react2.default.createElement(
+	                        'div',
+	                        { key: i, className: 'disabled item' },
+	                        tmp.text
+	                    );
+	                }
+	                return _react2.default.createElement(
+	                    'a',
+	                    { key: i, className: 'item', onClick: function onClick() {
+	                            return _this2.toPage(tmp.target);
 	                        } },
-	                    _react2.default.createElement("i", { className: "left chevron icon" })
+	                    tmp.text
 	                );
-	                var _pageOne = _react2.default.createElement(
-	                    "a",
-	                    { className: "icon item", onClick: function onClick() {
-	                            return _this2.toPage(1);
-	                        } },
-	                    "1"
-	                );
-	            }
+	            });
+
 	            return _react2.default.createElement(
-	                "div",
-	                { className: "ui pagination menu" },
-	                _react2.default.createElement(
-	                    "a",
-	                    { className: "icon item" },
-	                    _react2.default.createElement("i", { className: "left chevron icon" })
-	                ),
-	                _react2.default.createElement(
-	                    "a",
-	                    { className: "item" },
-	                    "1"
-	                ),
-	                _react2.default.createElement(
-	                    "a",
-	                    { className: "item" },
-	                    "2"
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "disabled item" },
-	                    "..."
-	                ),
-	                _react2.default.createElement(
-	                    "a",
-	                    { className: "item" },
-	                    this.props.totalPage
-	                ),
-	                _react2.default.createElement(
-	                    "a",
-	                    { className: "icon item" },
-	                    _react2.default.createElement("i", { className: "right chevron icon" })
-	                )
+	                'div',
+	                { className: 'ui pagination menu' },
+	                pagers
 	            );
 	        }
 	    }, {
-	        key: "toPage",
-	        value: function toPage(pageNum) {}
+	        key: 'toPage',
+	        value: function toPage(pageNum) {
+	            var _this3 = this;
+
+	            this.setState(function () {
+	                _this3.state.currentPage = pageNum;
+	                return _this3.state;
+	            });
+	        }
 	    }]);
 
 	    return Pager;

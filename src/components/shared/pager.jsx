@@ -1,4 +1,5 @@
 import React from 'react';
+import Common from '../../utils/common.js';
 
 export default class Pager extends React.Component {
     constructor(props) {
@@ -11,30 +12,42 @@ export default class Pager extends React.Component {
 
     render() {
         let currentPage = this.state.currentPage;
-        if (currentPage === 1) {
-            let leftArrow = <div className="disabled item"><i className="left chevron icon"></i></div>;
-            let pageOne = <div className="disabled item">1</div>;
-        } else {
-            let leftArrow = <a className="icon item" onClick={() => this.toPage(currentPage - 1)}><i className="left chevron icon"></i></a>;
-            let pageOne = <a className="icon item" onClick={() => this.toPage(1)}>1</a>;
-        }
+        let tmpArray = Common.getPagination(currentPage, this.props.totalPage);
+        let pagers = tmpArray.map((tmp, i) => {
+            if (tmp.text === '<') {
+                if (tmp.disabled) {
+                    return <div key={i} className="disabled item"><i className="left chevron icon"></i></div>;
+                } else {
+                    return <a key={i} className="icon item" onClick={() => this.toPage(tmp.target)}><i className="left chevron icon"></i></a>;
+                }
+            }
+            if (tmp.text === '>') {
+                if (tmp.disabled) {
+                    return <div key={i} className="disabled item"><i className="right chevron icon"></i></div>;
+                } else {
+                    return <a key={i} className="icon item" onClick={() => this.toPage(tmp.target)}><i className="right chevron icon"></i></a>;
+                }
+            }
+            if (tmp.active) {
+                return <div key={i} className="active item">{tmp.text}</div>;
+            }
+            if (tmp.disabled) {
+                return <div key={i} className="disabled item">{tmp.text}</div>;
+            }
+            return <a key={i} className="item" onClick={() => this.toPage(tmp.target)}>{tmp.text}</a>;
+        });
+
         return (
             <div className="ui pagination menu">
-                <a className="icon item">
-                    <i className="left chevron icon"></i>
-                </a>
-                <a className="item">1</a>
-                <a className="item">2</a>
-                <div className="disabled item">...</div>
-                <a className="item">{this.props.totalPage}</a>
-                <a className="icon item">
-                    <i className="right chevron icon"></i>
-                </a>
+                {pagers}
             </div>
         );
     }
 
     toPage(pageNum) {
-
+        this.setState(() => {
+            this.state.currentPage = pageNum;
+            return this.state;
+        });
     }
 }
