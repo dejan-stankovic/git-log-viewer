@@ -62,7 +62,7 @@ export default class Common {
             }, {
                 text: 2,
                 disabled: false,
-                href: 2
+                target: 2
             }, {
                 text: "...",
                 disabled: true,
