@@ -6,6 +6,7 @@ import TabModel from '../models/tab.js';
 import BackButton from './shared/back-home-btn.jsx';
 import Tab from './shared/tab.jsx';
 import CommitsTab from './detail-childs/commits-tab.jsx';
+import InformationTab from './detail-childs/information-tab.jsx';
 
 export default class Detail extends React.Component {
     constructor(props) {
@@ -16,7 +17,7 @@ export default class Detail extends React.Component {
     render() {
         let tabs = [];
         tabs.push(new TabModel('Commits', <CommitsTab git={this.props.git}/>));
-        tabs.push(new TabModel('Information', <h1>{this.props.git.currentBranch}</h1>));
+        tabs.push(new TabModel('Information', <InformationTab git={this.props.git}/>));
         return (
             <div>
                 <BackButton/>

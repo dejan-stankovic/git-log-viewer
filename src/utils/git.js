@@ -2,13 +2,17 @@ import { execSync } from 'child_process';
 import * as AppConst from '../appconst.js';
 
 import { Commit, CommitFile } from '../models/commit.js';
+import User from '../models/user.js';
 
 export default class GitUtils {
     constructor(path) {
         this.path = path;
+        this.url = '';
+        this.commitsCount = 0;
         this.branches = [];
         this.remoteBranches = [];
         this.currentBranch = '';
+        this.users = [];
     }
 
     /**
@@ -28,13 +32,22 @@ export default class GitUtils {
     }
 
     collectData() {
+        let cmd, output;
         try {
+            // Get URL
+            cmd = 'git config --get remote.origin.url';
+            output = execSync(cmd).toString();
+            this.url = output;
+
             // Get all branches
-            let cmd = 'git branch -a';
-            let output = execSync(cmd).toString();
+            cmd = 'git branch -a';
+            output = execSync(cmd).toString();
             let branches = output.split(/[\r\n]+/g);
             for (let i = 0; i < branches.length; i++) {
                 let branch = branches[i].trim();
+                if (branch === '') {
+                    continue;
+                }
                 if (branch.substring(0, 2) === '* ') {
                     this.currentBranch = branch.substring(2);
                     this.branches.push(this.currentBranch);
@@ -45,7 +58,25 @@ export default class GitUtils {
                 }
             }
 
-            // Todo: Get all users
+            // Count commits
+            this.commitsCount = this.getCommitsCount(this.currentBranch);
+
+            // Get all users
+            cmd = 'git log --pretty=[%cE][%cN] ' + this.currentBranch;
+            cmd += ' | sort | uniq';
+            output = execSync(cmd).toString();
+            let regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
+            let match = regexp.exec(output);
+            let emails = [];
+            while (match !== null) {
+                let email = match[1].toLowerCase();
+                if (emails.indexOf(email) === -1) {
+                    emails.push(email);
+                    let user = new User(match[2], email);
+                    this.users.push(user);
+                }
+                match = regexp.exec(output);
+            }
         } catch (err) {
             console.error(err);
         }
@@ -71,7 +102,7 @@ export default class GitUtils {
         if (isNaN(pageSize) || pageSize < 1) {
             pageSize = AppConst.PAGER_DEFAULT_SIZE;
         }
-        let cmd = 'git log --pretty=[%H][%cn][%ce][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S"';
+        let cmd = 'git log --pretty=[%H][%cN][%cE][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S"';
         cmd += ' --max-count=' + pageSize + ' --skip=' + (page - 1) * pageSize;
         cmd += ' ' + branch;
         try {
@@ -81,8 +112,6 @@ export default class GitUtils {
             let match = regexp.exec(output);
             while (match !== null) {
                 let commit = new Commit(match[1], match[2], match[3], match[4], match[5]);
-                // let files = this.getFilesByCommitHash(commit.hash);
-                // commit.files = files;
                 commits.push(commit);
                 match = regexp.exec(output);
             }

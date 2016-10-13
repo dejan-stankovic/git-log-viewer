@@ -17,8 +17,7 @@ export default class CommitsTab extends React.Component {
         };
 
         // Calculate total page
-        let commitsCount = this.props.git.getCommitsCount();
-        this.state.totalPage = Math.ceil(commitsCount / this.state.pageSize);
+        this.state.totalPage = Math.ceil(this.props.git.commitsCount / this.state.pageSize);
 
         this.changePage = this.changePage.bind(this);
         this.getData = this.getData.bind(this);
@@ -27,7 +26,7 @@ export default class CommitsTab extends React.Component {
     render() {
         let rows = null;
         if (this.state.loading) {
-            rows = <div className="ui active indeterminate centered text inline loader">Getting Commit Logs</div>;
+            rows = <div className="ui active centered text inline loader">Getting Commit Logs</div>;
         } else {
             if (this.commits === null) {
                 return this.showError('Empty data', ['Could not read commit log from Git directory.', 'Please try again.']);

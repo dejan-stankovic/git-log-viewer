@@ -21447,7 +21447,7 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _detail = __webpack_require__(178);
+	var _detail = __webpack_require__(179);
 
 	var _detail2 = _interopRequireDefault(_detail);
 
@@ -21568,6 +21568,12 @@
 
 	var _commit = __webpack_require__(177);
 
+	var _user = __webpack_require__(178);
+
+	var _user2 = _interopRequireDefault(_user);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21577,9 +21583,12 @@
 	        _classCallCheck(this, GitUtils);
 
 	        this.path = path;
+	        this.url = '';
+	        this.commitsCount = 0;
 	        this.branches = [];
 	        this.remoteBranches = [];
 	        this.currentBranch = '';
+	        this.users = [];
 	    }
 
 	    /**
@@ -21609,7 +21618,8 @@
 	            try {
 	                // Get URL
 	                cmd = 'git config --get remote.origin.url';
-	                output = _child_process.execSync;
+	                output = (0, _child_process.execSync)(cmd).toString();
+	                this.url = output;
 
 	                // Get all branches
 	                cmd = 'git branch -a';
@@ -21617,6 +21627,9 @@
 	                var branches = output.split(/[\r\n]+/g);
 	                for (var i = 0; i < branches.length; i++) {
 	                    var branch = branches[i].trim();
+	                    if (branch === '') {
+	                        continue;
+	                    }
 	                    if (branch.substring(0, 2) === '* ') {
 	                        this.currentBranch = branch.substring(2);
 	                        this.branches.push(this.currentBranch);
@@ -21627,7 +21640,25 @@
 	                    }
 	                }
 
-	                // Todo: Get all users
+	                // Count commits
+	                this.commitsCount = this.getCommitsCount(this.currentBranch);
+
+	                // Get all users
+	                cmd = 'git log --pretty=[%cE][%cN] ' + this.currentBranch;
+	                cmd += ' | sort | uniq';
+	                output = (0, _child_process.execSync)(cmd).toString();
+	                var regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
+	                var match = regexp.exec(output);
+	                var emails = [];
+	                while (match !== null) {
+	                    var email = match[1].toLowerCase();
+	                    if (emails.indexOf(email) === -1) {
+	                        emails.push(email);
+	                        var user = new _user2.default(match[2], email);
+	                        this.users.push(user);
+	                    }
+	                    match = regexp.exec(output);
+	                }
 	            } catch (err) {
 	                console.error(err);
 	            }
@@ -21659,7 +21690,7 @@
 	            if (isNaN(pageSize) || pageSize < 1) {
 	                pageSize = AppConst.PAGER_DEFAULT_SIZE;
 	            }
-	            var cmd = 'git log --pretty=[%H][%cn][%ce][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S"';
+	            var cmd = 'git log --pretty=[%H][%cN][%cE][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S"';
 	            cmd += ' --max-count=' + pageSize + ' --skip=' + (page - 1) * pageSize;
 	            cmd += ' ' + branch;
 	            try {
@@ -21669,8 +21700,6 @@
 	                var match = regexp.exec(output);
 	                while (match !== null) {
 	                    var commit = new _commit.Commit(match[1], match[2], match[3], match[4], match[5]);
-	                    // let files = this.getFilesByCommitHash(commit.hash);
-	                    // commit.files = files;
 	                    commits.push(commit);
 	                    match = regexp.exec(output);
 	                }
@@ -21745,6 +21774,27 @@
 
 /***/ },
 /* 178 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var User = function User(name, email) {
+	    _classCallCheck(this, User);
+
+	    this.name = name;
+	    this.email = email;
+	};
+
+	exports.default = User;
+
+/***/ },
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21767,21 +21817,25 @@
 
 	var _git2 = _interopRequireDefault(_git);
 
-	var _tab = __webpack_require__(179);
+	var _tab = __webpack_require__(180);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
-	var _backHomeBtn = __webpack_require__(180);
+	var _backHomeBtn = __webpack_require__(181);
 
 	var _backHomeBtn2 = _interopRequireDefault(_backHomeBtn);
 
-	var _tab3 = __webpack_require__(181);
+	var _tab3 = __webpack_require__(182);
 
 	var _tab4 = _interopRequireDefault(_tab3);
 
-	var _commitsTab = __webpack_require__(182);
+	var _commitsTab = __webpack_require__(183);
 
 	var _commitsTab2 = _interopRequireDefault(_commitsTab);
+
+	var _informationTab = __webpack_require__(186);
+
+	var _informationTab2 = _interopRequireDefault(_informationTab);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -21808,11 +21862,7 @@
 	        value: function render() {
 	            var tabs = [];
 	            tabs.push(new _tab2.default('Commits', _react2.default.createElement(_commitsTab2.default, { git: this.props.git })));
-	            tabs.push(new _tab2.default('Information', _react2.default.createElement(
-	                'h1',
-	                null,
-	                this.props.git.currentBranch
-	            )));
+	            tabs.push(new _tab2.default('Information', _react2.default.createElement(_informationTab2.default, { git: this.props.git })));
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -21828,7 +21878,7 @@
 	exports.default = Detail;
 
 /***/ },
-/* 179 */
+/* 180 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -21849,7 +21899,7 @@
 	exports.default = Tab;
 
 /***/ },
-/* 180 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21918,7 +21968,7 @@
 	exports.default = BackButton;
 
 /***/ },
-/* 181 */
+/* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22014,7 +22064,7 @@
 	exports.default = Tab;
 
 /***/ },
-/* 182 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22041,11 +22091,11 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _pager = __webpack_require__(183);
+	var _pager = __webpack_require__(184);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _row = __webpack_require__(184);
+	var _row = __webpack_require__(185);
 
 	var _row2 = _interopRequireDefault(_row);
 
@@ -22075,8 +22125,7 @@
 	        };
 
 	        // Calculate total page
-	        var commitsCount = _this.props.git.getCommitsCount();
-	        _this.state.totalPage = Math.ceil(commitsCount / _this.state.pageSize);
+	        _this.state.totalPage = Math.ceil(_this.props.git.commitsCount / _this.state.pageSize);
 
 	        _this.changePage = _this.changePage.bind(_this);
 	        _this.getData = _this.getData.bind(_this);
@@ -22092,7 +22141,7 @@
 	            if (this.state.loading) {
 	                rows = _react2.default.createElement(
 	                    'div',
-	                    { className: 'ui active indeterminate centered text inline loader' },
+	                    { className: 'ui active centered text inline loader' },
 	                    'Getting Commit Logs'
 	                );
 	            } else {
@@ -22175,7 +22224,7 @@
 	exports.default = CommitsTab;
 
 /***/ },
-/* 183 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22307,7 +22356,7 @@
 	exports.default = Pager;
 
 /***/ },
-/* 184 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22525,6 +22574,249 @@
 	}(_react2.default.Component);
 
 	exports.default = Row;
+
+/***/ },
+/* 186 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var InformationTab = function (_React$Component) {
+	    _inherits(InformationTab, _React$Component);
+
+	    function InformationTab(props) {
+	        _classCallCheck(this, InformationTab);
+
+	        var _this = _possibleConstructorReturn(this, (InformationTab.__proto__ || Object.getPrototypeOf(InformationTab)).call(this, props));
+
+	        _this.props = props;
+	        return _this;
+	    }
+
+	    _createClass(InformationTab, [{
+	        key: "render",
+	        value: function render() {
+	            var git = this.props.git;
+	            console.log(git.branches);
+	            var branches = [];
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = git.branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var branch = _step.value;
+
+	                    branches.push(_react2.default.createElement(
+	                        "tr",
+	                        { key: branch },
+	                        _react2.default.createElement(
+	                            "td",
+	                            null,
+	                            _react2.default.createElement(
+	                                "div",
+	                                { className: "ui teal horizontal small label" },
+	                                "Local"
+	                            ),
+	                            " ",
+	                            branch
+	                        )
+	                    ));
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            var _iteratorNormalCompletion2 = true;
+	            var _didIteratorError2 = false;
+	            var _iteratorError2 = undefined;
+
+	            try {
+	                for (var _iterator2 = git.remoteBranches[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                    var _branch = _step2.value;
+
+	                    branches.push(_react2.default.createElement(
+	                        "tr",
+	                        { key: _branch },
+	                        _react2.default.createElement(
+	                            "td",
+	                            null,
+	                            _react2.default.createElement(
+	                                "div",
+	                                { className: "ui orange horizontal small label" },
+	                                "Remote"
+	                            ),
+	                            " ",
+	                            _branch
+	                        )
+	                    ));
+	                }
+	            } catch (err) {
+	                _didIteratorError2 = true;
+	                _iteratorError2 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                        _iterator2.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError2) {
+	                        throw _iteratorError2;
+	                    }
+	                }
+	            }
+
+	            var users = git.users.map(function (user) {
+	                return _react2.default.createElement(
+	                    "tr",
+	                    { key: user.email },
+	                    _react2.default.createElement(
+	                        "td",
+	                        null,
+	                        _react2.default.createElement("i", { className: "icon user" }),
+	                        " ",
+	                        user.name
+	                    ),
+	                    _react2.default.createElement(
+	                        "td",
+	                        null,
+	                        _react2.default.createElement("i", { className: "icon mail" }),
+	                        " ",
+	                        user.email
+	                    )
+	                );
+	            });
+	            return _react2.default.createElement(
+	                "div",
+	                null,
+	                _react2.default.createElement(
+	                    "h3",
+	                    null,
+	                    "1. General Information"
+	                ),
+	                _react2.default.createElement(
+	                    "ul",
+	                    null,
+	                    _react2.default.createElement(
+	                        "li",
+	                        null,
+	                        "URL: ",
+	                        git.url
+	                    ),
+	                    _react2.default.createElement(
+	                        "li",
+	                        null,
+	                        "Current branch: ",
+	                        git.currentBranch
+	                    ),
+	                    _react2.default.createElement(
+	                        "li",
+	                        null,
+	                        "Commits: ",
+	                        git.commitsCount
+	                    ),
+	                    _react2.default.createElement(
+	                        "li",
+	                        null,
+	                        "Contributors: ",
+	                        git.users.length
+	                    ),
+	                    _react2.default.createElement(
+	                        "li",
+	                        null,
+	                        "Local branches: ",
+	                        git.branches.length
+	                    ),
+	                    _react2.default.createElement(
+	                        "li",
+	                        null,
+	                        "Remote branches: ",
+	                        git.remoteBranches.length
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "h3",
+	                    null,
+	                    "2. List contributors (of current branch)"
+	                ),
+	                _react2.default.createElement(
+	                    "table",
+	                    { className: "ui very basic compact collapsing table" },
+	                    _react2.default.createElement(
+	                        "thead",
+	                        null,
+	                        _react2.default.createElement(
+	                            "tr",
+	                            null,
+	                            _react2.default.createElement(
+	                                "th",
+	                                null,
+	                                "Name"
+	                            ),
+	                            _react2.default.createElement(
+	                                "th",
+	                                null,
+	                                "Email"
+	                            )
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "tbody",
+	                        null,
+	                        users
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "h3",
+	                    null,
+	                    "3. All branches"
+	                ),
+	                _react2.default.createElement(
+	                    "table",
+	                    { className: "ui very basic compact collapsing table" },
+	                    _react2.default.createElement(
+	                        "tbody",
+	                        null,
+	                        branches
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return InformationTab;
+	}(_react2.default.Component);
+
+	exports.default = InformationTab;
 
 /***/ }
 /******/ ]);
