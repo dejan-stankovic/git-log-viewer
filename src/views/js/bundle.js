@@ -4127,6 +4127,20 @@
 	        }
 
 	        /**
+	         * Execute a function async
+	         * @param  {function} func  Function that needs to be executed
+	         * @return {void}
+	         */
+
+	    }, {
+	        key: 'executeSync',
+	        value: function executeSync(func) {
+	            if (typeof func === 'function') {
+	                setTimeout(func, 0);
+	            }
+	        }
+
+	        /**
 	         * Return pagination array
 	         * @param  Integer   current    Current page
 	         * @param  Integer   total      Total page
@@ -4152,7 +4166,7 @@
 	                }, {
 	                    text: 2,
 	                    disabled: false,
-	                    href: 2
+	                    target: 2
 	                }, {
 	                    text: "...",
 	                    disabled: true,
@@ -21453,44 +21467,77 @@
 	    function Home() {
 	        _classCallCheck(this, Home);
 
-	        return _possibleConstructorReturn(this, (Home.__proto__ || Object.getPrototypeOf(Home)).apply(this, arguments));
+	        var _this = _possibleConstructorReturn(this, (Home.__proto__ || Object.getPrototypeOf(Home)).call(this));
+
+	        _this.state = { loading: false };
+	        _this.chooseDir = _this.chooseDir.bind(_this);
+	        _this.collectData = _this.collectData.bind(_this);
+	        return _this;
 	    }
 
 	    _createClass(Home, [{
 	        key: 'render',
 	        value: function render() {
+	            var loader = null;
+	            if (this.state.loading) {
+	                loader = _react2.default.createElement(
+	                    'div',
+	                    null,
+	                    _react2.default.createElement('div', { className: 'ui active centered inline small loader' }),
+	                    _react2.default.createElement(
+	                        'p',
+	                        { className: 'glv-centered' },
+	                        'Initializing data. Please wait...'
+	                    )
+	                );
+	            }
 	            return _react2.default.createElement(
 	                'div',
-	                { className: 'ui header centered' },
+	                null,
 	                _react2.default.createElement(
-	                    'h1',
-	                    { className: 'ui header icon glv-header' },
-	                    _react2.default.createElement('i', { className: 'git square icon' }),
-	                    'Git Log Viewer'
+	                    'div',
+	                    { className: 'ui header centered' },
+	                    _react2.default.createElement(
+	                        'h1',
+	                        { className: 'ui header icon glv-header' },
+	                        _react2.default.createElement('i', { className: 'git square icon' }),
+	                        'Git Log Viewer'
+	                    ),
+	                    _react2.default.createElement(
+	                        'p',
+	                        null,
+	                        'Simple Git Log Viewer built with Electron, ReactJS & Semantic UI'
+	                    ),
+	                    _react2.default.createElement(
+	                        'button',
+	                        { className: 'ui large blue button', onClick: this.chooseDir },
+	                        _react2.default.createElement('i', { className: 'folder open outline icon' }),
+	                        ' Choose your git directory'
+	                    )
 	                ),
-	                _react2.default.createElement(
-	                    'p',
-	                    null,
-	                    'Simple Git Log Viewer built with Electron, ReactJS & Semantic UI'
-	                ),
-	                _react2.default.createElement(
-	                    'button',
-	                    { className: 'ui large blue button', onClick: this.chooseDir },
-	                    _react2.default.createElement('i', { className: 'folder open outline icon' }),
-	                    ' Choose your git directory'
-	                )
+	                loader
 	            );
 	        }
 	    }, {
 	        key: 'chooseDir',
 	        value: function chooseDir() {
 	            _electron.ipcRenderer.send(AppConst.CHANNEL_SHOW_DIR_DIALOG, AppConst.CHANNEL_SELECTED_DIR);
-	            _electron.ipcRenderer.once(AppConst.CHANNEL_SELECTED_DIR, function (event, path) {
+	            _electron.ipcRenderer.once(AppConst.CHANNEL_SELECTED_DIR, this.collectData);
+	        }
+	    }, {
+	        key: 'collectData',
+	        value: function collectData(e, path) {
+	            var _this2 = this;
+
+	            this.setState({ loading: true });
+	            _common2.default.executeSync(function () {
 	                var git = new _git2.default(path[0]);
 	                if (!git.isValid()) {
 	                    _common2.default.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
+	                    _this2.setState({ loading: false });
 	                    return;
 	                }
+	                git.collectData();
 	                _common2.default.renderPage(_react2.default.createElement(_detail2.default, { git: git }));
 	            });
 	        }
@@ -21548,7 +21595,6 @@
 	                process.chdir(this.path);
 	                var cmd = 'git rev-parse --is-inside-work-tree';
 	                (0, _child_process.execSync)(cmd);
-	                this.getBranches();
 	                return true;
 	            } catch (err) {
 	                console.error(err);
@@ -21556,10 +21602,11 @@
 	            }
 	        }
 	    }, {
-	        key: 'getBranches',
-	        value: function getBranches() {
-	            var cmd = 'git branch -a';
+	        key: 'collectData',
+	        value: function collectData() {
 	            try {
+	                // Get all branches
+	                var cmd = 'git branch -a';
 	                var output = (0, _child_process.execSync)(cmd).toString();
 	                var branches = output.split(/[\r\n]+/g);
 	                for (var i = 0; i < branches.length; i++) {
@@ -21573,6 +21620,8 @@
 	                        this.branches.push(branch);
 	                    }
 	                }
+
+	                // Todo: Get all users
 	            } catch (err) {
 	                console.error(err);
 	            }
@@ -21756,7 +21805,7 @@
 	            tabs.push(new _tab2.default('Information', _react2.default.createElement(
 	                'h1',
 	                null,
-	                'Not yet'
+	                this.props.git.currentBranch
 	            )));
 	            return _react2.default.createElement(
 	                'div',
@@ -21900,6 +21949,7 @@
 	        } else {
 	            _this.state = { active: 0 }; // Active first tab by default
 	        }
+	        _this.changeTab = _this.changeTab.bind(_this);
 	        return _this;
 	    }
 
@@ -21926,7 +21976,7 @@
 	                ));
 	                contents.push(_react2.default.createElement(
 	                    'div',
-	                    { key: i, className: 'ui bottom attached tab segment' + activeClass, 'data-tab': 'tab-' + i },
+	                    { key: i, className: 'ui bottom attached tab segment' + activeClass },
 	                    tab.component
 	                ));
 	            };
@@ -21981,6 +22031,10 @@
 
 	var _git2 = _interopRequireDefault(_git);
 
+	var _common = __webpack_require__(33);
+
+	var _common2 = _interopRequireDefault(_common);
+
 	var _pager = __webpack_require__(183);
 
 	var _pager2 = _interopRequireDefault(_pager);
@@ -22013,6 +22067,13 @@
 	            currentPage: 1,
 	            pageSize: AppConst.PAGER_DEFAULT_SIZE
 	        };
+
+	        // Calculate total page
+	        var commitsCount = _this.props.git.getCommitsCount();
+	        _this.state.totalPage = Math.ceil(commitsCount / _this.state.pageSize);
+
+	        _this.changePage = _this.changePage.bind(_this);
+	        _this.getData = _this.getData.bind(_this);
 	        return _this;
 	    }
 
@@ -22021,20 +22082,25 @@
 	        value: function render() {
 	            var _this2 = this;
 
+	            var rows = null;
 	            if (this.state.loading) {
-	                return this.showLoader();
+	                rows = _react2.default.createElement(
+	                    'div',
+	                    { className: 'ui active indeterminate centered text inline loader' },
+	                    'Getting Commit Logs'
+	                );
+	            } else {
+	                if (this.commits === null) {
+	                    return this.showError('Empty data', ['Could not read commit log from Git directory.', 'Please try again.']);
+	                }
+	                rows = this.commits.map(function (commit) {
+	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit, git: _this2.props.git });
+	                });
 	            }
-	            var commits = this.commits;
-	            if (commits === null) {
-	                return this.showError('Empty data', ['Could not read commit log from Git directory.', 'Please try again.']);
-	            }
-	            var rows = commits.map(function (commit) {
-	                return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit, git: _this2.props.git });
-	            });
 	            return _react2.default.createElement(
 	                'div',
 	                null,
-	                _react2.default.createElement(_pager2.default, { currentPage: this.state.currentPage, totalPage: this.state.totalPage, pageSize: this.state.pageSize }),
+	                _react2.default.createElement(_pager2.default, { currentPage: this.state.currentPage, totalPage: this.state.totalPage, pageSize: this.state.pageSize, onChange: this.changePage }),
 	                _react2.default.createElement('br', null),
 	                _react2.default.createElement('br', null),
 	                _react2.default.createElement(
@@ -22047,42 +22113,28 @@
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
+	            this.getData();
+	        }
+	    }, {
+	        key: 'changePage',
+	        value: function changePage(page) {
+	            this.state.currentPage = page;
+	            this.setState(this.state);
+	            this.getData();
+	        }
+	    }, {
+	        key: 'getData',
+	        value: function getData() {
 	            var _this3 = this;
 
-	            setTimeout(function () {
-	                _this3.collectData();
-	            }, 0);
-	        }
-	    }, {
-	        key: 'collectData',
-	        value: function collectData() {
-	            var _this4 = this;
+	            this.state.loading = true;
+	            this.setState(this.state);
 
-	            var git = this.props.git;
-	            this.commits = git.getCommits();
-	            var commitsCount = git.getCommitsCount();
-	            this.setState(function () {
-	                _this4.state.loading = false;
-	                _this4.state.totalPage = Math.ceil(commitsCount / _this4.state.pageSize);
-	                return _this4.state;
+	            _common2.default.executeSync(function () {
+	                _this3.commits = _this3.props.git.getCommits(_this3.state.currentPage);
+	                _this3.state.loading = false;
+	                _this3.setState(_this3.state);
 	            });
-	        }
-	    }, {
-	        key: 'showLoader',
-	        value: function showLoader() {
-	            return _react2.default.createElement(
-	                'div',
-	                { className: 'ui' },
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'ui inverted active dimmer' },
-	                    _react2.default.createElement(
-	                        'div',
-	                        { className: 'ui massive text loader' },
-	                        'Please wait. Collecting data...'
-	                    )
-	                )
-	            );
 	        }
 	    }, {
 	        key: 'showError',
@@ -22235,6 +22287,7 @@
 	        value: function toPage(pageNum) {
 	            var _this3 = this;
 
+	            this.props.onChange(pageNum);
 	            this.setState(function () {
 	                _this3.state.currentPage = pageNum;
 	                return _this3.state;

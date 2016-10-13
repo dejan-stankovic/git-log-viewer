@@ -20,7 +20,6 @@ export default class GitUtils {
             process.chdir(this.path);
             let cmd = 'git rev-parse --is-inside-work-tree';
             execSync(cmd);
-            this.getBranches();
             return true;
         } catch (err) {
             console.error(err);
@@ -28,9 +27,10 @@ export default class GitUtils {
         }
     }
 
-    getBranches() {
-        let cmd = 'git branch -a';
+    collectData() {
         try {
+            // Get all branches
+            let cmd = 'git branch -a';
             let output = execSync(cmd).toString();
             let branches = output.split(/[\r\n]+/g);
             for (let i = 0; i < branches.length; i++) {
@@ -44,6 +44,8 @@ export default class GitUtils {
                     this.branches.push(branch);
                 }
             }
+
+            // Todo: Get all users
         } catch (err) {
             console.error(err);
         }

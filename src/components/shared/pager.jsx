@@ -37,14 +37,11 @@ export default class Pager extends React.Component {
             return <a key={i} className="item" onClick={() => this.toPage(tmp.target)}>{tmp.text}</a>;
         });
 
-        return (
-            <div className="ui pagination menu">
-                {pagers}
-            </div>
-        );
+        return <div className="ui pagination menu">{pagers}</div>;
     }
 
     toPage(pageNum) {
+        this.props.onChange(pageNum);
         this.setState(() => {
             this.state.currentPage = pageNum;
             return this.state;

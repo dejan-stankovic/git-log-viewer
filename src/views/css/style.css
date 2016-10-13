@@ -39,6 +39,10 @@
     padding: 20px;
 }
 
+.glv-centered {
+    text-align: center;
+}
+
 .glv-commit-msg {
     margin: 0;
 }

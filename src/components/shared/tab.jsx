@@ -9,6 +9,7 @@ export default class Tab extends React.Component {
         } else {
             this.state = { active: 0 }; // Active first tab by default
         }
+        this.changeTab = this.changeTab.bind(this);
     }
 
     render() {
@@ -22,7 +23,7 @@ export default class Tab extends React.Component {
             let activeClass = (i == this.state.active) ? ' active' : '';
             buttons.push(<a key={i} className={'item' + activeClass} onClick={() => this.changeTab(i)}>{tab.name}</a>);
             contents.push(
-                <div key={i} className={'ui bottom attached tab segment' + activeClass} data-tab={'tab-' + i}>{tab.component}</div>
+                <div key={i} className={'ui bottom attached tab segment' + activeClass}>{tab.component}</div>
             );
         }
         return (

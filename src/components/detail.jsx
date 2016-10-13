@@ -16,7 +16,7 @@ export default class Detail extends React.Component {
     render() {
         let tabs = [];
         tabs.push(new TabModel('Commits', <CommitsTab git={this.props.git}/>));
-        tabs.push(new TabModel('Information', <h1>Not yet</h1>));
+        tabs.push(new TabModel('Information', <h1>{this.props.git.currentBranch}</h1>));
         return (
             <div>
                 <BackButton/>

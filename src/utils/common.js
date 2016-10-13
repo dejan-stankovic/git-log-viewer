@@ -39,6 +39,17 @@ export default class Common {
     }
 
     /**
+     * Execute a function async
+     * @param  {function} func  Function that needs to be executed
+     * @return {void}
+     */
+    static executeSync(func) {
+        if (typeof func === 'function') {
+            setTimeout(func, 0);
+        }
+    }
+
+    /**
      * Return pagination array
      * @param  Integer   current    Current page
      * @param  Integer   total      Total page
