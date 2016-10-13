@@ -43,7 +43,7 @@ export default class Common {
      * @param  {function} func  Function that needs to be executed
      * @return {void}
      */
-    static executeSync(func) {
+    static executeAsync(func) {
         if (typeof func === 'function') {
             setTimeout(func, 0);
         }

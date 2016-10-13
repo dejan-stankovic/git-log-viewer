@@ -57,7 +57,7 @@ export default class CommitsTab extends React.Component {
         this.state.loading = true;
         this.setState(this.state);
 
-        Common.executeSync(() => {
+        Common.executeAsync(() => {
             this.commits = this.props.git.getCommits(this.state.currentPage);
             this.state.loading = false;
             this.setState(this.state);

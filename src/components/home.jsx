@@ -49,7 +49,7 @@ export default class Home extends React.Component {
 
     collectData(e, path) {
         this.setState({ loading: true });
-        Common.executeSync(() => {
+        Common.executeAsync(() => {
             let git = new Git(path[0]);
             if (!git.isValid()) {
                 Common.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');

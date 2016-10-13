@@ -4133,8 +4133,8 @@
 	         */
 
 	    }, {
-	        key: 'executeSync',
-	        value: function executeSync(func) {
+	        key: 'executeAsync',
+	        value: function executeAsync(func) {
 	            if (typeof func === 'function') {
 	                setTimeout(func, 0);
 	            }
@@ -21530,7 +21530,7 @@
 	            var _this2 = this;
 
 	            this.setState({ loading: true });
-	            _common2.default.executeSync(function () {
+	            _common2.default.executeAsync(function () {
 	                var git = new _git2.default(path[0]);
 	                if (!git.isValid()) {
 	                    _common2.default.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
@@ -21604,10 +21604,16 @@
 	    }, {
 	        key: 'collectData',
 	        value: function collectData() {
+	            var cmd = void 0,
+	                output = void 0;
 	            try {
+	                // Get URL
+	                cmd = 'git config --get remote.origin.url';
+	                output = _child_process.execSync;
+
 	                // Get all branches
-	                var cmd = 'git branch -a';
-	                var output = (0, _child_process.execSync)(cmd).toString();
+	                cmd = 'git branch -a';
+	                output = (0, _child_process.execSync)(cmd).toString();
 	                var branches = output.split(/[\r\n]+/g);
 	                for (var i = 0; i < branches.length; i++) {
 	                    var branch = branches[i].trim();
@@ -22130,7 +22136,7 @@
 	            this.state.loading = true;
 	            this.setState(this.state);
 
-	            _common2.default.executeSync(function () {
+	            _common2.default.executeAsync(function () {
 	                _this3.commits = _this3.props.git.getCommits(_this3.state.currentPage);
 	                _this3.state.loading = false;
 	                _this3.setState(_this3.state);
