@@ -4,6 +4,7 @@ import Git from '../../utils/git.js';
 import Common from '../../utils/common.js';
 
 import Pager from '../shared/pager.jsx';
+import Select from '../shared/select.jsx';
 import Row from './row.jsx';
 
 export default class CommitsTab extends React.Component {
@@ -33,8 +34,18 @@ export default class CommitsTab extends React.Component {
             }
             rows = this.commits.map((commit) => <Row key={commit.hash} commit={commit} git={this.props.git}/>);
         }
+
+        let options = [
+            {text: 'Test 1', value: 'test1@example.com', selected: false},
+            {text: 'Test 2', value: 'test2@example.com', selected: false},
+            {text: 'Test 3', value: 'test3@example.com', selected: true},
+            {text: 'Test 4', value: 'test4@example.com', selected: false},
+            {text: 'Test 5', value: 'test5@example.com', selected: false}
+        ];
+
         return (
             <div>
+                <Select options={options}/>
                 <Pager currentPage={this.state.currentPage} totalPage={this.state.totalPage} pageSize={this.state.pageSize} onChange={this.changePage}/>
                 <br/><br/>
                 <div className="ui vertically divided grid">{rows}</div>

@@ -12,7 +12,7 @@ export default class GitUtils {
         this.branches = [];
         this.remoteBranches = [];
         this.currentBranch = '';
-        this.users = [];
+        this.users = null;
     }
 
     /**
@@ -59,29 +59,37 @@ export default class GitUtils {
             }
 
             // Count commits
-            this.commitsCount = this.getCommitsCount(this.currentBranch);
+            this.commitsCount = this.getCommitsCount();
 
             // Get all users
-            cmd = 'git log --pretty=[%cE][%cN] ' + this.currentBranch;
-            cmd += ' | sort | uniq';
-            output = execSync(cmd).toString();
+            this.users = this.getUsers();
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    getUsers(branch = this.currentBranch) {
+        let cmd = 'git log --pretty=[%cE][%cN] ' + branch;
+        try {
+            let output = execSync(cmd).toString();
             let regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
             let match = regexp.exec(output);
             let emails = [];
+            let users = [];
             while (match !== null) {
                 let email = match[1].toLowerCase();
                 if (emails.indexOf(email) === -1) {
                     emails.push(email);
-                    let user = new User(match[2], email);
-                    this.users.push(user);
+                    users.push(new User(match[2], email));
                 }
                 match = regexp.exec(output);
             }
+            return users;
         } catch (err) {
             console.error(err);
+            return null;
         }
-
-
     }
 
     getCommitsCount(branch = this.currentBranch) {

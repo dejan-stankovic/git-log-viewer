@@ -8,7 +8,6 @@ export default class InformationTab extends React.Component {
 
     render() {
     	let git = this.props.git;
-    	console.log(git.branches);
     	let branches = [];
     	for (let branch of git.branches) {
     		branches.push(<tr key={branch}><td><div className="ui teal horizontal small label">Local</div> {branch}</td></tr>);

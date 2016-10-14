@@ -65,3 +65,10 @@
     padding-bottom: 0 !important;
 
 }
+
+.glv-sizer {
+    display: initial !important;
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+}

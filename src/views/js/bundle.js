@@ -21588,7 +21588,7 @@
 	        this.branches = [];
 	        this.remoteBranches = [];
 	        this.currentBranch = '';
-	        this.users = [];
+	        this.users = null;
 	    }
 
 	    /**
@@ -21641,26 +21641,38 @@
 	                }
 
 	                // Count commits
-	                this.commitsCount = this.getCommitsCount(this.currentBranch);
+	                this.commitsCount = this.getCommitsCount();
 
 	                // Get all users
-	                cmd = 'git log --pretty=[%cE][%cN] ' + this.currentBranch;
-	                cmd += ' | sort | uniq';
-	                output = (0, _child_process.execSync)(cmd).toString();
+	                this.users = this.getUsers();
+	            } catch (err) {
+	                console.error(err);
+	            }
+	        }
+	    }, {
+	        key: 'getUsers',
+	        value: function getUsers() {
+	            var branch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.currentBranch;
+
+	            var cmd = 'git log --pretty=[%cE][%cN] ' + branch;
+	            try {
+	                var output = (0, _child_process.execSync)(cmd).toString();
 	                var regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
 	                var match = regexp.exec(output);
 	                var emails = [];
+	                var users = [];
 	                while (match !== null) {
 	                    var email = match[1].toLowerCase();
 	                    if (emails.indexOf(email) === -1) {
 	                        emails.push(email);
-	                        var user = new _user2.default(match[2], email);
-	                        this.users.push(user);
+	                        users.push(new _user2.default(match[2], email));
 	                    }
 	                    match = regexp.exec(output);
 	                }
+	                return users;
 	            } catch (err) {
 	                console.error(err);
+	                return null;
 	            }
 	        }
 	    }, {
@@ -21833,7 +21845,7 @@
 
 	var _commitsTab2 = _interopRequireDefault(_commitsTab);
 
-	var _informationTab = __webpack_require__(186);
+	var _informationTab = __webpack_require__(187);
 
 	var _informationTab2 = _interopRequireDefault(_informationTab);
 
@@ -22095,7 +22107,11 @@
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _row = __webpack_require__(185);
+	var _select = __webpack_require__(185);
+
+	var _select2 = _interopRequireDefault(_select);
+
+	var _row = __webpack_require__(186);
 
 	var _row2 = _interopRequireDefault(_row);
 
@@ -22152,9 +22168,13 @@
 	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit, git: _this2.props.git });
 	                });
 	            }
+
+	            var options = [{ text: 'Test 1', value: 'test1@example.com', selected: false }, { text: 'Test 2', value: 'test2@example.com', selected: false }, { text: 'Test 3', value: 'test3@example.com', selected: true }, { text: 'Test 4', value: 'test4@example.com', selected: false }, { text: 'Test 5', value: 'test5@example.com', selected: false }];
+
 	            return _react2.default.createElement(
 	                'div',
 	                null,
+	                _react2.default.createElement(_select2.default, { options: options }),
 	                _react2.default.createElement(_pager2.default, { currentPage: this.state.currentPage, totalPage: this.state.totalPage, pageSize: this.state.pageSize, onChange: this.changePage }),
 	                _react2.default.createElement('br', null),
 	                _react2.default.createElement('br', null),
@@ -22357,6 +22377,187 @@
 
 /***/ },
 /* 185 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.DropdownItem = exports.Dropdown = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(34);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Select = function (_React$Component) {
+	    _inherits(Select, _React$Component);
+
+	    function Select(props) {
+	        _classCallCheck(this, Select);
+
+	        var _this = _possibleConstructorReturn(this, (Select.__proto__ || Object.getPrototypeOf(Select)).call(this, props));
+
+	        _this.props = props;
+	        _this.state = {
+	            active: false
+	        };
+	        _this.toggle = _this.toggle.bind(_this);
+	        _this.inputChange = _this.inputChange.bind(_this);
+	        return _this;
+	    }
+
+	    _createClass(Select, [{
+	        key: 'render',
+	        value: function render() {
+	            var dropdown = null;
+	            var activeClass = '';
+	            if (this.state.active) {
+	                dropdown = _react2.default.createElement(Dropdown, { options: this.props.options });
+	                activeClass = ' active visible';
+	            }
+	            return _react2.default.createElement(
+	                'div',
+	                { className: 'ui fluid search dropdown selection multiple' + activeClass, onClick: this.toggle, 'data-toggle': '1' },
+	                _react2.default.createElement('i', { className: 'dropdown icon', 'data-toggle': '1' }),
+	                _react2.default.createElement(
+	                    'a',
+	                    { className: 'ui label transition visible' },
+	                    'Selected 1',
+	                    _react2.default.createElement('i', { className: 'delete icon' })
+	                ),
+	                _react2.default.createElement(
+	                    'a',
+	                    { className: 'ui label transition visible' },
+	                    'Selected 2',
+	                    _react2.default.createElement('i', { className: 'delete icon' })
+	                ),
+	                _react2.default.createElement('input', { className: 'search', autoComplete: 'off', tabIndex: '0', onChange: this.inputChange, ref: 'inputText' }),
+	                _react2.default.createElement('span', { className: 'sizer glv-sizer', ref: 'inputSizer' }),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'default text' },
+	                    'Placeholder'
+	                ),
+	                dropdown
+	            );
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.inputText = _reactDom2.default.findDOMNode(this.refs.inputText);
+	            this.inputSizer = _reactDom2.default.findDOMNode(this.refs.inputSizer);
+	        }
+	    }, {
+	        key: 'toggle',
+	        value: function toggle(event) {
+	            var target = event.target;
+	            if (target.getAttribute('data-toggle') !== '1') {
+	                return;
+	            }
+	            var state = this.state;
+	            state.active = !state.active;
+	            if (state.active) {
+	                this.inputText.focus();
+	            }
+	            this.setState(state);
+	        }
+	    }, {
+	        key: 'inputChange',
+	        value: function inputChange(event) {
+	            // Change the size of input element based on input text
+	            this.inputSizer.innerHTML = this.inputText.value.replace(/\s/g, '&nbsp;');
+	            this.inputText.style = 'width: ' + this.inputSizer.offsetWidth + 'px';
+	        }
+	    }]);
+
+	    return Select;
+	}(_react2.default.Component);
+
+	exports.default = Select;
+
+	var Dropdown = exports.Dropdown = function (_React$Component2) {
+	    _inherits(Dropdown, _React$Component2);
+
+	    function Dropdown(props) {
+	        _classCallCheck(this, Dropdown);
+
+	        var _this2 = _possibleConstructorReturn(this, (Dropdown.__proto__ || Object.getPrototypeOf(Dropdown)).call(this, props));
+
+	        _this2.props = props;
+	        return _this2;
+	    }
+
+	    _createClass(Dropdown, [{
+	        key: 'render',
+	        value: function render() {
+	            var options = this.props.options.map(function (option) {
+	                return _react2.default.createElement(DropdownItem, {
+	                    key: option.value,
+	                    selected: option.selected,
+	                    text: option.text
+	                });
+	            });
+	            return _react2.default.createElement(
+	                'div',
+	                { className: 'menu transition visible', tabIndex: '-1' },
+	                options
+	            );
+	        }
+	    }]);
+
+	    return Dropdown;
+	}(_react2.default.Component);
+
+	var DropdownItem = exports.DropdownItem = function (_React$Component3) {
+	    _inherits(DropdownItem, _React$Component3);
+
+	    function DropdownItem(props) {
+	        _classCallCheck(this, DropdownItem);
+
+	        var _this3 = _possibleConstructorReturn(this, (DropdownItem.__proto__ || Object.getPrototypeOf(DropdownItem)).call(this, props));
+
+	        _this3.props = props;
+	        _this3.state = {
+	            selected: _this3.props.selected
+	        };
+	        return _this3;
+	    }
+
+	    _createClass(DropdownItem, [{
+	        key: 'render',
+	        value: function render() {
+	            var selectedClass = '';
+	            if (this.state.selected) {
+	                selectedClass = ' selected';
+	            }
+	            return _react2.default.createElement(
+	                'div',
+	                { className: 'item' + selectedClass },
+	                this.props.text
+	            );
+	        }
+	    }]);
+
+	    return DropdownItem;
+	}(_react2.default.Component);
+
+/***/ },
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22576,7 +22777,7 @@
 	exports.default = Row;
 
 /***/ },
-/* 186 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -22615,7 +22816,6 @@
 	        key: "render",
 	        value: function render() {
 	            var git = this.props.git;
-	            console.log(git.branches);
 	            var branches = [];
 	            var _iteratorNormalCompletion = true;
 	            var _didIteratorError = false;
