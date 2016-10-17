@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { execSync } from 'child_process';
 import { ipcRenderer } from 'electron';
 import * as AppConst from '../appconst.js';
 
@@ -46,6 +47,18 @@ export default class Common {
     static executeAsync(func) {
         if (typeof func === 'function') {
             setTimeout(func, 0);
+        }
+    }
+
+    static isValidGitDirectory(path) {
+        try {
+            process.chdir(path);
+            let cmd = 'git rev-parse --is-inside-work-tree';
+            execSync(cmd);
+            return true;
+        } catch (err) {
+            console.error(err);
+            return false;
         }
     }
 

@@ -13,16 +13,16 @@ export default class CommitsTab extends React.Component {
         super(props);
         this.props = props;
         this.state = {
+            repository: props.repository,
             loading: true,
             currentPage: 1,
-            pageSize: AppConst.PAGER_DEFAULT_SIZE
+            pageSize: AppConst.PAGER_DEFAULT_SIZE,
+            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
         };
 
         this.changePage = this.changePage.bind(this);
         this.changePageSize = this.changePageSize.bind(this);
         this.getData = this.getData.bind(this);
-
-        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
     }
 
     render() {
@@ -31,21 +31,10 @@ export default class CommitsTab extends React.Component {
             rows = <div className="ui active centered text inline loader">Getting Commit Logs</div>;
         } else {
             if (this.commits === null) {
-                return this.showError('Empty data', ['Could not read commit log from Git directory.', 'Please try again.']);
+                return this.showError('Empty data', 'Could not read commit log from Git directory. Please try again.');
             }
-            rows = this.commits.map((commit) => <Row key={commit.hash} commit={commit} git={this.props.git}/>);
+            rows = this.commits.map((commit) => <Row key={commit.hash} commit={commit}/>);
         }
-
-        let userFilter = (user, keyword) => {
-            if (user.name.indexOf(keyword) > -1 || user.email.indexOf(keyword) > -1) {
-                return true;
-            }
-            return false;
-        };
-        let userOptions = this.props.users.map((user) => {
-            user.disp = <div><strong>{user.name}</strong><br/>{user.email}</div>;
-            return user;
-        });
 
         return (
             <div>
@@ -83,25 +72,26 @@ export default class CommitsTab extends React.Component {
     }
 
     getData() {
+        let repository = this.props.repository;
         this.state.loading = true;
-        this.state.totalPage = Math.ceil(this.props.commitsCount / this.state.pageSize);
+        this.state.totalPage = Math.ceil(repository.commitsCount / this.state.pageSize);
         if (this.state.currentPage > this.state.totalPage) {
             this.state.currentPage = this.state.totalPage;
         }
         this.setState(this.state);
 
         Common.executeAsync(() => {
-            this.commits = this.props.git.getCommits(this.state.currentPage, this.state.pageSize);
+            this.commits = Git.getCommits(this.state.currentPage, this.state.pageSize, repository.currentBranch);
             this.setState({ loading: false });
         });
     }
 
-    showError(header, messages) {
-        let msg = messages.map((message) => <p>{message}</p>);
+    showError(header, message) {
         return (
             <div>
                 <div className="ui negative message">
-                    <div className="header">{header}</div>{msg}
+                    <div className="header">{header}</div>
+                    <p>{message}</p>
                 </div>
             </div>
         );

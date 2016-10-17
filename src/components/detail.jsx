@@ -13,31 +13,16 @@ export default class Detail extends React.Component {
         super(props);
         this.props = props;
         this.state = {
-            users: props.users,
-            commitsCount: props.commitsCount
+            repository: props.repository
         }
         this.changeBranch = this.changeBranch.bind(this);
     }
 
     render() {
-        let props = this.props;
         let state = this.state;
         let tabs = [];
-        let commitTab = <CommitsTab
-                            git={props.git}
-                            currentBranch={props.git.currentBranch}
-                            branches={props.branches}
-                            users={state.users}
-                            commitsCount={state.commitsCount}/>
-        let infoTab = <InformationTab 
-                            git={props.git} 
-                            currentBranch={props.git.currentBranch}
-                            branches={props.branches}
-                            users={state.users}
-                            commitsCount={state.commitsCount}
-                            changeBranch={this.changeBranch}/>
-        tabs.push(new TabModel('Commits', commitTab));
-        tabs.push(new TabModel('Information', infoTab));
+        tabs.push(new TabModel('Commits', <CommitsTab repository={state.repository}/>));
+        tabs.push(new TabModel('Information', <InformationTab repository={state.repository}/>));
         return (
             <div>
                 <BackButton/>
@@ -48,12 +33,12 @@ export default class Detail extends React.Component {
 
     changeBranch(branch) {
         let state = this.state;
-        let git = this.props.git;
+        let repository = this.state.repository;
 
-        git.currentBranch = branch;
-        state.users = git.getUsers(branch);
-        state.commitsCount = git.getCommitsCount(branch);
+        repository.currentBranch = branch;
+        repository.users = Git.getUsers(branch);
+        repository.commitsCount = Git.getCommitsCount(branch);
 
-        this.setState(state);
+        this.setState({ repository: repository });
     }
 }

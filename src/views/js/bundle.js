@@ -54,7 +54,7 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _home = __webpack_require__(174);
+	var _home = __webpack_require__(175);
 
 	var _home2 = _interopRequireDefault(_home);
 
@@ -4066,9 +4066,11 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _electron = __webpack_require__(172);
+	var _child_process = __webpack_require__(172);
 
-	var _appconst = __webpack_require__(173);
+	var _electron = __webpack_require__(173);
+
+	var _appconst = __webpack_require__(174);
 
 	var AppConst = _interopRequireWildcard(_appconst);
 
@@ -4137,6 +4139,19 @@
 	        value: function executeAsync(func) {
 	            if (typeof func === 'function') {
 	                setTimeout(func, 0);
+	            }
+	        }
+	    }, {
+	        key: 'isValidGitDirectory',
+	        value: function isValidGitDirectory(path) {
+	            try {
+	                process.chdir(path);
+	                var cmd = 'git rev-parse --is-inside-work-tree';
+	                (0, _child_process.execSync)(cmd);
+	                return true;
+	            } catch (err) {
+	                console.error(err);
+	                return false;
 	            }
 	        }
 
@@ -21395,10 +21410,16 @@
 /* 172 */
 /***/ function(module, exports) {
 
-	module.exports = require("electron");
+	module.exports = require("child_process");
 
 /***/ },
 /* 173 */
+/***/ function(module, exports) {
+
+	module.exports = require("electron");
+
+/***/ },
+/* 174 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21414,7 +21435,7 @@
 	});
 
 /***/ },
-/* 174 */
+/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21433,13 +21454,13 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _electron = __webpack_require__(172);
+	var _electron = __webpack_require__(173);
 
-	var _appconst = __webpack_require__(173);
+	var _appconst = __webpack_require__(174);
 
 	var AppConst = _interopRequireWildcard(_appconst);
 
-	var _git = __webpack_require__(175);
+	var _git = __webpack_require__(176);
 
 	var _git2 = _interopRequireDefault(_git);
 
@@ -21447,7 +21468,11 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _detail = __webpack_require__(179);
+	var _repo = __webpack_require__(179);
+
+	var _repo2 = _interopRequireDefault(_repo);
+
+	var _detail = __webpack_require__(180);
 
 	var _detail2 = _interopRequireDefault(_detail);
 
@@ -21469,7 +21494,6 @@
 
 	        var _this = _possibleConstructorReturn(this, (Home.__proto__ || Object.getPrototypeOf(Home)).call(this));
 
-	        _this.state = { loading: false };
 	        _this.chooseDir = _this.chooseDir.bind(_this);
 	        _this.collectData = _this.collectData.bind(_this);
 	        return _this;
@@ -21478,19 +21502,6 @@
 	    _createClass(Home, [{
 	        key: 'render',
 	        value: function render() {
-	            var loader = null;
-	            if (this.state.loading) {
-	                loader = _react2.default.createElement(
-	                    'div',
-	                    null,
-	                    _react2.default.createElement('div', { className: 'ui active centered inline small loader' }),
-	                    _react2.default.createElement(
-	                        'p',
-	                        { className: 'glv-centered' },
-	                        'Initializing data. Please wait...'
-	                    )
-	                );
-	            }
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -21515,7 +21526,16 @@
 	                        ' Choose your git directory'
 	                    )
 	                ),
-	                loader
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'glv-hidden', ref: 'loader' },
+	                    _react2.default.createElement('div', { className: 'ui active centered inline small loader' }),
+	                    _react2.default.createElement(
+	                        'p',
+	                        { className: 'glv-centered' },
+	                        'Initializing data. Please wait...'
+	                    )
+	                )
 	            );
 	        }
 	    }, {
@@ -21529,19 +21549,29 @@
 	        value: function collectData(e, path) {
 	            var _this2 = this;
 
-	            this.setState({ loading: true });
+	            this.showLoader();
 	            _common2.default.executeAsync(function () {
-	                var git = new _git2.default(path[0]);
-	                if (!git.isValid()) {
+	                if (!_common2.default.isValidGitDirectory(path[0])) {
 	                    _common2.default.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
-	                    _this2.setState({ loading: false });
+	                    _this2.hideLoader();
 	                    return;
 	                }
-	                var branches = git.getBranches();
-	                var users = git.getUsers();
-	                var commitsCount = git.getCommitsCount();
-	                _common2.default.renderPage(_react2.default.createElement(_detail2.default, { git: git, branches: branches, users: users, commitsCount: commitsCount }));
+	                var repository = new _repo2.default();
+	                repository.collectData();
+	                _common2.default.renderPage(_react2.default.createElement(_detail2.default, { repository: repository }));
 	            });
+	        }
+	    }, {
+	        key: 'showLoader',
+	        value: function showLoader() {
+	            var loader = _reactDom2.default.findDOMNode(this.refs.loader);
+	            loader.className = '';
+	        }
+	    }, {
+	        key: 'hideLoader',
+	        value: function hideLoader() {
+	            var loader = _reactDom2.default.findDOMNode(this.refs.loader);
+	            loader.className = 'glv-hidden';
 	        }
 	    }]);
 
@@ -21551,7 +21581,7 @@
 	exports.default = Home;
 
 /***/ },
-/* 175 */
+/* 176 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21562,9 +21592,9 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _child_process = __webpack_require__(176);
+	var _child_process = __webpack_require__(172);
 
-	var _appconst = __webpack_require__(173);
+	var _appconst = __webpack_require__(174);
 
 	var AppConst = _interopRequireWildcard(_appconst);
 
@@ -21581,38 +21611,30 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var GitUtils = function () {
-	    function GitUtils(path) {
+	    function GitUtils() {
 	        _classCallCheck(this, GitUtils);
-
-	        this.path = path;
-	        this.url = '';
-	        this.currentBranch = '';
 	    }
 
-	    /**
-	     * Check if the directory specified in this.path is a Git directory or not
-	     * @return {Boolean}
-	     */
-
-
-	    _createClass(GitUtils, [{
-	        key: 'isValid',
-	        value: function isValid() {
+	    _createClass(GitUtils, null, [{
+	        key: 'getURL',
+	        value: function getURL() {
 	            try {
-	                process.chdir(this.path);
-
-	                // Get URL
 	                var cmd = 'git config --get remote.origin.url';
-	                this.url = (0, _child_process.execSync)(cmd).toString();
-
-	                // Get current branch
-	                cmd = 'git rev-parse --abbrev-ref HEAD';
-	                this.currentBranch = (0, _child_process.execSync)(cmd).toString();
-
-	                return true;
+	                return (0, _child_process.execSync)(cmd).toString();
 	            } catch (err) {
 	                console.error(err);
-	                return false;
+	                return null;
+	            }
+	        }
+	    }, {
+	        key: 'getCurrentBranch',
+	        value: function getCurrentBranch() {
+	            try {
+	                var cmd = 'git rev-parse --abbrev-ref HEAD';
+	                return (0, _child_process.execSync)(cmd).toString();
+	            } catch (err) {
+	                console.error(err);
+	                return null;
 	            }
 	        }
 	    }, {
@@ -21660,9 +21682,7 @@
 	        }
 	    }, {
 	        key: 'getUsers',
-	        value: function getUsers() {
-	            var branch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.currentBranch;
-
+	        value: function getUsers(branch) {
 	            var cmd = 'git log --pretty=[%cE][%cN] ' + branch;
 	            try {
 	                var output = (0, _child_process.execSync)(cmd).toString();
@@ -21686,9 +21706,7 @@
 	        }
 	    }, {
 	        key: 'getCommitsCount',
-	        value: function getCommitsCount() {
-	            var branch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.currentBranch;
-
+	        value: function getCommitsCount(branch) {
 	            var cmd = 'git rev-list --count ' + branch;
 	            try {
 	                var output = (0, _child_process.execSync)(cmd).toString();
@@ -21703,7 +21721,7 @@
 	        value: function getCommits() {
 	            var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 	            var pageSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : AppConst.PAGER_DEFAULT_SIZE;
-	            var branch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : this.currentBranch;
+	            var branch = arguments[2];
 
 	            if (isNaN(page) || page < 1) {
 	                page = 1;
@@ -21756,12 +21774,6 @@
 	}();
 
 	exports.default = GitUtils;
-
-/***/ },
-/* 176 */
-/***/ function(module, exports) {
-
-	module.exports = require("child_process");
 
 /***/ },
 /* 177 */
@@ -21821,6 +21833,53 @@
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _git = __webpack_require__(176);
+
+	var _git2 = _interopRequireDefault(_git);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var thissitory = function () {
+		function thissitory() {
+			_classCallCheck(this, thissitory);
+
+			this.url = '';
+			this.currentBranch = '';
+			this.branches = [];
+			this.users = [];
+			this.commitsCount = 0;
+		}
+
+		_createClass(thissitory, [{
+			key: 'collectData',
+			value: function collectData() {
+				this.url = _git2.default.getURL();
+				this.currentBranch = _git2.default.getCurrentBranch();
+				this.branches = _git2.default.getBranches();
+				this.users = _git2.default.getUsers(this.currentBranch);
+				this.commitsCount = _git2.default.getCommitsCount(this.currentBranch);
+			}
+		}]);
+
+		return thissitory;
+	}();
+
+	exports.default = thissitory;
+
+/***/ },
+/* 180 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
@@ -21834,27 +21893,27 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _git = __webpack_require__(175);
+	var _git = __webpack_require__(176);
 
 	var _git2 = _interopRequireDefault(_git);
 
-	var _tab = __webpack_require__(180);
+	var _tab = __webpack_require__(181);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
-	var _backHomeBtn = __webpack_require__(181);
+	var _backHomeBtn = __webpack_require__(182);
 
 	var _backHomeBtn2 = _interopRequireDefault(_backHomeBtn);
 
-	var _tab3 = __webpack_require__(182);
+	var _tab3 = __webpack_require__(183);
 
 	var _tab4 = _interopRequireDefault(_tab3);
 
-	var _commitsTab = __webpack_require__(183);
+	var _commitsTab = __webpack_require__(184);
 
 	var _commitsTab2 = _interopRequireDefault(_commitsTab);
 
-	var _informationTab = __webpack_require__(190);
+	var _informationTab = __webpack_require__(191);
 
 	var _informationTab2 = _interopRequireDefault(_informationTab);
 
@@ -21876,8 +21935,7 @@
 
 	        _this.props = props;
 	        _this.state = {
-	            users: props.users,
-	            commitsCount: props.commitsCount
+	            repository: props.repository
 	        };
 	        _this.changeBranch = _this.changeBranch.bind(_this);
 	        return _this;
@@ -21886,24 +21944,10 @@
 	    _createClass(Detail, [{
 	        key: 'render',
 	        value: function render() {
-	            var props = this.props;
 	            var state = this.state;
 	            var tabs = [];
-	            var commitTab = _react2.default.createElement(_commitsTab2.default, {
-	                git: props.git,
-	                currentBranch: props.git.currentBranch,
-	                branches: props.branches,
-	                users: state.users,
-	                commitsCount: state.commitsCount });
-	            var infoTab = _react2.default.createElement(_informationTab2.default, {
-	                git: props.git,
-	                currentBranch: props.git.currentBranch,
-	                branches: props.branches,
-	                users: state.users,
-	                commitsCount: state.commitsCount,
-	                changeBranch: this.changeBranch });
-	            tabs.push(new _tab2.default('Commits', commitTab));
-	            tabs.push(new _tab2.default('Information', infoTab));
+	            tabs.push(new _tab2.default('Commits', _react2.default.createElement(_commitsTab2.default, { repository: state.repository })));
+	            tabs.push(new _tab2.default('Information', _react2.default.createElement(_informationTab2.default, { repository: state.repository })));
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -21915,13 +21959,13 @@
 	        key: 'changeBranch',
 	        value: function changeBranch(branch) {
 	            var state = this.state;
-	            var git = this.props.git;
+	            var repository = this.state.repository;
 
-	            git.currentBranch = branch;
-	            state.users = git.getUsers(branch);
-	            state.commitsCount = git.getCommitsCount(branch);
+	            repository.currentBranch = branch;
+	            repository.users = _git2.default.getUsers(branch);
+	            repository.commitsCount = _git2.default.getCommitsCount(branch);
 
-	            this.setState(state);
+	            this.setState({ repository: repository });
 	        }
 	    }]);
 
@@ -21931,7 +21975,7 @@
 	exports.default = Detail;
 
 /***/ },
-/* 180 */
+/* 181 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -21952,7 +21996,7 @@
 	exports.default = Tab;
 
 /***/ },
-/* 181 */
+/* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21971,7 +22015,7 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _home = __webpack_require__(174);
+	var _home = __webpack_require__(175);
 
 	var _home2 = _interopRequireDefault(_home);
 
@@ -22021,7 +22065,7 @@
 	exports.default = BackButton;
 
 /***/ },
-/* 182 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22117,7 +22161,7 @@
 	exports.default = Tab;
 
 /***/ },
-/* 183 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22132,15 +22176,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactAddonsPureRenderMixin = __webpack_require__(184);
+	var _reactAddonsPureRenderMixin = __webpack_require__(185);
 
 	var _reactAddonsPureRenderMixin2 = _interopRequireDefault(_reactAddonsPureRenderMixin);
 
-	var _appconst = __webpack_require__(173);
+	var _appconst = __webpack_require__(174);
 
 	var AppConst = _interopRequireWildcard(_appconst);
 
-	var _git = __webpack_require__(175);
+	var _git = __webpack_require__(176);
 
 	var _git2 = _interopRequireDefault(_git);
 
@@ -22148,15 +22192,15 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _pager = __webpack_require__(187);
+	var _pager = __webpack_require__(188);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _select = __webpack_require__(188);
+	var _select = __webpack_require__(189);
 
 	var _select2 = _interopRequireDefault(_select);
 
-	var _row = __webpack_require__(189);
+	var _row = __webpack_require__(190);
 
 	var _row2 = _interopRequireDefault(_row);
 
@@ -22180,24 +22224,22 @@
 
 	        _this.props = props;
 	        _this.state = {
+	            repository: props.repository,
 	            loading: true,
 	            currentPage: 1,
-	            pageSize: AppConst.PAGER_DEFAULT_SIZE
+	            pageSize: AppConst.PAGER_DEFAULT_SIZE,
+	            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
 	        };
 
 	        _this.changePage = _this.changePage.bind(_this);
 	        _this.changePageSize = _this.changePageSize.bind(_this);
 	        _this.getData = _this.getData.bind(_this);
-
-	        _this.shouldComponentUpdate = _reactAddonsPureRenderMixin2.default.shouldComponentUpdate.bind(_this);
 	        return _this;
 	    }
 
 	    _createClass(CommitsTab, [{
 	        key: 'render',
 	        value: function render() {
-	            var _this2 = this;
-
 	            var rows = null;
 	            if (this.state.loading) {
 	                rows = _react2.default.createElement(
@@ -22207,33 +22249,12 @@
 	                );
 	            } else {
 	                if (this.commits === null) {
-	                    return this.showError('Empty data', ['Could not read commit log from Git directory.', 'Please try again.']);
+	                    return this.showError('Empty data', 'Could not read commit log from Git directory. Please try again.');
 	                }
 	                rows = this.commits.map(function (commit) {
-	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit, git: _this2.props.git });
+	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit });
 	                });
 	            }
-
-	            var userFilter = function userFilter(user, keyword) {
-	                if (user.name.indexOf(keyword) > -1 || user.email.indexOf(keyword) > -1) {
-	                    return true;
-	                }
-	                return false;
-	            };
-	            var userOptions = this.props.users.map(function (user) {
-	                user.disp = _react2.default.createElement(
-	                    'div',
-	                    null,
-	                    _react2.default.createElement(
-	                        'strong',
-	                        null,
-	                        user.name
-	                    ),
-	                    _react2.default.createElement('br', null),
-	                    user.email
-	                );
-	                return user;
-	            });
 
 	            return _react2.default.createElement(
 	                'div',
@@ -22281,30 +22302,24 @@
 	    }, {
 	        key: 'getData',
 	        value: function getData() {
-	            var _this3 = this;
+	            var _this2 = this;
 
+	            var repository = this.props.repository;
 	            this.state.loading = true;
-	            this.state.totalPage = Math.ceil(this.props.commitsCount / this.state.pageSize);
+	            this.state.totalPage = Math.ceil(repository.commitsCount / this.state.pageSize);
 	            if (this.state.currentPage > this.state.totalPage) {
 	                this.state.currentPage = this.state.totalPage;
 	            }
 	            this.setState(this.state);
 
 	            _common2.default.executeAsync(function () {
-	                _this3.commits = _this3.props.git.getCommits(_this3.state.currentPage, _this3.state.pageSize);
-	                _this3.setState({ loading: false });
+	                _this2.commits = _git2.default.getCommits(_this2.state.currentPage, _this2.state.pageSize, repository.currentBranch);
+	                _this2.setState({ loading: false });
 	            });
 	        }
 	    }, {
 	        key: 'showError',
-	        value: function showError(header, messages) {
-	            var msg = messages.map(function (message) {
-	                return _react2.default.createElement(
-	                    'p',
-	                    null,
-	                    message
-	                );
-	            });
+	        value: function showError(header, message) {
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -22316,7 +22331,11 @@
 	                        { className: 'header' },
 	                        header
 	                    ),
-	                    msg
+	                    _react2.default.createElement(
+	                        'p',
+	                        null,
+	                        message
+	                    )
 	                )
 	            );
 	        }
@@ -22328,15 +22347,15 @@
 	exports.default = CommitsTab;
 
 /***/ },
-/* 184 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(185);
+	module.exports = __webpack_require__(186);
 
 /***/ },
-/* 185 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -22352,7 +22371,7 @@
 
 	'use strict';
 
-	var shallowCompare = __webpack_require__(186);
+	var shallowCompare = __webpack_require__(187);
 
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -22389,7 +22408,7 @@
 	module.exports = ReactComponentWithPureRenderMixin;
 
 /***/ },
-/* 186 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -22419,7 +22438,7 @@
 	module.exports = shallowCompare;
 
 /***/ },
-/* 187 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22439,7 +22458,7 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _select = __webpack_require__(188);
+	var _select = __webpack_require__(189);
 
 	var _select2 = _interopRequireDefault(_select);
 
@@ -22596,7 +22615,7 @@
 	}(_react2.default.Component);
 
 /***/ },
-/* 188 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22929,7 +22948,7 @@
 	}(_react2.default.Component);
 
 /***/ },
-/* 189 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22944,7 +22963,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _git = __webpack_require__(175);
+	var _git = __webpack_require__(176);
 
 	var _git2 = _interopRequireDefault(_git);
 
@@ -23133,8 +23152,7 @@
 	                }
 	                state.loading = true;
 	                this.setState(state);
-	                var git = this.props.git;
-	                commit.files = git.getFilesByCommitHash(commit.hash);
+	                commit.files = _git2.default.getFilesByCommitHash(commit.hash);
 	                state.loading = false;
 	                state.expanded = true;
 	                this.setState(state);
@@ -23149,7 +23167,7 @@
 	exports.default = Row;
 
 /***/ },
-/* 190 */
+/* 191 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23164,7 +23182,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _select = __webpack_require__(188);
+	var _select = __webpack_require__(189);
 
 	var _select2 = _interopRequireDefault(_select);
 
@@ -23185,22 +23203,23 @@
 	        var _this = _possibleConstructorReturn(this, (InformationTab.__proto__ || Object.getPrototypeOf(InformationTab)).call(this, props));
 
 	        _this.props = props;
-	        _this.changeBranch = _this.changeBranch.bind(_this);
+	        _this.state = {
+	            repository: props.repository
+	        };
 	        return _this;
 	    }
 
 	    _createClass(InformationTab, [{
 	        key: 'render',
 	        value: function render() {
-	            var props = this.props;
-	            var git = props.git;
+	            var repository = this.state.repository;
 	            var branches = [];
 	            var _iteratorNormalCompletion = true;
 	            var _didIteratorError = false;
 	            var _iteratorError = undefined;
 
 	            try {
-	                for (var _iterator = props.branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                for (var _iterator = repository.branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	                    var branch = _step.value;
 
 	                    if (branch.substring(0, 7) === 'remotes') {
@@ -23252,7 +23271,7 @@
 	                }
 	            }
 
-	            var users = props.users.map(function (user) {
+	            var users = repository.users.map(function (user) {
 	                return _react2.default.createElement(
 	                    'tr',
 	                    { key: user.email },
@@ -23287,36 +23306,31 @@
 	                        'li',
 	                        null,
 	                        'URL: ',
-	                        git.url
+	                        repository.url
 	                    ),
 	                    _react2.default.createElement(
 	                        'li',
 	                        null,
-	                        'Current branch:\xA0\xA0',
-	                        _react2.default.createElement(_select2.default, {
-	                            options: props.branches,
-	                            selectedOptions: [git.currentBranch],
-	                            stringOption: 'true',
-	                            inline: 'true',
-	                            onUpdate: this.changeBranch })
+	                        'Current branch: ',
+	                        repository.currentBranch
 	                    ),
 	                    _react2.default.createElement(
 	                        'li',
 	                        null,
 	                        'Commits: ',
-	                        props.commitsCount
+	                        repository.commitsCount
 	                    ),
 	                    _react2.default.createElement(
 	                        'li',
 	                        null,
 	                        'Contributors: ',
-	                        props.users.length
+	                        repository.users.length
 	                    ),
 	                    _react2.default.createElement(
 	                        'li',
 	                        null,
 	                        'Branches: ',
-	                        props.branches.length
+	                        repository.branches.length
 	                    )
 	                ),
 	                _react2.default.createElement(
@@ -23368,18 +23382,11 @@
 	            );
 	        }
 	    }, {
-	        key: 'shouldComponentUpdate',
-	        value: function shouldComponentUpdate(nextProps, nextState) {
-	            if (this.props !== nextProps) {
-	                return true;
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            if (this.props.repository.currentBranch !== nextProps.repository.currentBranch) {
+	                this.setState({ repository: nextProps.repository });
 	            }
-	            return false;
-	        }
-	    }, {
-	        key: 'changeBranch',
-	        value: function changeBranch(selectedBranches) {
-	            var branch = selectedBranches[0];
-	            this.props.changeBranch(branch);
 	        }
 	    }]);
 

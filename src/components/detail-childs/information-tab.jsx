@@ -6,21 +6,22 @@ export default class InformationTab extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
-        this.changeBranch = this.changeBranch.bind(this);
+        this.state = {
+            repository: props.repository
+        }
     }
 
     render() {
-        let props = this.props;
-    	let git = props.git;
+        let repository = this.state.repository;
     	let branches = [];
-    	for (let branch of props.branches) {
+    	for (let branch of repository.branches) {
             if (branch.substring(0, 7) === 'remotes') {
                 branches.push(<tr key={branch}><td><div className="ui orange horizontal small label">Remote</div> {branch}</td></tr>);
             } else {
                 branches.push(<tr key={branch}><td><div className="ui teal horizontal small label">Local</div> {branch}</td></tr>);
             }
     	}
-    	let users = props.users.map((user) => (
+    	let users = repository.users.map((user) => (
     		<tr key={user.email}>
     			<td><i className="icon user"></i> {user.name}</td>
     			<td><i className="icon mail"></i> {user.email}</td>
@@ -30,19 +31,11 @@ export default class InformationTab extends React.Component {
             <div>
             	<h3>1. General Information</h3>
             	<ul>
-            		<li>URL: {git.url}</li>
-            		<li>
-                        Current branch:&nbsp;&nbsp;
-                        <Select 
-                            options={props.branches}
-                            selectedOptions={[git.currentBranch]}
-                            stringOption="true"
-                            inline="true"
-                            onUpdate={this.changeBranch}/>
-                    </li>
-            		<li>Commits: {props.commitsCount}</li>
-            		<li>Contributors: {props.users.length}</li>
-            		<li>Branches: {props.branches.length}</li>
+            		<li>URL: {repository.url}</li>
+            		<li>Current branch: {repository.currentBranch}</li>
+            		<li>Commits: {repository.commitsCount}</li>
+            		<li>Contributors: {repository.users.length}</li>
+            		<li>Branches: {repository.branches.length}</li>
             	</ul>
             	<h3>2. List contributors (of current branch)</h3>
             	<table className="ui very basic compact collapsing table">
@@ -66,15 +59,9 @@ export default class InformationTab extends React.Component {
         )
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        if (this.props !== nextProps) {
-            return true;
+    componentWillReceiveProps(nextProps) {
+        if (this.props.repository.currentBranch !== nextProps.repository.currentBranch) {
+            this.setState({ repository: nextProps.repository });
         }
-        return false;
-    }
-
-    changeBranch(selectedBranches) {
-        let branch = selectedBranches[0];
-        this.props.changeBranch(branch);
     }
 }

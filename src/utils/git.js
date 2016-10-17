@@ -5,36 +5,28 @@ import { Commit, CommitFile } from '../models/commit.js';
 import User from '../models/user.js';
 
 export default class GitUtils {
-    constructor(path) {
-        this.path = path;
-        this.url = '';
-        this.currentBranch = '';
-    }
 
-    /**
-     * Check if the directory specified in this.path is a Git directory or not
-     * @return {Boolean}
-     */
-    isValid() {
+    static getURL() {
         try {
-            process.chdir(this.path);
-
-            // Get URL
             let cmd = 'git config --get remote.origin.url';
-            this.url = execSync(cmd).toString();
-
-            // Get current branch
-            cmd = 'git rev-parse --abbrev-ref HEAD';
-            this.currentBranch = execSync(cmd).toString();
-
-            return true;
+            return execSync(cmd).toString();
         } catch (err) {
             console.error(err);
-            return false;
+            return null;
         }
     }
 
-    getBranches() {
+    static getCurrentBranch() {
+        try {
+            let cmd = 'git rev-parse --abbrev-ref HEAD';
+            return execSync(cmd).toString();
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    }
+
+    static getBranches() {
         try {
             let cmd = 'git branch -a';
             let output = execSync(cmd).toString();
@@ -54,7 +46,7 @@ export default class GitUtils {
         }
     }
 
-    getUsers(branch = this.currentBranch) {
+    static getUsers(branch) {
         let cmd = 'git log --pretty=[%cE][%cN] ' + branch;
         try {
             let output = execSync(cmd).toString();
@@ -77,7 +69,7 @@ export default class GitUtils {
         }
     }
 
-    getCommitsCount(branch = this.currentBranch) {
+    static getCommitsCount(branch) {
         let cmd = 'git rev-list --count ' + branch;
         try {
             let output = execSync(cmd).toString();
@@ -88,7 +80,7 @@ export default class GitUtils {
         }
     }
 
-    getCommits(page = 1, pageSize = AppConst.PAGER_DEFAULT_SIZE, branch = this.currentBranch) {
+    static getCommits(page = 1, pageSize = AppConst.PAGER_DEFAULT_SIZE, branch) {
         if (isNaN(page) || page < 1) {
             page = 1;
         }
@@ -115,7 +107,7 @@ export default class GitUtils {
         }
     }
 
-    getFilesByCommitHash(hash) {
+    static getFilesByCommitHash(hash) {
         let cmd = 'git log -m -1 --pretty= --name-status ' + hash;
         try {
             let files = [];

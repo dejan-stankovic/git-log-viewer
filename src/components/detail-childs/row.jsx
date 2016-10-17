@@ -100,8 +100,7 @@ export default class Row extends React.Component {
             }
             state.loading = true;
             this.setState(state);
-            let git = this.props.git;
-            commit.files = git.getFilesByCommitHash(commit.hash);
+            commit.files = Git.getFilesByCommitHash(commit.hash);
             state.loading = false;
             state.expanded = true;
             this.setState(state);

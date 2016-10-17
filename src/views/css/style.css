@@ -35,6 +35,10 @@
     src: url('../fonts/lato/Lato-BoldItalic.ttf');
 }
 
+.glv-hidden {
+    display: none !important;
+}
+
 .glv-container {
     padding: 20px;
 }
