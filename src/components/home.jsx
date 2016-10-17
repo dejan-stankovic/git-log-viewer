@@ -56,8 +56,10 @@ export default class Home extends React.Component {
                 this.setState({ loading: false });
                 return;
             }
-            git.collectData();
-            Common.renderPage(<Detail git={git}/>);
+            let branches = git.getBranches();
+            let users = git.getUsers();
+            let commitsCount = git.getCommitsCount();
+            Common.renderPage(<Detail git={git} branches={branches} users={users} commitsCount={commitsCount}/>);
         });
     }
 }

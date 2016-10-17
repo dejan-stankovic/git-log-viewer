@@ -1,21 +1,26 @@
 import React from 'react';
 
+import Select from '../shared/select.jsx';
+
 export default class InformationTab extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
+        this.changeBranch = this.changeBranch.bind(this);
     }
 
     render() {
-    	let git = this.props.git;
+        let props = this.props;
+    	let git = props.git;
     	let branches = [];
-    	for (let branch of git.branches) {
-    		branches.push(<tr key={branch}><td><div className="ui teal horizontal small label">Local</div> {branch}</td></tr>);
+    	for (let branch of props.branches) {
+            if (branch.substring(0, 7) === 'remotes') {
+                branches.push(<tr key={branch}><td><div className="ui orange horizontal small label">Remote</div> {branch}</td></tr>);
+            } else {
+                branches.push(<tr key={branch}><td><div className="ui teal horizontal small label">Local</div> {branch}</td></tr>);
+            }
     	}
-    	for (let branch of git.remoteBranches) {
-    		branches.push(<tr key={branch}><td><div className="ui orange horizontal small label">Remote</div> {branch}</td></tr>);
-    	}
-    	let users = git.users.map((user) => (
+    	let users = props.users.map((user) => (
     		<tr key={user.email}>
     			<td><i className="icon user"></i> {user.name}</td>
     			<td><i className="icon mail"></i> {user.email}</td>
@@ -26,11 +31,18 @@ export default class InformationTab extends React.Component {
             	<h3>1. General Information</h3>
             	<ul>
             		<li>URL: {git.url}</li>
-            		<li>Current branch: {git.currentBranch}</li>
-            		<li>Commits: {git.commitsCount}</li>
-            		<li>Contributors: {git.users.length}</li>
-            		<li>Local branches: {git.branches.length}</li>
-            		<li>Remote branches: {git.remoteBranches.length}</li>
+            		<li>
+                        Current branch:&nbsp;&nbsp;
+                        <Select 
+                            options={props.branches}
+                            selectedOptions={[git.currentBranch]}
+                            stringOption="true"
+                            inline="true"
+                            onUpdate={this.changeBranch}/>
+                    </li>
+            		<li>Commits: {props.commitsCount}</li>
+            		<li>Contributors: {props.users.length}</li>
+            		<li>Branches: {props.branches.length}</li>
             	</ul>
             	<h3>2. List contributors (of current branch)</h3>
             	<table className="ui very basic compact collapsing table">
@@ -52,5 +64,17 @@ export default class InformationTab extends React.Component {
             	</table>
             </div>
         )
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.props !== nextProps) {
+            return true;
+        }
+        return false;
+    }
+
+    changeBranch(selectedBranches) {
+        let branch = selectedBranches[0];
+        this.props.changeBranch(branch);
     }
 }

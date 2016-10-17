@@ -5,52 +5,171 @@ export default class Select extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
-        this.state = {
-            active: false
+        let state = {
+            active: false,
+            options: this.props.options
         }
-        this.toggle = this.toggle.bind(this);
+
+        state.selectedOptions = props.selectedOptions ? props.selectedOptions : [];
+        state.valueAttr = props.valueAttr ? props.valueAttr : 'value';
+        state.textAttr = props.textAttr ? props.textAttr : 'text';
+        state.optionAttr = props.optionAttr ? props.optionAttr : state.textAttr;
+        state.selectedAttr = props.selectedAttr ? props.selectedAttr : state.optionAttr;
+
+        this.state = state;
+
+        this.getClass = this.getClass.bind(this);
+        this.renderSelected = this.renderSelected.bind(this);
         this.inputChange = this.inputChange.bind(this);
+        this.filter = this.filter.bind(this);
+        this.onSelect = this.onSelect.bind(this);
+        this.onDeselect = this.onDeselect.bind(this);
+        this.toggleDropdown = this.toggleDropdown.bind(this);
+        this.hideDropdown = this.hideDropdown.bind(this);
     }
+
     render() {
-        let dropdown = null;
-        let activeClass = '';
-        if (this.state.active) {
-            dropdown = <Dropdown options={this.props.options}/>
-            activeClass = ' active visible';
+        let state = this.state;
+        let props = this.props;
+        let selectedComponent = this.renderSelected();
+        let inputText = null;
+        let inputSizer = null;
+        if (props.searchable) {
+            inputText = <input className="search" autoComplete="off" onChange={this.inputChange} ref="inputText"/>;
+            if (props.multiple) {
+                inputSizer = <span className="sizer glv-sizer" ref="inputSizer"></span>;
+            }
         }
         return (
-            <div className={'ui fluid search dropdown selection multiple' + activeClass} onClick={this.toggle} data-toggle="1">
-                <i className="dropdown icon" data-toggle="1"></i>
-                <a className="ui label transition visible">Selected 1<i className="delete icon"></i></a>
-                <a className="ui label transition visible">Selected 2<i className="delete icon"></i></a>
-                <input className="search" autoComplete="off" tabIndex="0" onChange={this.inputChange} ref="inputText"/>
-                <span className="sizer glv-sizer" ref="inputSizer"></span>
-                <div className="default text">Placeholder</div>
-                {dropdown}
+            <div className={this.getClass()} onClick={this.toggleDropdown}>
+                {selectedComponent}
+                {inputText}
+                {inputSizer}
+                <i className="dropdown icon"></i>
+                <Dropdown 
+                    visible={this.state.active}
+                    options={this.state.options}
+                    stringOption={this.props.stringOption}
+                    onSelect={this.onSelect}
+                    onHide={this.hideDropdown}/>
             </div>
         );
     }
+
     componentDidMount() {
-        this.inputText = ReactDOM.findDOMNode(this.refs.inputText);
-        this.inputSizer = ReactDOM.findDOMNode(this.refs.inputSizer);
-    }
-    toggle(event) {
-        let target = event.target;
-        if (target.getAttribute('data-toggle') !== '1') {
-            return;
+        if (this.props.searchable) {
+            this.inputText = ReactDOM.findDOMNode(this.refs.inputText);
+            if (this.props.multiple) {
+                this.inputSizer = ReactDOM.findDOMNode(this.refs.inputSizer);
+            }
         }
+    }
+
+    getClass() {
+        let props = this.props;
+        let className = 'ui dropdown glv-dropdown ';
+        if (this.state.active) className += 'active visible ';
+        if (props.fluid) className += 'fluid ';
+        if (props.inline) className += 'inline scrolling ';
+        else {
+            className += 'selection ';
+            if (props.searchable) className += 'search ';
+            if (props.multiple) className += 'multiple ';
+        }
+        return className;
+    }
+
+    renderSelected() {
+        let props = this.props;
         let state = this.state;
-        state.active = !state.active;
-        if (state.active) {
-            this.inputText.focus();
+        let selectedOptions = this.state.selectedOptions;
+        if (selectedOptions.length === 0) {
+            return <div className="text default">{props.placeHolder}</div>;
+        } else if (!props.multiple) {
+            let option = selectedOptions[0];
+            if (!props.stringOption) {
+                option = option[state.selectedAttr];
+            }
+            return <div className="text">{option}</div>;
+        } else if (!props.stringOption) {
+            return selectedOptions.map((option, i) => (
+                <a key={option[state.valueAttr]} className="ui label" onClick={(e) => this.onDeselect(e, option, i)}>
+                    {option[state.selectedAttr]}<i className="delete icon"></i>
+                </a>
+            ));
+        } else {
+            return selectedOptions.map((option, i) => (
+                <a key={i} className="ui label" onClick={(e) => this.onDeselect(e, option, i)}>
+                    {option}<i className="delete icon"></i>
+                </a>
+            ));
         }
-        this.setState(state);
-        
     }
-    inputChange(event) {
-        // Change the size of input element based on input text
-        this.inputSizer.innerHTML = this.inputText.value.replace(/\s/g, '&nbsp;');
-        this.inputText.style = 'width: ' + this.inputSizer.offsetWidth + 'px';
+
+    inputChange() {
+        let keyword = this.inputText.value;
+        if (this.props.searchable && this.props.multiple) {
+            // Change the size of input element based on input text
+            this.inputSizer.innerHTML = keyword.replace(/\s/g, '&nbsp;');
+            this.inputText.style = 'width: ' + this.inputSizer.offsetWidth + 'px';
+        }
+        if (keyword.length > 2) this.filter(keyword);
+    }
+
+    filter(keyword) {
+        let customFilter = this.props.customFilter;
+        let options = this.props.options;
+        if (typeof customFilter === 'function') {
+            options = options.filter((option) => {
+                return customFilter(option, keyword);
+            });
+        } else if (this.props.stringOption) {
+            options = options.filter(option => option.indexOf(keyword) > -1);
+        } else {
+            options = options.filter(option => option[this.state.textAttr].indexOf(keyword) > -1);
+        }
+        this.setState({ options: options });
+    }
+
+    onSelect(option) {
+        if (this.props.searchable) {
+            this.inputText.value = '';
+        }
+        let selectedOptions = this.state.selectedOptions;
+
+        if (this.props.multiple || selectedOptions.length === 0) {
+            selectedOptions.push(option);
+        } else {
+            selectedOptions[0] = option;
+        }
+
+        this.setState({
+            active: false,
+            selectedOptions: selectedOptions
+        });
+
+        this.props.onUpdate(this.state.selectedOptions);
+    }
+
+    onDeselect(e, option, i) {
+        e.stopPropagation();
+        if (option && typeof option === 'object') option.selected = false;
+        this.state.selectedOptions.splice(i, 1);
+        this.setState({
+            selectedOptions: this.state.selectedOptions
+        });
+        this.props.onUpdate(this.state.selectedOptions);
+    }
+
+    toggleDropdown(e) {
+        e.stopPropagation();
+        if (this.props.searchable)
+            this.inputText.focus();
+        this.setState({ active: !this.state.active });
+    }
+
+    hideDropdown() {
+        this.setState({ active: false });
     }
 }
 
@@ -58,32 +177,55 @@ export class Dropdown extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
-    }
-    render() {
-        let options = this.props.options.map((option) => (
-            <DropdownItem 
-                key={option.value}
-                selected={option.selected}
-                text={option.text}
-            />
-        ));
-        return <div className="menu transition visible" tabIndex="-1">{options}</div>;
-    }
-}
-
-export class DropdownItem extends React.Component {
-    constructor(props) {
-        super(props);
-        this.props = props;
         this.state = {
-            selected: this.props.selected
+            visible: this.props.visible
         }
+        this.onSelect = this.onSelect.bind(this);
     }
+
     render() {
-        let selectedClass = '';
-        if (this.state.selected) {
-            selectedClass = ' selected';
+        if (this.props.options.length === 0) return null;
+        let visibleClass = this.state.visible ? 'visible' : 'hidden';
+        let options = [];
+        if (this.props.stringOption) {
+            options = this.props.options.map((option) => {
+                return (
+                    <div key={option} className="item" onClick={(e) => this.onSelect(e, option)}>
+                        {option}
+                    </div>
+                );
+            });
+        } else {
+            let value = this.props.valueAttr;
+            let text = this.props.textAttr;
+            let disp = this.props.optionAttr;
+            options = this.props.options.map((option, i) => {
+                let selectedClass = option.selected ? 'selected' : '';
+                return (
+                    <div key={option[value]} className={'item ' + selectedClass} onClick={(e) => this.onSelect(e, option)}>
+                        {option[disp]}
+                    </div>
+                );
+            });
         }
-        return <div className={'item' + selectedClass}>{this.props.text}</div>;
+        return <div className={'menu transition ' + visibleClass} tabIndex="-1">{options}</div>;
+    }
+
+    componentDidMount() {
+        window.addEventListener('click', this.props.onHide, false);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('click', this.props.onHide, false);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({ visible: nextProps.visible });
+    }
+
+    onSelect(e, option) {
+        e.stopPropagation();
+        this.props.onSelect(option);
+        this.props.onHide();
     }
 }

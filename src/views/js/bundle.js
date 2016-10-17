@@ -4188,7 +4188,7 @@
 	            var diff = total - current;
 	            var after = [{
 	                text: current,
-	                disabled: true,
+	                disabled: false,
 	                active: true,
 	                target: 0
 	            }];
@@ -21409,7 +21409,7 @@
 		CHANNEL_SHOW_DIR_DIALOG: 'show-dir-dialog',
 		CHANNEL_SELECTED_DIR: 'selected-dir',
 		CHANNEL_SHOW_ERR_BOX: 'show-err-box',
-
+		PAGER_SIZE_AVAIABLE: [50, 100, 150, 200],
 		PAGER_DEFAULT_SIZE: 50
 	});
 
@@ -21537,8 +21537,10 @@
 	                    _this2.setState({ loading: false });
 	                    return;
 	                }
-	                git.collectData();
-	                _common2.default.renderPage(_react2.default.createElement(_detail2.default, { git: git }));
+	                var branches = git.getBranches();
+	                var users = git.getUsers();
+	                var commitsCount = git.getCommitsCount();
+	                _common2.default.renderPage(_react2.default.createElement(_detail2.default, { git: git, branches: branches, users: users, commitsCount: commitsCount }));
 	            });
 	        }
 	    }]);
@@ -21584,11 +21586,7 @@
 
 	        this.path = path;
 	        this.url = '';
-	        this.commitsCount = 0;
-	        this.branches = [];
-	        this.remoteBranches = [];
 	        this.currentBranch = '';
-	        this.users = null;
 	    }
 
 	    /**
@@ -21602,8 +21600,15 @@
 	        value: function isValid() {
 	            try {
 	                process.chdir(this.path);
-	                var cmd = 'git rev-parse --is-inside-work-tree';
-	                (0, _child_process.execSync)(cmd);
+
+	                // Get URL
+	                var cmd = 'git config --get remote.origin.url';
+	                this.url = (0, _child_process.execSync)(cmd).toString();
+
+	                // Get current branch
+	                cmd = 'git rev-parse --abbrev-ref HEAD';
+	                this.currentBranch = (0, _child_process.execSync)(cmd).toString();
+
 	                return true;
 	            } catch (err) {
 	                console.error(err);
@@ -21611,40 +21616,44 @@
 	            }
 	        }
 	    }, {
-	        key: 'collectData',
-	        value: function collectData() {
-	            var cmd = void 0,
-	                output = void 0;
+	        key: 'getBranches',
+	        value: function getBranches() {
 	            try {
-	                // Get URL
-	                cmd = 'git config --get remote.origin.url';
-	                output = (0, _child_process.execSync)(cmd).toString();
-	                this.url = output;
-
-	                // Get all branches
-	                cmd = 'git branch -a';
-	                output = (0, _child_process.execSync)(cmd).toString();
+	                var cmd = 'git branch -a';
+	                var output = (0, _child_process.execSync)(cmd).toString();
 	                var branches = output.split(/[\r\n]+/g);
-	                for (var i = 0; i < branches.length; i++) {
-	                    var branch = branches[i].trim();
-	                    if (branch === '') {
-	                        continue;
+	                var result = [];
+	                var _iteratorNormalCompletion = true;
+	                var _didIteratorError = false;
+	                var _iteratorError = undefined;
+
+	                try {
+	                    for (var _iterator = branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                        var branch = _step.value;
+
+	                        branch = branch.trim();
+	                        if (branch === '') continue;
+	                        if (branch.substring(0, 2) === '* ') {
+	                            branch = branch.substring(2);
+	                        }
+	                        result.push(branch);
 	                    }
-	                    if (branch.substring(0, 2) === '* ') {
-	                        this.currentBranch = branch.substring(2);
-	                        this.branches.push(this.currentBranch);
-	                    } else if (branch.substring(0, 7) === 'remotes') {
-	                        this.remoteBranches.push(branch);
-	                    } else {
-	                        this.branches.push(branch);
+	                } catch (err) {
+	                    _didIteratorError = true;
+	                    _iteratorError = err;
+	                } finally {
+	                    try {
+	                        if (!_iteratorNormalCompletion && _iterator.return) {
+	                            _iterator.return();
+	                        }
+	                    } finally {
+	                        if (_didIteratorError) {
+	                            throw _iteratorError;
+	                        }
 	                    }
 	                }
 
-	                // Count commits
-	                this.commitsCount = this.getCommitsCount();
-
-	                // Get all users
-	                this.users = this.getUsers();
+	                return result;
 	            } catch (err) {
 	                console.error(err);
 	            }
@@ -21845,7 +21854,7 @@
 
 	var _commitsTab2 = _interopRequireDefault(_commitsTab);
 
-	var _informationTab = __webpack_require__(187);
+	var _informationTab = __webpack_require__(190);
 
 	var _informationTab2 = _interopRequireDefault(_informationTab);
 
@@ -21866,21 +21875,53 @@
 	        var _this = _possibleConstructorReturn(this, (Detail.__proto__ || Object.getPrototypeOf(Detail)).call(this, props));
 
 	        _this.props = props;
+	        _this.state = {
+	            users: props.users,
+	            commitsCount: props.commitsCount
+	        };
+	        _this.changeBranch = _this.changeBranch.bind(_this);
 	        return _this;
 	    }
 
 	    _createClass(Detail, [{
 	        key: 'render',
 	        value: function render() {
+	            var props = this.props;
+	            var state = this.state;
 	            var tabs = [];
-	            tabs.push(new _tab2.default('Commits', _react2.default.createElement(_commitsTab2.default, { git: this.props.git })));
-	            tabs.push(new _tab2.default('Information', _react2.default.createElement(_informationTab2.default, { git: this.props.git })));
+	            var commitTab = _react2.default.createElement(_commitsTab2.default, {
+	                git: props.git,
+	                currentBranch: props.git.currentBranch,
+	                branches: props.branches,
+	                users: state.users,
+	                commitsCount: state.commitsCount });
+	            var infoTab = _react2.default.createElement(_informationTab2.default, {
+	                git: props.git,
+	                currentBranch: props.git.currentBranch,
+	                branches: props.branches,
+	                users: state.users,
+	                commitsCount: state.commitsCount,
+	                changeBranch: this.changeBranch });
+	            tabs.push(new _tab2.default('Commits', commitTab));
+	            tabs.push(new _tab2.default('Information', infoTab));
 	            return _react2.default.createElement(
 	                'div',
 	                null,
 	                _react2.default.createElement(_backHomeBtn2.default, null),
 	                _react2.default.createElement(_tab4.default, { data: tabs })
 	            );
+	        }
+	    }, {
+	        key: 'changeBranch',
+	        value: function changeBranch(branch) {
+	            var state = this.state;
+	            var git = this.props.git;
+
+	            git.currentBranch = branch;
+	            state.users = git.getUsers(branch);
+	            state.commitsCount = git.getCommitsCount(branch);
+
+	            this.setState(state);
 	        }
 	    }]);
 
@@ -22091,6 +22132,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactAddonsPureRenderMixin = __webpack_require__(184);
+
+	var _reactAddonsPureRenderMixin2 = _interopRequireDefault(_reactAddonsPureRenderMixin);
+
 	var _appconst = __webpack_require__(173);
 
 	var AppConst = _interopRequireWildcard(_appconst);
@@ -22103,15 +22148,15 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _pager = __webpack_require__(184);
+	var _pager = __webpack_require__(187);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _select = __webpack_require__(185);
+	var _select = __webpack_require__(188);
 
 	var _select2 = _interopRequireDefault(_select);
 
-	var _row = __webpack_require__(186);
+	var _row = __webpack_require__(189);
 
 	var _row2 = _interopRequireDefault(_row);
 
@@ -22140,11 +22185,11 @@
 	            pageSize: AppConst.PAGER_DEFAULT_SIZE
 	        };
 
-	        // Calculate total page
-	        _this.state.totalPage = Math.ceil(_this.props.git.commitsCount / _this.state.pageSize);
-
 	        _this.changePage = _this.changePage.bind(_this);
+	        _this.changePageSize = _this.changePageSize.bind(_this);
 	        _this.getData = _this.getData.bind(_this);
+
+	        _this.shouldComponentUpdate = _reactAddonsPureRenderMixin2.default.shouldComponentUpdate.bind(_this);
 	        return _this;
 	    }
 
@@ -22169,13 +22214,36 @@
 	                });
 	            }
 
-	            var options = [{ text: 'Test 1', value: 'test1@example.com', selected: false }, { text: 'Test 2', value: 'test2@example.com', selected: false }, { text: 'Test 3', value: 'test3@example.com', selected: true }, { text: 'Test 4', value: 'test4@example.com', selected: false }, { text: 'Test 5', value: 'test5@example.com', selected: false }];
+	            var userFilter = function userFilter(user, keyword) {
+	                if (user.name.indexOf(keyword) > -1 || user.email.indexOf(keyword) > -1) {
+	                    return true;
+	                }
+	                return false;
+	            };
+	            var userOptions = this.props.users.map(function (user) {
+	                user.disp = _react2.default.createElement(
+	                    'div',
+	                    null,
+	                    _react2.default.createElement(
+	                        'strong',
+	                        null,
+	                        user.name
+	                    ),
+	                    _react2.default.createElement('br', null),
+	                    user.email
+	                );
+	                return user;
+	            });
 
 	            return _react2.default.createElement(
 	                'div',
 	                null,
-	                _react2.default.createElement(_select2.default, { options: options }),
-	                _react2.default.createElement(_pager2.default, { currentPage: this.state.currentPage, totalPage: this.state.totalPage, pageSize: this.state.pageSize, onChange: this.changePage }),
+	                _react2.default.createElement(_pager2.default, {
+	                    currentPage: this.state.currentPage,
+	                    totalPage: this.state.totalPage,
+	                    onPageChanged: this.changePage,
+	                    onPageSizeChanged: this.changePageSize,
+	                    pageSizes: AppConst.PAGER_SIZE_AVAIABLE }),
 	                _react2.default.createElement('br', null),
 	                _react2.default.createElement('br', null),
 	                _react2.default.createElement(
@@ -22191,10 +22259,23 @@
 	            this.getData();
 	        }
 	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            if (this.props.currentBranch !== nextProps.currentBranch) {
+	                this.props.git.currentBranch = nextProps.currentBranch;
+	                this.getData();
+	            }
+	        }
+	    }, {
 	        key: 'changePage',
 	        value: function changePage(page) {
 	            this.state.currentPage = page;
-	            this.setState(this.state);
+	            this.getData();
+	        }
+	    }, {
+	        key: 'changePageSize',
+	        value: function changePageSize(pageSize) {
+	            this.state.pageSize = pageSize;
 	            this.getData();
 	        }
 	    }, {
@@ -22203,12 +22284,15 @@
 	            var _this3 = this;
 
 	            this.state.loading = true;
+	            this.state.totalPage = Math.ceil(this.props.commitsCount / this.state.pageSize);
+	            if (this.state.currentPage > this.state.totalPage) {
+	                this.state.currentPage = this.state.totalPage;
+	            }
 	            this.setState(this.state);
 
 	            _common2.default.executeAsync(function () {
-	                _this3.commits = _this3.props.git.getCommits(_this3.state.currentPage);
-	                _this3.state.loading = false;
-	                _this3.setState(_this3.state);
+	                _this3.commits = _this3.props.git.getCommits(_this3.state.currentPage, _this3.state.pageSize);
+	                _this3.setState({ loading: false });
 	            });
 	        }
 	    }, {
@@ -22249,9 +22333,101 @@
 
 	'use strict';
 
+	module.exports = __webpack_require__(185);
+
+/***/ },
+/* 185 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactComponentWithPureRenderMixin
+	 */
+
+	'use strict';
+
+	var shallowCompare = __webpack_require__(186);
+
+	/**
+	 * If your React component's render function is "pure", e.g. it will render the
+	 * same result given the same props and state, provide this mixin for a
+	 * considerable performance boost.
+	 *
+	 * Most React components have pure render functions.
+	 *
+	 * Example:
+	 *
+	 *   var ReactComponentWithPureRenderMixin =
+	 *     require('ReactComponentWithPureRenderMixin');
+	 *   React.createClass({
+	 *     mixins: [ReactComponentWithPureRenderMixin],
+	 *
+	 *     render: function() {
+	 *       return <div className={this.props.className}>foo</div>;
+	 *     }
+	 *   });
+	 *
+	 * Note: This only checks shallow equality for props and state. If these contain
+	 * complex data structures this mixin may have false-negatives for deeper
+	 * differences. Only mixin to components which have simple props and state, or
+	 * use `forceUpdate()` when you know deep data structures have changed.
+	 *
+	 * See https://facebook.github.io/react/docs/pure-render-mixin.html
+	 */
+	var ReactComponentWithPureRenderMixin = {
+	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+	    return shallowCompare(this, nextProps, nextState);
+	  }
+	};
+
+	module.exports = ReactComponentWithPureRenderMixin;
+
+/***/ },
+/* 186 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	* @providesModule shallowCompare
+	*/
+
+	'use strict';
+
+	var shallowEqual = __webpack_require__(124);
+
+	/**
+	 * Does a shallow comparison for props and state.
+	 * See ReactComponentWithPureRenderMixin
+	 * See also https://facebook.github.io/react/docs/shallow-compare.html
+	 */
+	function shallowCompare(instance, nextProps, nextState) {
+	  return !shallowEqual(instance.props, nextProps) || !shallowEqual(instance.state, nextState);
+	}
+
+	module.exports = shallowCompare;
+
+/***/ },
+/* 187 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.PagerItem = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -22262,6 +22438,10 @@
 	var _common = __webpack_require__(33);
 
 	var _common2 = _interopRequireDefault(_common);
+
+	var _select = __webpack_require__(188);
+
+	var _select2 = _interopRequireDefault(_select);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -22283,6 +22463,8 @@
 	        _this.state = {
 	            currentPage: props.currentPage
 	        };
+	        _this.onPageChanged = _this.onPageChanged.bind(_this);
+	        _this.updatePageSize = _this.updatePageSize.bind(_this);
 	        return _this;
 	    }
 
@@ -22291,82 +22473,59 @@
 	        value: function render() {
 	            var _this2 = this;
 
-	            var currentPage = this.state.currentPage;
-	            var tmpArray = _common2.default.getPagination(currentPage, this.props.totalPage);
+	            var tmpArray = _common2.default.getPagination(this.state.currentPage, this.props.totalPage);
 	            var pagers = tmpArray.map(function (tmp, i) {
-	                if (tmp.text === '<') {
-	                    if (tmp.disabled) {
-	                        return _react2.default.createElement(
-	                            'div',
-	                            { key: i, className: 'disabled item' },
-	                            _react2.default.createElement('i', { className: 'left chevron icon' })
-	                        );
-	                    } else {
-	                        return _react2.default.createElement(
-	                            'a',
-	                            { key: i, className: 'icon item', onClick: function onClick() {
-	                                    return _this2.toPage(tmp.target);
-	                                } },
-	                            _react2.default.createElement('i', { className: 'left chevron icon' })
-	                        );
-	                    }
-	                }
-	                if (tmp.text === '>') {
-	                    if (tmp.disabled) {
-	                        return _react2.default.createElement(
-	                            'div',
-	                            { key: i, className: 'disabled item' },
-	                            _react2.default.createElement('i', { className: 'right chevron icon' })
-	                        );
-	                    } else {
-	                        return _react2.default.createElement(
-	                            'a',
-	                            { key: i, className: 'icon item', onClick: function onClick() {
-	                                    return _this2.toPage(tmp.target);
-	                                } },
-	                            _react2.default.createElement('i', { className: 'right chevron icon' })
-	                        );
-	                    }
-	                }
-	                if (tmp.active) {
-	                    return _react2.default.createElement(
-	                        'div',
-	                        { key: i, className: 'active item' },
-	                        tmp.text
-	                    );
-	                }
-	                if (tmp.disabled) {
-	                    return _react2.default.createElement(
-	                        'div',
-	                        { key: i, className: 'disabled item' },
-	                        tmp.text
-	                    );
-	                }
-	                return _react2.default.createElement(
-	                    'a',
-	                    { key: i, className: 'item', onClick: function onClick() {
-	                            return _this2.toPage(tmp.target);
-	                        } },
-	                    tmp.text
-	                );
+	                return _react2.default.createElement(PagerItem, { key: i, data: tmp, onChange: _this2.onPageChanged });
 	            });
-
 	            return _react2.default.createElement(
 	                'div',
-	                { className: 'ui pagination menu' },
-	                pagers
+	                { className: 'ui grid' },
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'ten wide column' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'ui pagination menu' },
+	                        pagers
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'six wide right aligned column' },
+	                    _react2.default.createElement(
+	                        'label',
+	                        null,
+	                        'Show\xA0',
+	                        _react2.default.createElement(_select2.default, {
+	                            options: this.props.pageSizes,
+	                            stringOption: 'true',
+	                            selectedOptions: this.props.pageSizes.slice(0, 1),
+	                            onUpdate: this.updatePageSize }),
+	                        '\xA0items'
+	                    )
+	                )
 	            );
 	        }
 	    }, {
-	        key: 'toPage',
-	        value: function toPage(pageNum) {
-	            var _this3 = this;
-
-	            this.props.onChange(pageNum);
-	            this.setState(function () {
-	                _this3.state.currentPage = pageNum;
-	                return _this3.state;
-	            });
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            if (this.props !== nextProps) {
+	                this.setState({
+	                    currentPage: nextProps.currentPage,
+	                    totalPage: nextProps.totalPage
+	                });
+	            }
+	        }
+	    }, {
+	        key: 'onPageChanged',
+	        value: function onPageChanged(pageNum) {
+	            this.props.onPageChanged(pageNum);
+	        }
+	    }, {
+	        key: 'updatePageSize',
+	        value: function updatePageSize(selected) {
+	            var pageSize = selected[0];
+	            this.props.onPageSizeChanged(pageSize);
 	        }
 	    }]);
 
@@ -22375,8 +22534,69 @@
 
 	exports.default = Pager;
 
+	var PagerItem = exports.PagerItem = function (_React$Component2) {
+	    _inherits(PagerItem, _React$Component2);
+
+	    function PagerItem(props) {
+	        _classCallCheck(this, PagerItem);
+
+	        var _this3 = _possibleConstructorReturn(this, (PagerItem.__proto__ || Object.getPrototypeOf(PagerItem)).call(this, props));
+
+	        _this3.props = props;
+	        _this3.state = {
+	            active: props.data.active
+	        };
+	        _this3.onChange = _this3.onChange.bind(_this3);
+	        return _this3;
+	    }
+
+	    _createClass(PagerItem, [{
+	        key: 'render',
+	        value: function render() {
+	            var data = this.props.data;
+	            var className = 'item ';
+	            if (data.disabled) className += 'disabled ';
+	            if (this.state.active) className += 'active ';
+	            var text = data.text;
+	            if (text === '<') {
+	                text = _react2.default.createElement('i', { className: 'left chevron icon' });
+	            } else if (text === '>') {
+	                text = _react2.default.createElement('i', { className: 'right chevron icon' });
+	            }
+	            if (data.disabled || data.active) {
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: className },
+	                    text
+	                );
+	            } else {
+	                return _react2.default.createElement(
+	                    'a',
+	                    { className: className, onClick: this.onChange },
+	                    text
+	                );
+	            }
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            if (this.props !== nextProps) {
+	                this.setState({ active: nextProps.data.active });
+	            }
+	        }
+	    }, {
+	        key: 'onChange',
+	        value: function onChange(e) {
+	            e.stopPropagation();
+	            this.props.onChange(this.props.data.target);
+	        }
+	    }]);
+
+	    return PagerItem;
+	}(_react2.default.Component);
+
 /***/ },
-/* 185 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22384,7 +22604,9 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.DropdownItem = exports.Dropdown = undefined;
+	exports.Dropdown = undefined;
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -22413,75 +22635,207 @@
 	        var _this = _possibleConstructorReturn(this, (Select.__proto__ || Object.getPrototypeOf(Select)).call(this, props));
 
 	        _this.props = props;
-	        _this.state = {
-	            active: false
+	        var state = {
+	            active: false,
+	            options: _this.props.options
 	        };
-	        _this.toggle = _this.toggle.bind(_this);
+
+	        state.selectedOptions = props.selectedOptions ? props.selectedOptions : [];
+	        state.valueAttr = props.valueAttr ? props.valueAttr : 'value';
+	        state.textAttr = props.textAttr ? props.textAttr : 'text';
+	        state.optionAttr = props.optionAttr ? props.optionAttr : state.textAttr;
+	        state.selectedAttr = props.selectedAttr ? props.selectedAttr : state.optionAttr;
+
+	        _this.state = state;
+
+	        _this.getClass = _this.getClass.bind(_this);
+	        _this.renderSelected = _this.renderSelected.bind(_this);
 	        _this.inputChange = _this.inputChange.bind(_this);
+	        _this.filter = _this.filter.bind(_this);
+	        _this.onSelect = _this.onSelect.bind(_this);
+	        _this.onDeselect = _this.onDeselect.bind(_this);
+	        _this.toggleDropdown = _this.toggleDropdown.bind(_this);
+	        _this.hideDropdown = _this.hideDropdown.bind(_this);
 	        return _this;
 	    }
 
 	    _createClass(Select, [{
 	        key: 'render',
 	        value: function render() {
-	            var dropdown = null;
-	            var activeClass = '';
-	            if (this.state.active) {
-	                dropdown = _react2.default.createElement(Dropdown, { options: this.props.options });
-	                activeClass = ' active visible';
+	            var state = this.state;
+	            var props = this.props;
+	            var selectedComponent = this.renderSelected();
+	            var inputText = null;
+	            var inputSizer = null;
+	            if (props.searchable) {
+	                inputText = _react2.default.createElement('input', { className: 'search', autoComplete: 'off', onChange: this.inputChange, ref: 'inputText' });
+	                if (props.multiple) {
+	                    inputSizer = _react2.default.createElement('span', { className: 'sizer glv-sizer', ref: 'inputSizer' });
+	                }
 	            }
 	            return _react2.default.createElement(
 	                'div',
-	                { className: 'ui fluid search dropdown selection multiple' + activeClass, onClick: this.toggle, 'data-toggle': '1' },
-	                _react2.default.createElement('i', { className: 'dropdown icon', 'data-toggle': '1' }),
-	                _react2.default.createElement(
-	                    'a',
-	                    { className: 'ui label transition visible' },
-	                    'Selected 1',
-	                    _react2.default.createElement('i', { className: 'delete icon' })
-	                ),
-	                _react2.default.createElement(
-	                    'a',
-	                    { className: 'ui label transition visible' },
-	                    'Selected 2',
-	                    _react2.default.createElement('i', { className: 'delete icon' })
-	                ),
-	                _react2.default.createElement('input', { className: 'search', autoComplete: 'off', tabIndex: '0', onChange: this.inputChange, ref: 'inputText' }),
-	                _react2.default.createElement('span', { className: 'sizer glv-sizer', ref: 'inputSizer' }),
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'default text' },
-	                    'Placeholder'
-	                ),
-	                dropdown
+	                { className: this.getClass(), onClick: this.toggleDropdown },
+	                selectedComponent,
+	                inputText,
+	                inputSizer,
+	                _react2.default.createElement('i', { className: 'dropdown icon' }),
+	                _react2.default.createElement(Dropdown, {
+	                    visible: this.state.active,
+	                    options: this.state.options,
+	                    stringOption: this.props.stringOption,
+	                    onSelect: this.onSelect,
+	                    onHide: this.hideDropdown })
 	            );
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            this.inputText = _reactDom2.default.findDOMNode(this.refs.inputText);
-	            this.inputSizer = _reactDom2.default.findDOMNode(this.refs.inputSizer);
+	            if (this.props.searchable) {
+	                this.inputText = _reactDom2.default.findDOMNode(this.refs.inputText);
+	                if (this.props.multiple) {
+	                    this.inputSizer = _reactDom2.default.findDOMNode(this.refs.inputSizer);
+	                }
+	            }
 	        }
 	    }, {
-	        key: 'toggle',
-	        value: function toggle(event) {
-	            var target = event.target;
-	            if (target.getAttribute('data-toggle') !== '1') {
-	                return;
+	        key: 'getClass',
+	        value: function getClass() {
+	            var props = this.props;
+	            var className = 'ui dropdown glv-dropdown ';
+	            if (this.state.active) className += 'active visible ';
+	            if (props.fluid) className += 'fluid ';
+	            if (props.inline) className += 'inline scrolling ';else {
+	                className += 'selection ';
+	                if (props.searchable) className += 'search ';
+	                if (props.multiple) className += 'multiple ';
 	            }
+	            return className;
+	        }
+	    }, {
+	        key: 'renderSelected',
+	        value: function renderSelected() {
+	            var _this2 = this;
+
+	            var props = this.props;
 	            var state = this.state;
-	            state.active = !state.active;
-	            if (state.active) {
-	                this.inputText.focus();
+	            var selectedOptions = this.state.selectedOptions;
+	            if (selectedOptions.length === 0) {
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: 'text default' },
+	                    props.placeHolder
+	                );
+	            } else if (!props.multiple) {
+	                var option = selectedOptions[0];
+	                if (!props.stringOption) {
+	                    option = option[state.selectedAttr];
+	                }
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: 'text' },
+	                    option
+	                );
+	            } else if (!props.stringOption) {
+	                return selectedOptions.map(function (option, i) {
+	                    return _react2.default.createElement(
+	                        'a',
+	                        { key: option[state.valueAttr], className: 'ui label', onClick: function onClick(e) {
+	                                return _this2.onDeselect(e, option, i);
+	                            } },
+	                        option[state.selectedAttr],
+	                        _react2.default.createElement('i', { className: 'delete icon' })
+	                    );
+	                });
+	            } else {
+	                return selectedOptions.map(function (option, i) {
+	                    return _react2.default.createElement(
+	                        'a',
+	                        { key: i, className: 'ui label', onClick: function onClick(e) {
+	                                return _this2.onDeselect(e, option, i);
+	                            } },
+	                        option,
+	                        _react2.default.createElement('i', { className: 'delete icon' })
+	                    );
+	                });
 	            }
-	            this.setState(state);
 	        }
 	    }, {
 	        key: 'inputChange',
-	        value: function inputChange(event) {
-	            // Change the size of input element based on input text
-	            this.inputSizer.innerHTML = this.inputText.value.replace(/\s/g, '&nbsp;');
-	            this.inputText.style = 'width: ' + this.inputSizer.offsetWidth + 'px';
+	        value: function inputChange() {
+	            var keyword = this.inputText.value;
+	            if (this.props.searchable && this.props.multiple) {
+	                // Change the size of input element based on input text
+	                this.inputSizer.innerHTML = keyword.replace(/\s/g, '&nbsp;');
+	                this.inputText.style = 'width: ' + this.inputSizer.offsetWidth + 'px';
+	            }
+	            if (keyword.length > 2) this.filter(keyword);
+	        }
+	    }, {
+	        key: 'filter',
+	        value: function filter(keyword) {
+	            var _this3 = this;
+
+	            var customFilter = this.props.customFilter;
+	            var options = this.props.options;
+	            if (typeof customFilter === 'function') {
+	                options = options.filter(function (option) {
+	                    return customFilter(option, keyword);
+	                });
+	            } else if (this.props.stringOption) {
+	                options = options.filter(function (option) {
+	                    return option.indexOf(keyword) > -1;
+	                });
+	            } else {
+	                options = options.filter(function (option) {
+	                    return option[_this3.state.textAttr].indexOf(keyword) > -1;
+	                });
+	            }
+	            this.setState({ options: options });
+	        }
+	    }, {
+	        key: 'onSelect',
+	        value: function onSelect(option) {
+	            if (this.props.searchable) {
+	                this.inputText.value = '';
+	            }
+	            var selectedOptions = this.state.selectedOptions;
+
+	            if (this.props.multiple || selectedOptions.length === 0) {
+	                selectedOptions.push(option);
+	            } else {
+	                selectedOptions[0] = option;
+	            }
+
+	            this.setState({
+	                active: false,
+	                selectedOptions: selectedOptions
+	            });
+
+	            this.props.onUpdate(this.state.selectedOptions);
+	        }
+	    }, {
+	        key: 'onDeselect',
+	        value: function onDeselect(e, option, i) {
+	            e.stopPropagation();
+	            if (option && (typeof option === 'undefined' ? 'undefined' : _typeof(option)) === 'object') option.selected = false;
+	            this.state.selectedOptions.splice(i, 1);
+	            this.setState({
+	                selectedOptions: this.state.selectedOptions
+	            });
+	            this.props.onUpdate(this.state.selectedOptions);
+	        }
+	    }, {
+	        key: 'toggleDropdown',
+	        value: function toggleDropdown(e) {
+	            e.stopPropagation();
+	            if (this.props.searchable) this.inputText.focus();
+	            this.setState({ active: !this.state.active });
+	        }
+	    }, {
+	        key: 'hideDropdown',
+	        value: function hideDropdown() {
+	            this.setState({ active: false });
 	        }
 	    }]);
 
@@ -22496,68 +22850,86 @@
 	    function Dropdown(props) {
 	        _classCallCheck(this, Dropdown);
 
-	        var _this2 = _possibleConstructorReturn(this, (Dropdown.__proto__ || Object.getPrototypeOf(Dropdown)).call(this, props));
+	        var _this4 = _possibleConstructorReturn(this, (Dropdown.__proto__ || Object.getPrototypeOf(Dropdown)).call(this, props));
 
-	        _this2.props = props;
-	        return _this2;
+	        _this4.props = props;
+	        _this4.state = {
+	            visible: _this4.props.visible
+	        };
+	        _this4.onSelect = _this4.onSelect.bind(_this4);
+	        return _this4;
 	    }
 
 	    _createClass(Dropdown, [{
 	        key: 'render',
 	        value: function render() {
-	            var options = this.props.options.map(function (option) {
-	                return _react2.default.createElement(DropdownItem, {
-	                    key: option.value,
-	                    selected: option.selected,
-	                    text: option.text
+	            var _this5 = this;
+
+	            if (this.props.options.length === 0) return null;
+	            var visibleClass = this.state.visible ? 'visible' : 'hidden';
+	            var options = [];
+	            if (this.props.stringOption) {
+	                options = this.props.options.map(function (option) {
+	                    return _react2.default.createElement(
+	                        'div',
+	                        { key: option, className: 'item', onClick: function onClick(e) {
+	                                return _this5.onSelect(e, option);
+	                            } },
+	                        option
+	                    );
 	                });
-	            });
+	            } else {
+	                (function () {
+	                    var value = _this5.props.valueAttr;
+	                    var text = _this5.props.textAttr;
+	                    var disp = _this5.props.optionAttr;
+	                    options = _this5.props.options.map(function (option, i) {
+	                        var selectedClass = option.selected ? 'selected' : '';
+	                        return _react2.default.createElement(
+	                            'div',
+	                            { key: option[value], className: 'item ' + selectedClass, onClick: function onClick(e) {
+	                                    return _this5.onSelect(e, option);
+	                                } },
+	                            option[disp]
+	                        );
+	                    });
+	                })();
+	            }
 	            return _react2.default.createElement(
 	                'div',
-	                { className: 'menu transition visible', tabIndex: '-1' },
+	                { className: 'menu transition ' + visibleClass, tabIndex: '-1' },
 	                options
 	            );
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            window.addEventListener('click', this.props.onHide, false);
+	        }
+	    }, {
+	        key: 'componentWillUnmount',
+	        value: function componentWillUnmount() {
+	            window.removeEventListener('click', this.props.onHide, false);
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            this.setState({ visible: nextProps.visible });
+	        }
+	    }, {
+	        key: 'onSelect',
+	        value: function onSelect(e, option) {
+	            e.stopPropagation();
+	            this.props.onSelect(option);
+	            this.props.onHide();
 	        }
 	    }]);
 
 	    return Dropdown;
 	}(_react2.default.Component);
 
-	var DropdownItem = exports.DropdownItem = function (_React$Component3) {
-	    _inherits(DropdownItem, _React$Component3);
-
-	    function DropdownItem(props) {
-	        _classCallCheck(this, DropdownItem);
-
-	        var _this3 = _possibleConstructorReturn(this, (DropdownItem.__proto__ || Object.getPrototypeOf(DropdownItem)).call(this, props));
-
-	        _this3.props = props;
-	        _this3.state = {
-	            selected: _this3.props.selected
-	        };
-	        return _this3;
-	    }
-
-	    _createClass(DropdownItem, [{
-	        key: 'render',
-	        value: function render() {
-	            var selectedClass = '';
-	            if (this.state.selected) {
-	                selectedClass = ' selected';
-	            }
-	            return _react2.default.createElement(
-	                'div',
-	                { className: 'item' + selectedClass },
-	                this.props.text
-	            );
-	        }
-	    }]);
-
-	    return DropdownItem;
-	}(_react2.default.Component);
-
 /***/ },
-/* 186 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22777,10 +23149,10 @@
 	exports.default = Row;
 
 /***/ },
-/* 187 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -22791,6 +23163,10 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
+
+	var _select = __webpack_require__(188);
+
+	var _select2 = _interopRequireDefault(_select);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -22809,37 +23185,57 @@
 	        var _this = _possibleConstructorReturn(this, (InformationTab.__proto__ || Object.getPrototypeOf(InformationTab)).call(this, props));
 
 	        _this.props = props;
+	        _this.changeBranch = _this.changeBranch.bind(_this);
 	        return _this;
 	    }
 
 	    _createClass(InformationTab, [{
-	        key: "render",
+	        key: 'render',
 	        value: function render() {
-	            var git = this.props.git;
+	            var props = this.props;
+	            var git = props.git;
 	            var branches = [];
 	            var _iteratorNormalCompletion = true;
 	            var _didIteratorError = false;
 	            var _iteratorError = undefined;
 
 	            try {
-	                for (var _iterator = git.branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                for (var _iterator = props.branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	                    var branch = _step.value;
 
-	                    branches.push(_react2.default.createElement(
-	                        "tr",
-	                        { key: branch },
-	                        _react2.default.createElement(
-	                            "td",
-	                            null,
+	                    if (branch.substring(0, 7) === 'remotes') {
+	                        branches.push(_react2.default.createElement(
+	                            'tr',
+	                            { key: branch },
 	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "ui teal horizontal small label" },
-	                                "Local"
-	                            ),
-	                            " ",
-	                            branch
-	                        )
-	                    ));
+	                                'td',
+	                                null,
+	                                _react2.default.createElement(
+	                                    'div',
+	                                    { className: 'ui orange horizontal small label' },
+	                                    'Remote'
+	                                ),
+	                                ' ',
+	                                branch
+	                            )
+	                        ));
+	                    } else {
+	                        branches.push(_react2.default.createElement(
+	                            'tr',
+	                            { key: branch },
+	                            _react2.default.createElement(
+	                                'td',
+	                                null,
+	                                _react2.default.createElement(
+	                                    'div',
+	                                    { className: 'ui teal horizontal small label' },
+	                                    'Local'
+	                                ),
+	                                ' ',
+	                                branch
+	                            )
+	                        ));
+	                    }
 	                }
 	            } catch (err) {
 	                _didIteratorError = true;
@@ -22856,160 +23252,134 @@
 	                }
 	            }
 
-	            var _iteratorNormalCompletion2 = true;
-	            var _didIteratorError2 = false;
-	            var _iteratorError2 = undefined;
-
-	            try {
-	                for (var _iterator2 = git.remoteBranches[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                    var _branch = _step2.value;
-
-	                    branches.push(_react2.default.createElement(
-	                        "tr",
-	                        { key: _branch },
-	                        _react2.default.createElement(
-	                            "td",
-	                            null,
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "ui orange horizontal small label" },
-	                                "Remote"
-	                            ),
-	                            " ",
-	                            _branch
-	                        )
-	                    ));
-	                }
-	            } catch (err) {
-	                _didIteratorError2 = true;
-	                _iteratorError2 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                        _iterator2.return();
-	                    }
-	                } finally {
-	                    if (_didIteratorError2) {
-	                        throw _iteratorError2;
-	                    }
-	                }
-	            }
-
-	            var users = git.users.map(function (user) {
+	            var users = props.users.map(function (user) {
 	                return _react2.default.createElement(
-	                    "tr",
+	                    'tr',
 	                    { key: user.email },
 	                    _react2.default.createElement(
-	                        "td",
+	                        'td',
 	                        null,
-	                        _react2.default.createElement("i", { className: "icon user" }),
-	                        " ",
+	                        _react2.default.createElement('i', { className: 'icon user' }),
+	                        ' ',
 	                        user.name
 	                    ),
 	                    _react2.default.createElement(
-	                        "td",
+	                        'td',
 	                        null,
-	                        _react2.default.createElement("i", { className: "icon mail" }),
-	                        " ",
+	                        _react2.default.createElement('i', { className: 'icon mail' }),
+	                        ' ',
 	                        user.email
 	                    )
 	                );
 	            });
 	            return _react2.default.createElement(
-	                "div",
+	                'div',
 	                null,
 	                _react2.default.createElement(
-	                    "h3",
+	                    'h3',
 	                    null,
-	                    "1. General Information"
+	                    '1. General Information'
 	                ),
 	                _react2.default.createElement(
-	                    "ul",
+	                    'ul',
 	                    null,
 	                    _react2.default.createElement(
-	                        "li",
+	                        'li',
 	                        null,
-	                        "URL: ",
+	                        'URL: ',
 	                        git.url
 	                    ),
 	                    _react2.default.createElement(
-	                        "li",
+	                        'li',
 	                        null,
-	                        "Current branch: ",
-	                        git.currentBranch
+	                        'Current branch:\xA0\xA0',
+	                        _react2.default.createElement(_select2.default, {
+	                            options: props.branches,
+	                            selectedOptions: [git.currentBranch],
+	                            stringOption: 'true',
+	                            inline: 'true',
+	                            onUpdate: this.changeBranch })
 	                    ),
 	                    _react2.default.createElement(
-	                        "li",
+	                        'li',
 	                        null,
-	                        "Commits: ",
-	                        git.commitsCount
+	                        'Commits: ',
+	                        props.commitsCount
 	                    ),
 	                    _react2.default.createElement(
-	                        "li",
+	                        'li',
 	                        null,
-	                        "Contributors: ",
-	                        git.users.length
+	                        'Contributors: ',
+	                        props.users.length
 	                    ),
 	                    _react2.default.createElement(
-	                        "li",
+	                        'li',
 	                        null,
-	                        "Local branches: ",
-	                        git.branches.length
-	                    ),
-	                    _react2.default.createElement(
-	                        "li",
-	                        null,
-	                        "Remote branches: ",
-	                        git.remoteBranches.length
+	                        'Branches: ',
+	                        props.branches.length
 	                    )
 	                ),
 	                _react2.default.createElement(
-	                    "h3",
+	                    'h3',
 	                    null,
-	                    "2. List contributors (of current branch)"
+	                    '2. List contributors (of current branch)'
 	                ),
 	                _react2.default.createElement(
-	                    "table",
-	                    { className: "ui very basic compact collapsing table" },
+	                    'table',
+	                    { className: 'ui very basic compact collapsing table' },
 	                    _react2.default.createElement(
-	                        "thead",
+	                        'thead',
 	                        null,
 	                        _react2.default.createElement(
-	                            "tr",
+	                            'tr',
 	                            null,
 	                            _react2.default.createElement(
-	                                "th",
+	                                'th',
 	                                null,
-	                                "Name"
+	                                'Name'
 	                            ),
 	                            _react2.default.createElement(
-	                                "th",
+	                                'th',
 	                                null,
-	                                "Email"
+	                                'Email'
 	                            )
 	                        )
 	                    ),
 	                    _react2.default.createElement(
-	                        "tbody",
+	                        'tbody',
 	                        null,
 	                        users
 	                    )
 	                ),
 	                _react2.default.createElement(
-	                    "h3",
+	                    'h3',
 	                    null,
-	                    "3. All branches"
+	                    '3. All branches'
 	                ),
 	                _react2.default.createElement(
-	                    "table",
-	                    { className: "ui very basic compact collapsing table" },
+	                    'table',
+	                    { className: 'ui very basic compact collapsing table' },
 	                    _react2.default.createElement(
-	                        "tbody",
+	                        'tbody',
 	                        null,
 	                        branches
 	                    )
 	                )
 	            );
+	        }
+	    }, {
+	        key: 'shouldComponentUpdate',
+	        value: function shouldComponentUpdate(nextProps, nextState) {
+	            if (this.props !== nextProps) {
+	                return true;
+	            }
+	            return false;
+	        }
+	    }, {
+	        key: 'changeBranch',
+	        value: function changeBranch(selectedBranches) {
+	            var branch = selectedBranches[0];
+	            this.props.changeBranch(branch);
 	        }
 	    }]);
 

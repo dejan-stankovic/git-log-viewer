@@ -95,7 +95,7 @@ export default class Common {
         var diff = total - current;
         var after = [{
             text: current,
-            disabled: true,
+            disabled: false,
             active: true,
             target: 0
         }];

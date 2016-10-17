@@ -8,11 +8,7 @@ export default class GitUtils {
     constructor(path) {
         this.path = path;
         this.url = '';
-        this.commitsCount = 0;
-        this.branches = [];
-        this.remoteBranches = [];
         this.currentBranch = '';
-        this.users = null;
     }
 
     /**
@@ -22,8 +18,15 @@ export default class GitUtils {
     isValid() {
         try {
             process.chdir(this.path);
-            let cmd = 'git rev-parse --is-inside-work-tree';
-            execSync(cmd);
+
+            // Get URL
+            let cmd = 'git config --get remote.origin.url';
+            this.url = execSync(cmd).toString();
+
+            // Get current branch
+            cmd = 'git rev-parse --abbrev-ref HEAD';
+            this.currentBranch = execSync(cmd).toString();
+
             return true;
         } catch (err) {
             console.error(err);
@@ -31,39 +34,21 @@ export default class GitUtils {
         }
     }
 
-    collectData() {
-        let cmd, output;
+    getBranches() {
         try {
-            // Get URL
-            cmd = 'git config --get remote.origin.url';
-            output = execSync(cmd).toString();
-            this.url = output;
-
-            // Get all branches
-            cmd = 'git branch -a';
-            output = execSync(cmd).toString();
+            let cmd = 'git branch -a';
+            let output = execSync(cmd).toString();
             let branches = output.split(/[\r\n]+/g);
-            for (let i = 0; i < branches.length; i++) {
-                let branch = branches[i].trim();
-                if (branch === '') {
-                    continue;
-                }
+            let result = [];
+            for (let branch of branches) {
+                branch = branch.trim();
+                if (branch === '') continue;
                 if (branch.substring(0, 2) === '* ') {
-                    this.currentBranch = branch.substring(2);
-                    this.branches.push(this.currentBranch);
-                } else if (branch.substring(0, 7) === 'remotes') {
-                    this.remoteBranches.push(branch);
-                } else {
-                    this.branches.push(branch);
+                    branch = branch.substring(2);
                 }
+                result.push(branch);
             }
-
-            // Count commits
-            this.commitsCount = this.getCommitsCount();
-
-            // Get all users
-            this.users = this.getUsers();
-
+            return result;
         } catch (err) {
             console.error(err);
         }
