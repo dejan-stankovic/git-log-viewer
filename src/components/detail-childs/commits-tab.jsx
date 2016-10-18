@@ -13,7 +13,7 @@ export default class CommitsTab extends React.Component {
         super(props);
         this.props = props;
         this.state = {
-            repository: props.repository,
+            currentBranch: props.repository.currentBranch,
             loading: true,
             currentPage: 1,
             pageSize: AppConst.PAGER_DEFAULT_SIZE,
@@ -52,6 +52,13 @@ export default class CommitsTab extends React.Component {
 
     componentDidMount() {
         this.getData();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.state.currentBranch !== nextProps.repository.currentBranch) {
+            this.state.currentBranch = nextProps.repository.currentBranch;
+            this.getData();
+        }
     }
 
     changePage(page) {

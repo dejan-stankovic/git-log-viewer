@@ -71,6 +71,7 @@ export default class Select extends React.Component {
         if (this.state.active) className += 'active visible ';
         if (props.fluid) className += 'fluid ';
         if (props.inline) className += 'inline scrolling ';
+        else if (props.button) className += 'button scrolling ';
         else {
             className += 'selection ';
             if (props.searchable) className += 'search ';

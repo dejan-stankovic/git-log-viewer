@@ -21925,9 +21925,17 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _reactDom = __webpack_require__(34);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
 	var _common = __webpack_require__(33);
 
 	var _common2 = _interopRequireDefault(_common);
+
+	var _git = __webpack_require__(176);
+
+	var _git2 = _interopRequireDefault(_git);
 
 	var _tab = __webpack_require__(181);
 
@@ -21970,9 +21978,10 @@
 	        var _this = _possibleConstructorReturn(this, (Detail.__proto__ || Object.getPrototypeOf(Detail)).call(this, props));
 
 	        _this.props = props;
-	        _this.state = {
-	            repository: props.repository
-	        };
+	        _this.state = { repository: props.repository };
+	        _this.showLoader = _this.showLoader.bind(_this);
+	        _this.hideLoader = _this.hideLoader.bind(_this);
+	        _this.changeBranch = _this.changeBranch.bind(_this);
 	        return _this;
 	    }
 
@@ -21987,10 +21996,65 @@
 	                'div',
 	                null,
 	                _react2.default.createElement(_backHomeBtn2.default, null),
+	                _react2.default.createElement(_select2.default, {
+	                    options: state.repository.branches,
+	                    stringOption: 'true',
+	                    selectedOptions: [state.repository.currentBranch],
+	                    button: 'true',
+	                    onUpdate: this.changeBranch }),
 	                _react2.default.createElement('br', null),
 	                _react2.default.createElement('br', null),
-	                _react2.default.createElement(_tab4.default, { data: tabs })
+	                _react2.default.createElement(_tab4.default, { data: tabs, ref: 'tab' }),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'glv-hidden', ref: 'loader' },
+	                    _react2.default.createElement('div', { className: 'ui active centered inline large loader' }),
+	                    _react2.default.createElement(
+	                        'h4',
+	                        { className: 'glv-centered' },
+	                        'Getting data for new branch. Please wait...'
+	                    )
+	                )
 	            );
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.tab = _reactDom2.default.findDOMNode(this.refs.tab);
+	            this.loader = _reactDom2.default.findDOMNode(this.refs.loader);
+	        }
+	    }, {
+	        key: 'showLoader',
+	        value: function showLoader() {
+	            this.tab.className = 'glv-hidden';
+	            this.loader.className = '';
+	        }
+	    }, {
+	        key: 'hideLoader',
+	        value: function hideLoader() {
+	            this.tab.className = '';
+	            this.loader.className = 'glv-hidden';
+	        }
+	    }, {
+	        key: 'changeBranch',
+	        value: function changeBranch(branches) {
+	            var _this2 = this;
+
+	            this.showLoader();
+	            var repository = this.state.repository;
+	            repository.currentBranch = branches[0];
+	            var promises = [];
+	            promises.push(_git2.default.getUsers(repository.currentBranch));
+	            promises.push(_git2.default.getCommitsCount(repository.currentBranch));
+	            Promise.all(promises).then(function (values) {
+	                repository.users = values[0];
+	                repository.commitsCount = values[1];
+	                _this2.hideLoader();
+	                _this2.setState({ repository: repository });
+	            }).catch(function (err) {
+	                _common2.default.showErrorBox('Error', 'Could not get information of new branch.');
+	                _this2.hideLoader();
+	            });
 	        }
 	    }]);
 
@@ -22289,7 +22353,7 @@
 	            var className = 'ui dropdown glv-dropdown ';
 	            if (this.state.active) className += 'active visible ';
 	            if (props.fluid) className += 'fluid ';
-	            if (props.inline) className += 'inline scrolling ';else {
+	            if (props.inline) className += 'inline scrolling ';else if (props.button) className += 'button scrolling ';else {
 	                className += 'selection ';
 	                if (props.searchable) className += 'search ';
 	                if (props.multiple) className += 'multiple ';
@@ -22576,7 +22640,7 @@
 
 	        _this.props = props;
 	        _this.state = {
-	            repository: props.repository,
+	            currentBranch: props.repository.currentBranch,
 	            loading: true,
 	            currentPage: 1,
 	            pageSize: AppConst.PAGER_DEFAULT_SIZE,
@@ -22630,6 +22694,14 @@
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
 	            this.getData();
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            if (this.state.currentBranch !== nextProps.repository.currentBranch) {
+	                this.state.currentBranch = nextProps.repository.currentBranch;
+	                this.getData();
+	            }
 	        }
 	    }, {
 	        key: 'changePage',
@@ -23385,13 +23457,6 @@
 	                    )
 	                )
 	            );
-	        }
-	    }, {
-	        key: 'componentWillReceiveProps',
-	        value: function componentWillReceiveProps(nextProps) {
-	            if (this.props.repository.currentBranch !== nextProps.repository.currentBranch) {
-	                this.setState({ repository: nextProps.repository });
-	            }
 	        }
 	    }]);
 

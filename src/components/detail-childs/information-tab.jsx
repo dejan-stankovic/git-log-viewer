@@ -58,10 +58,4 @@ export default class InformationTab extends React.Component {
             </div>
         )
     }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.repository.currentBranch !== nextProps.repository.currentBranch) {
-            this.setState({ repository: nextProps.repository });
-        }
-    }
 }
