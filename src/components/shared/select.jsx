@@ -24,7 +24,7 @@ export default class Select extends React.Component {
         this.filter = this.filter.bind(this);
         this.onSelect = this.onSelect.bind(this);
         this.onDeselect = this.onDeselect.bind(this);
-        this.toggleDropdown = this.toggleDropdown.bind(this);
+        this.showDropdown = this.showDropdown.bind(this);
         this.hideDropdown = this.hideDropdown.bind(this);
     }
 
@@ -41,7 +41,7 @@ export default class Select extends React.Component {
             }
         }
         return (
-            <div className={this.getClass()} onClick={this.toggleDropdown}>
+            <div className={this.getClass()} onClick={this.showDropdown}>
                 {selectedComponent}
                 {inputText}
                 {inputSizer}
@@ -51,7 +51,10 @@ export default class Select extends React.Component {
                     options={this.state.options}
                     stringOption={this.props.stringOption}
                     onSelect={this.onSelect}
-                    onHide={this.hideDropdown}/>
+                    onHide={this.hideDropdown}
+                    valueAttr={this.state.valueAttr}
+                    textAttr={this.state.textAttr}
+                    optionAttr={this.state.optionAttr}/>
             </div>
         );
     }
@@ -62,6 +65,12 @@ export default class Select extends React.Component {
             if (this.props.multiple) {
                 this.inputSizer = ReactDOM.findDOMNode(this.refs.inputSizer);
             }
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.state.selectedOptions !== nextProps.selectedOptions) {
+            this.setState({ selectedOptions: nextProps.selectedOptions });
         }
     }
 
@@ -85,7 +94,7 @@ export default class Select extends React.Component {
         let state = this.state;
         let selectedOptions = this.state.selectedOptions;
         if (selectedOptions.length === 0) {
-            return <div className="text default">{props.placeHolder}</div>;
+            return <div className="text default" ref="placeHolder">{props.placeHolder}</div>;
         } else if (!props.multiple) {
             let option = selectedOptions[0];
             if (!props.stringOption) {
@@ -109,12 +118,20 @@ export default class Select extends React.Component {
 
     inputChange() {
         let keyword = this.inputText.value;
-        if (this.props.searchable && this.props.multiple) {
+        if (this.state.selectedOptions.length === 0) {
+            let placeHolder = ReactDOM.findDOMNode(this.refs.placeHolder);
+            if (keyword.length === 0) {
+                placeHolder.innerHTML = this.props.placeHolder;
+            } else {
+                placeHolder.innerHTML = '';
+            }
+        }
+        if (this.props.multiple) {
             // Change the size of input element based on input text
             this.inputSizer.innerHTML = keyword.replace(/\s/g, '&nbsp;');
             this.inputText.style = 'width: ' + this.inputSizer.offsetWidth + 'px';
         }
-        if (keyword.length > 2) this.filter(keyword);
+        this.filter(keyword);
     }
 
     filter(keyword) {
@@ -162,11 +179,12 @@ export default class Select extends React.Component {
         this.props.onUpdate(this.state.selectedOptions);
     }
 
-    toggleDropdown(e) {
+    showDropdown(e) {
         e.stopPropagation();
-        if (this.props.searchable)
+        if (this.props.searchable) {
             this.inputText.focus();
-        this.setState({ active: !this.state.active });
+        }
+        this.setState({ active: true });
     }
 
     hideDropdown() {

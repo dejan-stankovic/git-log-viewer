@@ -21735,16 +21735,49 @@
 	        key: 'getCommitsCount',
 	        value: function getCommitsCount() {
 	            var branch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+	            var users = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+	            var message = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+	            var fromDate = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
+	            var toDate = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
 
+	            var cmd = 'git log --pretty=%h --regexp-ignore-case';
+	            var _iteratorNormalCompletion2 = true;
+	            var _didIteratorError2 = false;
+	            var _iteratorError2 = undefined;
+
+	            try {
+	                for (var _iterator2 = users[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                    var user = _step2.value;
+
+	                    cmd += ' --author=' + user.email;
+	                }
+	            } catch (err) {
+	                _didIteratorError2 = true;
+	                _iteratorError2 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                        _iterator2.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError2) {
+	                        throw _iteratorError2;
+	                    }
+	                }
+	            }
+
+	            if (message !== '') {
+	                cmd += ' --grep=' + message.toLowerCase();
+	            }
+	            if (branch !== '') cmd += ' ' + branch;
 	            return new Promise(function (resolve, reject) {
-	                var cmd = 'git rev-list --count HEAD';
-	                if (branch !== '') cmd += ' ' + branch;
 	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
 	                        reject(error);
 	                    }
-	                    resolve(parseInt(stdout));
+	                    var lines = stdout.split(/[\r\n]+/g);
+	                    resolve(lines.length);
 	                });
 	            });
 	        }
@@ -21754,6 +21787,10 @@
 	            var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 	            var pageSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : AppConst.PAGER_DEFAULT_SIZE;
 	            var branch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+	            var users = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
+	            var message = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
+	            var fromDate = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : '';
+	            var toDate = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : '';
 
 	            if (isNaN(page) || page < 1) {
 	                page = 1;
@@ -21761,7 +21798,35 @@
 	            if (isNaN(pageSize) || pageSize < 1) {
 	                pageSize = AppConst.PAGER_DEFAULT_SIZE;
 	            }
-	            var cmd = 'git log --pretty=[%H][%cN][%cE][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S"';
+	            var cmd = 'git log --pretty=[%H][%cN][%cE][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S" --regexp-ignore-case';
+	            var _iteratorNormalCompletion3 = true;
+	            var _didIteratorError3 = false;
+	            var _iteratorError3 = undefined;
+
+	            try {
+	                for (var _iterator3 = users[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                    var user = _step3.value;
+
+	                    cmd += ' --author=' + user.email;
+	                }
+	            } catch (err) {
+	                _didIteratorError3 = true;
+	                _iteratorError3 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	                        _iterator3.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError3) {
+	                        throw _iteratorError3;
+	                    }
+	                }
+	            }
+
+	            if (message !== '') {
+	                cmd += ' --grep=' + message.toLowerCase();
+	            }
 	            cmd += ' --max-count=' + pageSize + ' --skip=' + (page - 1) * pageSize;
 	            if (branch !== '') cmd += ' ' + branch;
 	            return new Promise(function (resolve, reject) {
@@ -21957,7 +22022,7 @@
 
 	var _commitsTab2 = _interopRequireDefault(_commitsTab);
 
-	var _informationTab = __webpack_require__(191);
+	var _informationTab = __webpack_require__(189);
 
 	var _informationTab2 = _interopRequireDefault(_informationTab);
 
@@ -22302,7 +22367,7 @@
 	        _this.filter = _this.filter.bind(_this);
 	        _this.onSelect = _this.onSelect.bind(_this);
 	        _this.onDeselect = _this.onDeselect.bind(_this);
-	        _this.toggleDropdown = _this.toggleDropdown.bind(_this);
+	        _this.showDropdown = _this.showDropdown.bind(_this);
 	        _this.hideDropdown = _this.hideDropdown.bind(_this);
 	        return _this;
 	    }
@@ -22323,7 +22388,7 @@
 	            }
 	            return _react2.default.createElement(
 	                'div',
-	                { className: this.getClass(), onClick: this.toggleDropdown },
+	                { className: this.getClass(), onClick: this.showDropdown },
 	                selectedComponent,
 	                inputText,
 	                inputSizer,
@@ -22333,7 +22398,10 @@
 	                    options: this.state.options,
 	                    stringOption: this.props.stringOption,
 	                    onSelect: this.onSelect,
-	                    onHide: this.hideDropdown })
+	                    onHide: this.hideDropdown,
+	                    valueAttr: this.state.valueAttr,
+	                    textAttr: this.state.textAttr,
+	                    optionAttr: this.state.optionAttr })
 	            );
 	        }
 	    }, {
@@ -22344,6 +22412,13 @@
 	                if (this.props.multiple) {
 	                    this.inputSizer = _reactDom2.default.findDOMNode(this.refs.inputSizer);
 	                }
+	            }
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            if (this.state.selectedOptions !== nextProps.selectedOptions) {
+	                this.setState({ selectedOptions: nextProps.selectedOptions });
 	            }
 	        }
 	    }, {
@@ -22371,7 +22446,7 @@
 	            if (selectedOptions.length === 0) {
 	                return _react2.default.createElement(
 	                    'div',
-	                    { className: 'text default' },
+	                    { className: 'text default', ref: 'placeHolder' },
 	                    props.placeHolder
 	                );
 	            } else if (!props.multiple) {
@@ -22412,12 +22487,20 @@
 	        key: 'inputChange',
 	        value: function inputChange() {
 	            var keyword = this.inputText.value;
-	            if (this.props.searchable && this.props.multiple) {
+	            if (this.state.selectedOptions.length === 0) {
+	                var placeHolder = _reactDom2.default.findDOMNode(this.refs.placeHolder);
+	                if (keyword.length === 0) {
+	                    placeHolder.innerHTML = this.props.placeHolder;
+	                } else {
+	                    placeHolder.innerHTML = '';
+	                }
+	            }
+	            if (this.props.multiple) {
 	                // Change the size of input element based on input text
 	                this.inputSizer.innerHTML = keyword.replace(/\s/g, '&nbsp;');
 	                this.inputText.style = 'width: ' + this.inputSizer.offsetWidth + 'px';
 	            }
-	            if (keyword.length > 2) this.filter(keyword);
+	            this.filter(keyword);
 	        }
 	    }, {
 	        key: 'filter',
@@ -22474,11 +22557,13 @@
 	            this.props.onUpdate(this.state.selectedOptions);
 	        }
 	    }, {
-	        key: 'toggleDropdown',
-	        value: function toggleDropdown(e) {
+	        key: 'showDropdown',
+	        value: function showDropdown(e) {
 	            e.stopPropagation();
-	            if (this.props.searchable) this.inputText.focus();
-	            this.setState({ active: !this.state.active });
+	            if (this.props.searchable) {
+	                this.inputText.focus();
+	            }
+	            this.setState({ active: true });
 	        }
 	    }, {
 	        key: 'hideDropdown',
@@ -22592,10 +22677,6 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactAddonsPureRenderMixin = __webpack_require__(186);
-
-	var _reactAddonsPureRenderMixin2 = _interopRequireDefault(_reactAddonsPureRenderMixin);
-
 	var _appconst = __webpack_require__(174);
 
 	var AppConst = _interopRequireWildcard(_appconst);
@@ -22608,7 +22689,7 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _pager = __webpack_require__(189);
+	var _pager = __webpack_require__(186);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
@@ -22616,7 +22697,11 @@
 
 	var _select2 = _interopRequireDefault(_select);
 
-	var _row = __webpack_require__(190);
+	var _filter = __webpack_require__(187);
+
+	var _filter2 = _interopRequireDefault(_filter);
+
+	var _row = __webpack_require__(188);
 
 	var _row2 = _interopRequireDefault(_row);
 
@@ -22646,10 +22731,17 @@
 	            pageSize: AppConst.PAGER_DEFAULT_SIZE,
 	            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
 	        };
+	        _this.filter = {
+	            users: [],
+	            message: '',
+	            fromDate: '',
+	            toDate: ''
+	        };
 
 	        _this.changePage = _this.changePage.bind(_this);
 	        _this.changePageSize = _this.changePageSize.bind(_this);
 	        _this.getData = _this.getData.bind(_this);
+	        _this.search = _this.search.bind(_this);
 	        return _this;
 	    }
 
@@ -22675,14 +22767,13 @@
 	            return _react2.default.createElement(
 	                'div',
 	                null,
+	                _react2.default.createElement(_filter2.default, { users: this.props.repository.users, search: this.search }),
 	                _react2.default.createElement(_pager2.default, {
 	                    currentPage: this.state.currentPage,
 	                    totalPage: this.state.totalPage,
 	                    onPageChanged: this.changePage,
 	                    onPageSizeChanged: this.changePageSize,
 	                    pageSizes: AppConst.PAGER_SIZE_AVAIABLE }),
-	                _react2.default.createElement('br', null),
-	                _react2.default.createElement('br', null),
 	                _react2.default.createElement(
 	                    'div',
 	                    { className: 'ui vertically divided grid' },
@@ -22720,18 +22811,28 @@
 	        value: function getData() {
 	            var _this2 = this;
 
-	            var repository = this.props.repository;
-	            this.state.loading = true;
-	            this.state.totalPage = Math.ceil(repository.commitsCount / this.state.pageSize);
-	            if (this.state.currentPage > this.state.totalPage) {
-	                this.state.currentPage = this.state.totalPage;
-	            }
-	            this.setState(this.state);
+	            this.setState({ loading: true });
+	            var currentBranch = this.props.repository.currentBranch;
 
-	            _git2.default.getCommits(this.state.currentPage, this.state.pageSize, repository.currentBranch).then(function (commits) {
+	            _git2.default.getCommitsCount(currentBranch, this.filter.users, this.filter.message, this.filter.fromDate, this.filter.toDate).then(function (count) {
+	                _this2.state.totalPage = Math.ceil(count / _this2.state.pageSize);
+	                if (_this2.state.currentPage > _this2.state.totalPage) {
+	                    _this2.state.currentPage = _this2.state.totalPage;
+	                }
+	                return _git2.default.getCommits(_this2.state.currentPage, _this2.state.pageSize, currentBranch, _this2.filter.users, _this2.filter.message, _this2.filter.fromDate, _this2.filter.toDate);
+	            }).then(function (commits) {
 	                _this2.commits = commits;
 	                _this2.setState({ loading: false });
 	            });
+	        }
+	    }, {
+	        key: 'search',
+	        value: function search(users, message, fromDate, toDate) {
+	            this.filter.users = users;
+	            this.filter.message = message;
+	            this.filter.fromDate = fromDate;
+	            this.filter.toDate = toDate;
+	            this.getData();
 	        }
 	    }, {
 	        key: 'showError',
@@ -22764,97 +22865,6 @@
 
 /***/ },
 /* 186 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = __webpack_require__(187);
-
-/***/ },
-/* 187 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactComponentWithPureRenderMixin
-	 */
-
-	'use strict';
-
-	var shallowCompare = __webpack_require__(188);
-
-	/**
-	 * If your React component's render function is "pure", e.g. it will render the
-	 * same result given the same props and state, provide this mixin for a
-	 * considerable performance boost.
-	 *
-	 * Most React components have pure render functions.
-	 *
-	 * Example:
-	 *
-	 *   var ReactComponentWithPureRenderMixin =
-	 *     require('ReactComponentWithPureRenderMixin');
-	 *   React.createClass({
-	 *     mixins: [ReactComponentWithPureRenderMixin],
-	 *
-	 *     render: function() {
-	 *       return <div className={this.props.className}>foo</div>;
-	 *     }
-	 *   });
-	 *
-	 * Note: This only checks shallow equality for props and state. If these contain
-	 * complex data structures this mixin may have false-negatives for deeper
-	 * differences. Only mixin to components which have simple props and state, or
-	 * use `forceUpdate()` when you know deep data structures have changed.
-	 *
-	 * See https://facebook.github.io/react/docs/pure-render-mixin.html
-	 */
-	var ReactComponentWithPureRenderMixin = {
-	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-	    return shallowCompare(this, nextProps, nextState);
-	  }
-	};
-
-	module.exports = ReactComponentWithPureRenderMixin;
-
-/***/ },
-/* 188 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	* @providesModule shallowCompare
-	*/
-
-	'use strict';
-
-	var shallowEqual = __webpack_require__(124);
-
-	/**
-	 * Does a shallow comparison for props and state.
-	 * See ReactComponentWithPureRenderMixin
-	 * See also https://facebook.github.io/react/docs/shallow-compare.html
-	 */
-	function shallowCompare(instance, nextProps, nextState) {
-	  return !shallowEqual(instance.props, nextProps) || !shallowEqual(instance.state, nextState);
-	}
-
-	module.exports = shallowCompare;
-
-/***/ },
-/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23031,7 +23041,221 @@
 	}(_react2.default.Component);
 
 /***/ },
-/* 190 */
+/* 187 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(34);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _select = __webpack_require__(184);
+
+	var _select2 = _interopRequireDefault(_select);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Filter = function (_React$Component) {
+	    _inherits(Filter, _React$Component);
+
+	    function Filter(props) {
+	        _classCallCheck(this, Filter);
+
+	        var _this = _possibleConstructorReturn(this, (Filter.__proto__ || Object.getPrototypeOf(Filter)).call(this, props));
+
+	        _this.props = props;
+	        _this.state = { active: false, selectedUsers: [] };
+
+	        _this.toggle = _this.toggle.bind(_this);
+	        _this.selectUsers = _this.selectUsers.bind(_this);
+	        _this.search = _this.search.bind(_this);
+	        _this.clear = _this.clear.bind(_this);
+	        return _this;
+	    }
+
+	    _createClass(Filter, [{
+	        key: 'render',
+	        value: function render() {
+	            var className = 'glv-hidden';
+	            var buttonText = 'Show filter';
+	            if (this.state.active) {
+	                className = '';
+	                buttonText = 'Hide filter';
+	            }
+	            var allUsers = this.props.users.map(function (user) {
+	                user.disp = _react2.default.createElement(
+	                    'div',
+	                    null,
+	                    _react2.default.createElement(
+	                        'strong',
+	                        null,
+	                        user.name
+	                    ),
+	                    _react2.default.createElement('br', null),
+	                    user.email
+	                );
+	                return user;
+	            });
+	            var userFilter = function userFilter(user, keyword) {
+	                var name = user.name.toLowerCase();
+	                var email = user.email.toLowerCase();
+	                var key = keyword.toLowerCase();
+	                if (name.indexOf(key) > -1 || email.indexOf(key) > -1) return true;
+	                return false;
+	            };
+	            return _react2.default.createElement(
+	                'div',
+	                null,
+	                _react2.default.createElement(
+	                    'button',
+	                    { className: 'ui basic button', onClick: this.toggle },
+	                    _react2.default.createElement('i', { className: 'filter icon' }),
+	                    ' ',
+	                    buttonText
+	                ),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'ui form ' + className },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'fields' },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'sixteen wide field' },
+	                            _react2.default.createElement(
+	                                'label',
+	                                null,
+	                                'Users'
+	                            ),
+	                            _react2.default.createElement(_select2.default, {
+	                                options: allUsers,
+	                                valueAttr: 'email',
+	                                textAttr: 'name',
+	                                optionAttr: 'disp',
+	                                selectedAttr: 'name',
+	                                multiple: 'true',
+	                                searchable: 'true',
+	                                placeHolder: 'Select users',
+	                                onUpdate: this.selectUsers,
+	                                customFilter: userFilter,
+	                                selectedOptions: this.state.selectedUsers })
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'fields' },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'ten wide field' },
+	                            _react2.default.createElement(
+	                                'label',
+	                                null,
+	                                'Commit message'
+	                            ),
+	                            _react2.default.createElement('input', { type: 'text', placeholder: 'Message', ref: 'message' })
+	                        ),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'three wide field' },
+	                            _react2.default.createElement(
+	                                'label',
+	                                null,
+	                                'From date'
+	                            ),
+	                            _react2.default.createElement('input', { type: 'date', placeholder: 'From', ref: 'fromDate' })
+	                        ),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'three wide field' },
+	                            _react2.default.createElement(
+	                                'label',
+	                                null,
+	                                'To date'
+	                            ),
+	                            _react2.default.createElement('input', { type: 'date', placeholder: 'To', ref: 'toDate' })
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'fields' },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'field' },
+	                            _react2.default.createElement(
+	                                'button',
+	                                { className: 'ui blue button', onClick: this.search },
+	                                _react2.default.createElement('i', { className: 'search icon' }),
+	                                ' Search'
+	                            ),
+	                            _react2.default.createElement(
+	                                'button',
+	                                { className: 'ui button', onClick: this.clear },
+	                                _react2.default.createElement('i', { className: 'undo icon' }),
+	                                ' Clear'
+	                            )
+	                        )
+	                    )
+	                )
+	            );
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.message = _reactDom2.default.findDOMNode(this.refs.message);
+	            this.fromDate = _reactDom2.default.findDOMNode(this.refs.fromDate);
+	            this.toDate = _reactDom2.default.findDOMNode(this.refs.toDate);
+	        }
+	    }, {
+	        key: 'toggle',
+	        value: function toggle() {
+	            this.setState({ active: !this.state.active });
+	        }
+	    }, {
+	        key: 'selectUsers',
+	        value: function selectUsers(users) {
+	            this.state.selectedUsers = users;
+	        }
+	    }, {
+	        key: 'search',
+	        value: function search() {
+	            this.props.search(this.state.selectedUsers, this.message.value, this.fromDate.value, this.toDate.value);
+	        }
+	    }, {
+	        key: 'clear',
+	        value: function clear() {
+	            this.message.value = '';
+	            this.fromDate.value = '';
+	            this.toDate.value = '';
+	            this.setState({ selectedUsers: [] });
+	        }
+	    }]);
+
+	    return Filter;
+	}(_react2.default.Component);
+
+	exports.default = Filter;
+
+/***/ },
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23244,7 +23468,7 @@
 	exports.default = Row;
 
 /***/ },
-/* 191 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

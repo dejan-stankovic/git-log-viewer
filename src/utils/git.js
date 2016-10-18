@@ -80,28 +80,41 @@ export default class Git {
         });
     }
 
-    static getCommitsCount(branch = '') {
+    static getCommitsCount(branch = '', users = [], message = '', fromDate = '', toDate = '') {
+        let cmd = 'git log --pretty=%h --regexp-ignore-case';
+        for (let user of users) {
+            cmd += ' --committer=' + user.email;
+        }
+        if (message !== '') {
+            cmd += ' --grep=' + message.toLowerCase();
+        }
+        if (branch !== '') cmd += ' ' + branch;
         return new Promise((resolve, reject) => {
-            let cmd = 'git rev-list --count HEAD';
-            if (branch !== '') cmd += ' ' + branch;
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
                     reject(error);
                 }
-                resolve(parseInt(stdout));
+                let lines = stdout.split(/[\r\n]+/g);
+                resolve(lines.length);
             });
         });
     }
 
-    static getCommits(page = 1, pageSize = AppConst.PAGER_DEFAULT_SIZE, branch = '') {
+    static getCommits(page = 1, pageSize = AppConst.PAGER_DEFAULT_SIZE, branch = '', users = [], message = '', fromDate = '', toDate = '') {
         if (isNaN(page) || page < 1) {
             page = 1;
         }
         if (isNaN(pageSize) || pageSize < 1) {
             pageSize = AppConst.PAGER_DEFAULT_SIZE;
         }
-        let cmd = 'git log --pretty=[%H][%cN][%cE][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S"';
+        let cmd = 'git log --pretty=[%H][%cN][%cE][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S" --regexp-ignore-case';
+        for (let user of users) {
+            cmd += ' --committer=' + user.email;
+        }
+        if (message !== '') {
+            cmd += ' --grep=' + message.toLowerCase();
+        }
         cmd += ' --max-count=' + pageSize + ' --skip=' + (page - 1) * pageSize;
         if (branch !== '') cmd += ' ' + branch;
         return new Promise((resolve, reject) => {

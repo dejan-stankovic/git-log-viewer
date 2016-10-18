@@ -1,11 +1,11 @@
 import React from 'react';
-import PureRenderMixin from 'react-addons-pure-render-mixin';
 import * as AppConst from '../../appconst.js';
 import Git from '../../utils/git.js';
 import Common from '../../utils/common.js';
 
 import Pager from '../shared/pager.jsx';
 import Select from '../shared/select.jsx';
+import Filter from './filter.jsx';
 import Row from './row.jsx';
 
 export default class CommitsTab extends React.Component {
@@ -19,10 +19,17 @@ export default class CommitsTab extends React.Component {
             pageSize: AppConst.PAGER_DEFAULT_SIZE,
             totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
         };
+        this.filter = {
+            users: [],
+            message: '',
+            fromDate: '',
+            toDate: ''
+        };
 
         this.changePage = this.changePage.bind(this);
         this.changePageSize = this.changePageSize.bind(this);
         this.getData = this.getData.bind(this);
+        this.search = this.search.bind(this);
     }
 
     render() {
@@ -38,13 +45,13 @@ export default class CommitsTab extends React.Component {
 
         return (
             <div>
+                <Filter users={this.props.repository.users} search={this.search}/>
                 <Pager
                     currentPage={this.state.currentPage}
                     totalPage={this.state.totalPage}
                     onPageChanged={this.changePage}
                     onPageSizeChanged={this.changePageSize}
                     pageSizes={AppConst.PAGER_SIZE_AVAIABLE}/>
-                <br/><br/>
                 <div className="ui vertically divided grid">{rows}</div>
             </div>
         );
@@ -72,18 +79,28 @@ export default class CommitsTab extends React.Component {
     }
 
     getData() {
-        let repository = this.props.repository;
-        this.state.loading = true;
-        this.state.totalPage = Math.ceil(repository.commitsCount / this.state.pageSize);
-        if (this.state.currentPage > this.state.totalPage) {
-            this.state.currentPage = this.state.totalPage;
-        }
-        this.setState(this.state);
+        this.setState({ loading: true });
+        let currentBranch = this.props.repository.currentBranch;
 
-        Git.getCommits(this.state.currentPage, this.state.pageSize, repository.currentBranch).then(commits => {
+        Git.getCommitsCount(currentBranch, this.filter.users, this.filter.message, this.filter.fromDate, this.filter.toDate).then(count => {
+            this.state.totalPage = Math.ceil(count / this.state.pageSize);
+            if (this.state.currentPage > this.state.totalPage) {
+                this.state.currentPage = this.state.totalPage;
+            }
+            return Git.getCommits(this.state.currentPage, this.state.pageSize, currentBranch,
+                this.filter.users, this.filter.message, this.filter.fromDate, this.filter.toDate);
+        }).then(commits => {
             this.commits = commits;
             this.setState({ loading: false });
         });
+    }
+
+    search(users, message, fromDate, toDate) {
+        this.filter.users = users;
+        this.filter.message = message;
+        this.filter.fromDate = fromDate;
+        this.filter.toDate = toDate;
+        this.getData();
     }
 
     showError(header, message) {
