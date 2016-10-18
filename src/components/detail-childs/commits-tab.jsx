@@ -54,13 +54,6 @@ export default class CommitsTab extends React.Component {
         this.getData();
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (this.props.currentBranch !== nextProps.currentBranch) {
-            this.props.git.currentBranch = nextProps.currentBranch;
-            this.getData();
-        }
-    }
-
     changePage(page) {
         this.state.currentPage = page;
         this.getData();
@@ -80,8 +73,8 @@ export default class CommitsTab extends React.Component {
         }
         this.setState(this.state);
 
-        Common.executeAsync(() => {
-            this.commits = Git.getCommits(this.state.currentPage, this.state.pageSize, repository.currentBranch);
+        Git.getCommits(this.state.currentPage, this.state.pageSize, repository.currentBranch).then(commits => {
+            this.commits = commits;
             this.setState({ loading: false });
         });
     }

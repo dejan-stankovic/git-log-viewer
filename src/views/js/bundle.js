@@ -21426,12 +21426,12 @@
 
 	module.exports = Object.freeze({
 		HTML_APP_ID: 'app',
-
 		CHANNEL_SHOW_DIR_DIALOG: 'show-dir-dialog',
 		CHANNEL_SELECTED_DIR: 'selected-dir',
 		CHANNEL_SHOW_ERR_BOX: 'show-err-box',
 		PAGER_SIZE_AVAIABLE: [50, 100, 150, 200],
-		PAGER_DEFAULT_SIZE: 50
+		PAGER_DEFAULT_SIZE: 50,
+		EXEC_OPTIONS: { maxBuffer: 1000 * 1024 }
 	});
 
 /***/ },
@@ -21539,6 +21539,11 @@
 	            );
 	        }
 	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.loader = _reactDom2.default.findDOMNode(this.refs.loader);
+	        }
+	    }, {
 	        key: 'chooseDir',
 	        value: function chooseDir() {
 	            _electron.ipcRenderer.send(AppConst.CHANNEL_SHOW_DIR_DIALOG, AppConst.CHANNEL_SELECTED_DIR);
@@ -21550,28 +21555,36 @@
 	            var _this2 = this;
 
 	            this.showLoader();
-	            _common2.default.executeAsync(function () {
-	                if (!_common2.default.isValidGitDirectory(path[0])) {
-	                    _common2.default.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
-	                    _this2.hideLoader();
-	                    return;
-	                }
+	            process.chdir(path[0]);
+	            var promises = [];
+	            promises.push(_git2.default.getURL());
+	            promises.push(_git2.default.getCurrentBranch());
+	            promises.push(_git2.default.getBranches());
+	            promises.push(_git2.default.getUsers());
+	            promises.push(_git2.default.getCommitsCount());
+	            Promise.all(promises).then(function (values) {
 	                var repository = new _repo2.default();
-	                repository.collectData();
+	                repository.url = values[0];
+	                repository.currentBranch = values[1];
+	                repository.branches = values[2];
+	                repository.users = values[3];
+	                repository.commitsCount = values[4];
 	                _common2.default.renderPage(_react2.default.createElement(_detail2.default, { repository: repository }));
+	            }).catch(function (err) {
+	                console.error(err);
+	                _common2.default.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
+	                _this2.hideLoader();
 	            });
 	        }
 	    }, {
 	        key: 'showLoader',
 	        value: function showLoader() {
-	            var loader = _reactDom2.default.findDOMNode(this.refs.loader);
-	            loader.className = '';
+	            this.loader.className = '';
 	        }
 	    }, {
 	        key: 'hideLoader',
 	        value: function hideLoader() {
-	            var loader = _reactDom2.default.findDOMNode(this.refs.loader);
-	            loader.className = 'glv-hidden';
+	            this.loader.className = 'glv-hidden';
 	        }
 	    }]);
 
@@ -21610,118 +21623,137 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var GitUtils = function () {
-	    function GitUtils() {
-	        _classCallCheck(this, GitUtils);
+	var Git = function () {
+	    function Git() {
+	        _classCallCheck(this, Git);
 	    }
 
-	    _createClass(GitUtils, null, [{
+	    _createClass(Git, null, [{
 	        key: 'getURL',
 	        value: function getURL() {
-	            try {
+	            return new Promise(function (resolve, reject) {
 	                var cmd = 'git config --get remote.origin.url';
-	                return (0, _child_process.execSync)(cmd).toString();
-	            } catch (err) {
-	                console.error(err);
-	                return null;
-	            }
+	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    resolve(stdout);
+	                });
+	            });
 	        }
 	    }, {
 	        key: 'getCurrentBranch',
 	        value: function getCurrentBranch() {
-	            try {
+	            return new Promise(function (resolve, reject) {
 	                var cmd = 'git rev-parse --abbrev-ref HEAD';
-	                return (0, _child_process.execSync)(cmd).toString();
-	            } catch (err) {
-	                console.error(err);
-	                return null;
-	            }
+	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    resolve(stdout);
+	                });
+	            });
 	        }
 	    }, {
 	        key: 'getBranches',
 	        value: function getBranches() {
-	            try {
+	            return new Promise(function (resolve, reject) {
 	                var cmd = 'git branch -a';
-	                var output = (0, _child_process.execSync)(cmd).toString();
-	                var branches = output.split(/[\r\n]+/g);
-	                var result = [];
-	                var _iteratorNormalCompletion = true;
-	                var _didIteratorError = false;
-	                var _iteratorError = undefined;
-
-	                try {
-	                    for (var _iterator = branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                        var branch = _step.value;
-
-	                        branch = branch.trim();
-	                        if (branch === '') continue;
-	                        if (branch.substring(0, 2) === '* ') {
-	                            branch = branch.substring(2);
-	                        }
-	                        result.push(branch);
+	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
 	                    }
-	                } catch (err) {
-	                    _didIteratorError = true;
-	                    _iteratorError = err;
-	                } finally {
+	                    var branches = stdout.split(/[\r\n]+/g);
+	                    var result = [];
+	                    var _iteratorNormalCompletion = true;
+	                    var _didIteratorError = false;
+	                    var _iteratorError = undefined;
+
 	                    try {
-	                        if (!_iteratorNormalCompletion && _iterator.return) {
-	                            _iterator.return();
+	                        for (var _iterator = branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                            var branch = _step.value;
+
+	                            branch = branch.trim();
+	                            if (branch === '') continue;
+	                            if (branch.substring(0, 2) === '* ') {
+	                                branch = branch.substring(2);
+	                            }
+	                            result.push(branch);
 	                        }
+	                    } catch (err) {
+	                        _didIteratorError = true;
+	                        _iteratorError = err;
 	                    } finally {
-	                        if (_didIteratorError) {
-	                            throw _iteratorError;
+	                        try {
+	                            if (!_iteratorNormalCompletion && _iterator.return) {
+	                                _iterator.return();
+	                            }
+	                        } finally {
+	                            if (_didIteratorError) {
+	                                throw _iteratorError;
+	                            }
 	                        }
 	                    }
-	                }
 
-	                return result;
-	            } catch (err) {
-	                console.error(err);
-	            }
+	                    resolve(result);
+	                });
+	            });
 	        }
 	    }, {
 	        key: 'getUsers',
-	        value: function getUsers(branch) {
-	            var cmd = 'git log --pretty=[%cE][%cN] ' + branch;
-	            try {
-	                var output = (0, _child_process.execSync)(cmd).toString();
-	                var regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
-	                var match = regexp.exec(output);
-	                var emails = [];
-	                var users = [];
-	                while (match !== null) {
-	                    var email = match[1].toLowerCase();
-	                    if (emails.indexOf(email) === -1) {
-	                        emails.push(email);
-	                        users.push(new _user2.default(match[2], email));
+	        value: function getUsers() {
+	            var branch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+	            return new Promise(function (resolve, reject) {
+	                var cmd = 'git log --pretty=[%cE][%cN]';
+	                if (branch !== '') cmd += ' ' + branch;
+	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
 	                    }
-	                    match = regexp.exec(output);
-	                }
-	                return users;
-	            } catch (err) {
-	                console.error(err);
-	                return null;
-	            }
+	                    var regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
+	                    var match = regexp.exec(stdout);
+	                    var emails = [];
+	                    var users = [];
+	                    while (match !== null) {
+	                        var email = match[1].toLowerCase();
+	                        if (emails.indexOf(email) === -1) {
+	                            emails.push(email);
+	                            users.push(new _user2.default(match[2], email));
+	                        }
+	                        match = regexp.exec(stdout);
+	                    }
+	                    resolve(users);
+	                });
+	            });
 	        }
 	    }, {
 	        key: 'getCommitsCount',
-	        value: function getCommitsCount(branch) {
-	            var cmd = 'git rev-list --count ' + branch;
-	            try {
-	                var output = (0, _child_process.execSync)(cmd).toString();
-	                return parseInt(output);
-	            } catch (err) {
-	                console.error(err);
-	                return 0;
-	            }
+	        value: function getCommitsCount() {
+	            var branch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+	            return new Promise(function (resolve, reject) {
+	                var cmd = 'git rev-list --count HEAD';
+	                if (branch !== '') cmd += ' ' + branch;
+	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    resolve(parseInt(stdout));
+	                });
+	            });
 	        }
 	    }, {
 	        key: 'getCommits',
 	        value: function getCommits() {
 	            var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 	            var pageSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : AppConst.PAGER_DEFAULT_SIZE;
-	            var branch = arguments[2];
+	            var branch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 
 	            if (isNaN(page) || page < 1) {
 	                page = 1;
@@ -21731,49 +21763,53 @@
 	            }
 	            var cmd = 'git log --pretty=[%H][%cN][%cE][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S"';
 	            cmd += ' --max-count=' + pageSize + ' --skip=' + (page - 1) * pageSize;
-	            cmd += ' ' + branch;
-	            try {
-	                var commits = [];
-	                var output = (0, _child_process.execSync)(cmd).toString();
-	                var regexp = /\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+)\][\r\n]+/g;
-	                var match = regexp.exec(output);
-	                while (match !== null) {
-	                    var commit = new _commit.Commit(match[1], match[2], match[3], match[4], match[5]);
-	                    commits.push(commit);
-	                    match = regexp.exec(output);
-	                }
-	                return commits;
-	            } catch (err) {
-	                console.error(err);
-	                return null;
-	            }
+	            if (branch !== '') cmd += ' ' + branch;
+	            return new Promise(function (resolve, reject) {
+	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    var commits = [];
+	                    var regexp = /\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+)\][\r\n]+/g;
+	                    var match = regexp.exec(stdout);
+	                    while (match !== null) {
+	                        var commit = new _commit.Commit(match[1], match[2], match[3], match[4], match[5]);
+	                        commits.push(commit);
+	                        match = regexp.exec(stdout);
+	                    }
+	                    resolve(commits);
+	                });
+	            });
 	        }
 	    }, {
 	        key: 'getFilesByCommitHash',
 	        value: function getFilesByCommitHash(hash) {
 	            var cmd = 'git log -m -1 --pretty= --name-status ' + hash;
-	            try {
-	                var files = [];
-	                var output = (0, _child_process.execSync)(cmd).toString();
-	                var regexp = /(\w+)\s+(\S+)(\s+(\S+))?[\r\n]+/g;
-	                var match = regexp.exec(output);
-	                while (match !== null) {
-	                    var file = new _commit.CommitFile(match[1], match[2]);
-	                    files.push(file);
-	                    match = regexp.exec(output);
-	                }
-	                return files;
-	            } catch (err) {
-	                console.error(err);
-	                return null;
-	            }
+	            return new Promise(function (resolve, reject) {
+	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    var files = [];
+	                    var regexp = /(\w+)\s+(\S+)(\s+(\S+))?[\r\n]+/g;
+	                    var match = regexp.exec(stdout);
+	                    while (match !== null) {
+	                        var file = new _commit.CommitFile(match[1], match[2]);
+	                        files.push(file);
+	                        match = regexp.exec(stdout);
+	                    }
+	                    resolve(files);
+	                });
+	            });
 	        }
 	    }]);
 
-	    return GitUtils;
+	    return Git;
 	}();
 
-	exports.default = GitUtils;
+	exports.default = Git;
 
 /***/ },
 /* 177 */
@@ -21893,10 +21929,6 @@
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _git = __webpack_require__(176);
-
-	var _git2 = _interopRequireDefault(_git);
-
 	var _tab = __webpack_require__(181);
 
 	var _tab2 = _interopRequireDefault(_tab);
@@ -21909,7 +21941,11 @@
 
 	var _tab4 = _interopRequireDefault(_tab3);
 
-	var _commitsTab = __webpack_require__(184);
+	var _select = __webpack_require__(184);
+
+	var _select2 = _interopRequireDefault(_select);
+
+	var _commitsTab = __webpack_require__(185);
 
 	var _commitsTab2 = _interopRequireDefault(_commitsTab);
 
@@ -21937,7 +21973,6 @@
 	        _this.state = {
 	            repository: props.repository
 	        };
-	        _this.changeBranch = _this.changeBranch.bind(_this);
 	        return _this;
 	    }
 
@@ -21952,20 +21987,10 @@
 	                'div',
 	                null,
 	                _react2.default.createElement(_backHomeBtn2.default, null),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement('br', null),
 	                _react2.default.createElement(_tab4.default, { data: tabs })
 	            );
-	        }
-	    }, {
-	        key: 'changeBranch',
-	        value: function changeBranch(branch) {
-	            var state = this.state;
-	            var repository = this.state.repository;
-
-	            repository.currentBranch = branch;
-	            repository.users = _git2.default.getUsers(branch);
-	            repository.commitsCount = _git2.default.getCommitsCount(branch);
-
-	            this.setState({ repository: repository });
 	        }
 	    }]);
 
@@ -22040,16 +22065,10 @@
 	        key: 'render',
 	        value: function render() {
 	            return _react2.default.createElement(
-	                'div',
-	                null,
-	                _react2.default.createElement(
-	                    'button',
-	                    { className: 'ui green button', onClick: this.backToHome },
-	                    _react2.default.createElement('i', { className: 'caret left icon' }),
-	                    ' Back to Home'
-	                ),
-	                _react2.default.createElement('br', null),
-	                _react2.default.createElement('br', null)
+	                'button',
+	                { className: 'ui green button', onClick: this.backToHome },
+	                _react2.default.createElement('i', { className: 'caret left icon' }),
+	                ' Back to Home'
 	            );
 	        }
 	    }, {
@@ -22162,460 +22181,6 @@
 
 /***/ },
 /* 184 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _reactAddonsPureRenderMixin = __webpack_require__(185);
-
-	var _reactAddonsPureRenderMixin2 = _interopRequireDefault(_reactAddonsPureRenderMixin);
-
-	var _appconst = __webpack_require__(174);
-
-	var AppConst = _interopRequireWildcard(_appconst);
-
-	var _git = __webpack_require__(176);
-
-	var _git2 = _interopRequireDefault(_git);
-
-	var _common = __webpack_require__(33);
-
-	var _common2 = _interopRequireDefault(_common);
-
-	var _pager = __webpack_require__(188);
-
-	var _pager2 = _interopRequireDefault(_pager);
-
-	var _select = __webpack_require__(189);
-
-	var _select2 = _interopRequireDefault(_select);
-
-	var _row = __webpack_require__(190);
-
-	var _row2 = _interopRequireDefault(_row);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var CommitsTab = function (_React$Component) {
-	    _inherits(CommitsTab, _React$Component);
-
-	    function CommitsTab(props) {
-	        _classCallCheck(this, CommitsTab);
-
-	        var _this = _possibleConstructorReturn(this, (CommitsTab.__proto__ || Object.getPrototypeOf(CommitsTab)).call(this, props));
-
-	        _this.props = props;
-	        _this.state = {
-	            repository: props.repository,
-	            loading: true,
-	            currentPage: 1,
-	            pageSize: AppConst.PAGER_DEFAULT_SIZE,
-	            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
-	        };
-
-	        _this.changePage = _this.changePage.bind(_this);
-	        _this.changePageSize = _this.changePageSize.bind(_this);
-	        _this.getData = _this.getData.bind(_this);
-	        return _this;
-	    }
-
-	    _createClass(CommitsTab, [{
-	        key: 'render',
-	        value: function render() {
-	            var rows = null;
-	            if (this.state.loading) {
-	                rows = _react2.default.createElement(
-	                    'div',
-	                    { className: 'ui active centered text inline loader' },
-	                    'Getting Commit Logs'
-	                );
-	            } else {
-	                if (this.commits === null) {
-	                    return this.showError('Empty data', 'Could not read commit log from Git directory. Please try again.');
-	                }
-	                rows = this.commits.map(function (commit) {
-	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit });
-	                });
-	            }
-
-	            return _react2.default.createElement(
-	                'div',
-	                null,
-	                _react2.default.createElement(_pager2.default, {
-	                    currentPage: this.state.currentPage,
-	                    totalPage: this.state.totalPage,
-	                    onPageChanged: this.changePage,
-	                    onPageSizeChanged: this.changePageSize,
-	                    pageSizes: AppConst.PAGER_SIZE_AVAIABLE }),
-	                _react2.default.createElement('br', null),
-	                _react2.default.createElement('br', null),
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'ui vertically divided grid' },
-	                    rows
-	                )
-	            );
-	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            this.getData();
-	        }
-	    }, {
-	        key: 'componentWillReceiveProps',
-	        value: function componentWillReceiveProps(nextProps) {
-	            if (this.props.currentBranch !== nextProps.currentBranch) {
-	                this.props.git.currentBranch = nextProps.currentBranch;
-	                this.getData();
-	            }
-	        }
-	    }, {
-	        key: 'changePage',
-	        value: function changePage(page) {
-	            this.state.currentPage = page;
-	            this.getData();
-	        }
-	    }, {
-	        key: 'changePageSize',
-	        value: function changePageSize(pageSize) {
-	            this.state.pageSize = pageSize;
-	            this.getData();
-	        }
-	    }, {
-	        key: 'getData',
-	        value: function getData() {
-	            var _this2 = this;
-
-	            var repository = this.props.repository;
-	            this.state.loading = true;
-	            this.state.totalPage = Math.ceil(repository.commitsCount / this.state.pageSize);
-	            if (this.state.currentPage > this.state.totalPage) {
-	                this.state.currentPage = this.state.totalPage;
-	            }
-	            this.setState(this.state);
-
-	            _common2.default.executeAsync(function () {
-	                _this2.commits = _git2.default.getCommits(_this2.state.currentPage, _this2.state.pageSize, repository.currentBranch);
-	                _this2.setState({ loading: false });
-	            });
-	        }
-	    }, {
-	        key: 'showError',
-	        value: function showError(header, message) {
-	            return _react2.default.createElement(
-	                'div',
-	                null,
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'ui negative message' },
-	                    _react2.default.createElement(
-	                        'div',
-	                        { className: 'header' },
-	                        header
-	                    ),
-	                    _react2.default.createElement(
-	                        'p',
-	                        null,
-	                        message
-	                    )
-	                )
-	            );
-	        }
-	    }]);
-
-	    return CommitsTab;
-	}(_react2.default.Component);
-
-	exports.default = CommitsTab;
-
-/***/ },
-/* 185 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = __webpack_require__(186);
-
-/***/ },
-/* 186 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactComponentWithPureRenderMixin
-	 */
-
-	'use strict';
-
-	var shallowCompare = __webpack_require__(187);
-
-	/**
-	 * If your React component's render function is "pure", e.g. it will render the
-	 * same result given the same props and state, provide this mixin for a
-	 * considerable performance boost.
-	 *
-	 * Most React components have pure render functions.
-	 *
-	 * Example:
-	 *
-	 *   var ReactComponentWithPureRenderMixin =
-	 *     require('ReactComponentWithPureRenderMixin');
-	 *   React.createClass({
-	 *     mixins: [ReactComponentWithPureRenderMixin],
-	 *
-	 *     render: function() {
-	 *       return <div className={this.props.className}>foo</div>;
-	 *     }
-	 *   });
-	 *
-	 * Note: This only checks shallow equality for props and state. If these contain
-	 * complex data structures this mixin may have false-negatives for deeper
-	 * differences. Only mixin to components which have simple props and state, or
-	 * use `forceUpdate()` when you know deep data structures have changed.
-	 *
-	 * See https://facebook.github.io/react/docs/pure-render-mixin.html
-	 */
-	var ReactComponentWithPureRenderMixin = {
-	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-	    return shallowCompare(this, nextProps, nextState);
-	  }
-	};
-
-	module.exports = ReactComponentWithPureRenderMixin;
-
-/***/ },
-/* 187 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-present, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	* @providesModule shallowCompare
-	*/
-
-	'use strict';
-
-	var shallowEqual = __webpack_require__(124);
-
-	/**
-	 * Does a shallow comparison for props and state.
-	 * See ReactComponentWithPureRenderMixin
-	 * See also https://facebook.github.io/react/docs/shallow-compare.html
-	 */
-	function shallowCompare(instance, nextProps, nextState) {
-	  return !shallowEqual(instance.props, nextProps) || !shallowEqual(instance.state, nextState);
-	}
-
-	module.exports = shallowCompare;
-
-/***/ },
-/* 188 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.PagerItem = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _common = __webpack_require__(33);
-
-	var _common2 = _interopRequireDefault(_common);
-
-	var _select = __webpack_require__(189);
-
-	var _select2 = _interopRequireDefault(_select);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var Pager = function (_React$Component) {
-	    _inherits(Pager, _React$Component);
-
-	    function Pager(props) {
-	        _classCallCheck(this, Pager);
-
-	        var _this = _possibleConstructorReturn(this, (Pager.__proto__ || Object.getPrototypeOf(Pager)).call(this, props));
-
-	        _this.props = props;
-	        _this.state = {
-	            currentPage: props.currentPage
-	        };
-	        _this.onPageChanged = _this.onPageChanged.bind(_this);
-	        _this.updatePageSize = _this.updatePageSize.bind(_this);
-	        return _this;
-	    }
-
-	    _createClass(Pager, [{
-	        key: 'render',
-	        value: function render() {
-	            var _this2 = this;
-
-	            var tmpArray = _common2.default.getPagination(this.state.currentPage, this.props.totalPage);
-	            var pagers = tmpArray.map(function (tmp, i) {
-	                return _react2.default.createElement(PagerItem, { key: i, data: tmp, onChange: _this2.onPageChanged });
-	            });
-	            return _react2.default.createElement(
-	                'div',
-	                { className: 'ui grid' },
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'ten wide column' },
-	                    _react2.default.createElement(
-	                        'div',
-	                        { className: 'ui pagination menu' },
-	                        pagers
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'six wide right aligned column' },
-	                    _react2.default.createElement(
-	                        'label',
-	                        null,
-	                        'Show\xA0',
-	                        _react2.default.createElement(_select2.default, {
-	                            options: this.props.pageSizes,
-	                            stringOption: 'true',
-	                            selectedOptions: this.props.pageSizes.slice(0, 1),
-	                            onUpdate: this.updatePageSize }),
-	                        '\xA0items'
-	                    )
-	                )
-	            );
-	        }
-	    }, {
-	        key: 'componentWillReceiveProps',
-	        value: function componentWillReceiveProps(nextProps) {
-	            if (this.props !== nextProps) {
-	                this.setState({
-	                    currentPage: nextProps.currentPage,
-	                    totalPage: nextProps.totalPage
-	                });
-	            }
-	        }
-	    }, {
-	        key: 'onPageChanged',
-	        value: function onPageChanged(pageNum) {
-	            this.props.onPageChanged(pageNum);
-	        }
-	    }, {
-	        key: 'updatePageSize',
-	        value: function updatePageSize(selected) {
-	            var pageSize = selected[0];
-	            this.props.onPageSizeChanged(pageSize);
-	        }
-	    }]);
-
-	    return Pager;
-	}(_react2.default.Component);
-
-	exports.default = Pager;
-
-	var PagerItem = exports.PagerItem = function (_React$Component2) {
-	    _inherits(PagerItem, _React$Component2);
-
-	    function PagerItem(props) {
-	        _classCallCheck(this, PagerItem);
-
-	        var _this3 = _possibleConstructorReturn(this, (PagerItem.__proto__ || Object.getPrototypeOf(PagerItem)).call(this, props));
-
-	        _this3.props = props;
-	        _this3.state = {
-	            active: props.data.active
-	        };
-	        _this3.onChange = _this3.onChange.bind(_this3);
-	        return _this3;
-	    }
-
-	    _createClass(PagerItem, [{
-	        key: 'render',
-	        value: function render() {
-	            var data = this.props.data;
-	            var className = 'item ';
-	            if (data.disabled) className += 'disabled ';
-	            if (this.state.active) className += 'active ';
-	            var text = data.text;
-	            if (text === '<') {
-	                text = _react2.default.createElement('i', { className: 'left chevron icon' });
-	            } else if (text === '>') {
-	                text = _react2.default.createElement('i', { className: 'right chevron icon' });
-	            }
-	            if (data.disabled || data.active) {
-	                return _react2.default.createElement(
-	                    'div',
-	                    { className: className },
-	                    text
-	                );
-	            } else {
-	                return _react2.default.createElement(
-	                    'a',
-	                    { className: className, onClick: this.onChange },
-	                    text
-	                );
-	            }
-	        }
-	    }, {
-	        key: 'componentWillReceiveProps',
-	        value: function componentWillReceiveProps(nextProps) {
-	            if (this.props !== nextProps) {
-	                this.setState({ active: nextProps.data.active });
-	            }
-	        }
-	    }, {
-	        key: 'onChange',
-	        value: function onChange(e) {
-	            e.stopPropagation();
-	            this.props.onChange(this.props.data.target);
-	        }
-	    }]);
-
-	    return PagerItem;
-	}(_react2.default.Component);
-
-/***/ },
-/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22948,6 +22513,452 @@
 	}(_react2.default.Component);
 
 /***/ },
+/* 185 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactAddonsPureRenderMixin = __webpack_require__(186);
+
+	var _reactAddonsPureRenderMixin2 = _interopRequireDefault(_reactAddonsPureRenderMixin);
+
+	var _appconst = __webpack_require__(174);
+
+	var AppConst = _interopRequireWildcard(_appconst);
+
+	var _git = __webpack_require__(176);
+
+	var _git2 = _interopRequireDefault(_git);
+
+	var _common = __webpack_require__(33);
+
+	var _common2 = _interopRequireDefault(_common);
+
+	var _pager = __webpack_require__(189);
+
+	var _pager2 = _interopRequireDefault(_pager);
+
+	var _select = __webpack_require__(184);
+
+	var _select2 = _interopRequireDefault(_select);
+
+	var _row = __webpack_require__(190);
+
+	var _row2 = _interopRequireDefault(_row);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var CommitsTab = function (_React$Component) {
+	    _inherits(CommitsTab, _React$Component);
+
+	    function CommitsTab(props) {
+	        _classCallCheck(this, CommitsTab);
+
+	        var _this = _possibleConstructorReturn(this, (CommitsTab.__proto__ || Object.getPrototypeOf(CommitsTab)).call(this, props));
+
+	        _this.props = props;
+	        _this.state = {
+	            repository: props.repository,
+	            loading: true,
+	            currentPage: 1,
+	            pageSize: AppConst.PAGER_DEFAULT_SIZE,
+	            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
+	        };
+
+	        _this.changePage = _this.changePage.bind(_this);
+	        _this.changePageSize = _this.changePageSize.bind(_this);
+	        _this.getData = _this.getData.bind(_this);
+	        return _this;
+	    }
+
+	    _createClass(CommitsTab, [{
+	        key: 'render',
+	        value: function render() {
+	            var rows = null;
+	            if (this.state.loading) {
+	                rows = _react2.default.createElement(
+	                    'div',
+	                    { className: 'ui active centered text inline loader' },
+	                    'Getting Commit Logs'
+	                );
+	            } else {
+	                if (this.commits === null) {
+	                    return this.showError('Empty data', 'Could not read commit log from Git directory. Please try again.');
+	                }
+	                rows = this.commits.map(function (commit) {
+	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit });
+	                });
+	            }
+
+	            return _react2.default.createElement(
+	                'div',
+	                null,
+	                _react2.default.createElement(_pager2.default, {
+	                    currentPage: this.state.currentPage,
+	                    totalPage: this.state.totalPage,
+	                    onPageChanged: this.changePage,
+	                    onPageSizeChanged: this.changePageSize,
+	                    pageSizes: AppConst.PAGER_SIZE_AVAIABLE }),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'ui vertically divided grid' },
+	                    rows
+	                )
+	            );
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.getData();
+	        }
+	    }, {
+	        key: 'changePage',
+	        value: function changePage(page) {
+	            this.state.currentPage = page;
+	            this.getData();
+	        }
+	    }, {
+	        key: 'changePageSize',
+	        value: function changePageSize(pageSize) {
+	            this.state.pageSize = pageSize;
+	            this.getData();
+	        }
+	    }, {
+	        key: 'getData',
+	        value: function getData() {
+	            var _this2 = this;
+
+	            var repository = this.props.repository;
+	            this.state.loading = true;
+	            this.state.totalPage = Math.ceil(repository.commitsCount / this.state.pageSize);
+	            if (this.state.currentPage > this.state.totalPage) {
+	                this.state.currentPage = this.state.totalPage;
+	            }
+	            this.setState(this.state);
+
+	            _git2.default.getCommits(this.state.currentPage, this.state.pageSize, repository.currentBranch).then(function (commits) {
+	                _this2.commits = commits;
+	                _this2.setState({ loading: false });
+	            });
+	        }
+	    }, {
+	        key: 'showError',
+	        value: function showError(header, message) {
+	            return _react2.default.createElement(
+	                'div',
+	                null,
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'ui negative message' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'header' },
+	                        header
+	                    ),
+	                    _react2.default.createElement(
+	                        'p',
+	                        null,
+	                        message
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return CommitsTab;
+	}(_react2.default.Component);
+
+	exports.default = CommitsTab;
+
+/***/ },
+/* 186 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = __webpack_require__(187);
+
+/***/ },
+/* 187 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactComponentWithPureRenderMixin
+	 */
+
+	'use strict';
+
+	var shallowCompare = __webpack_require__(188);
+
+	/**
+	 * If your React component's render function is "pure", e.g. it will render the
+	 * same result given the same props and state, provide this mixin for a
+	 * considerable performance boost.
+	 *
+	 * Most React components have pure render functions.
+	 *
+	 * Example:
+	 *
+	 *   var ReactComponentWithPureRenderMixin =
+	 *     require('ReactComponentWithPureRenderMixin');
+	 *   React.createClass({
+	 *     mixins: [ReactComponentWithPureRenderMixin],
+	 *
+	 *     render: function() {
+	 *       return <div className={this.props.className}>foo</div>;
+	 *     }
+	 *   });
+	 *
+	 * Note: This only checks shallow equality for props and state. If these contain
+	 * complex data structures this mixin may have false-negatives for deeper
+	 * differences. Only mixin to components which have simple props and state, or
+	 * use `forceUpdate()` when you know deep data structures have changed.
+	 *
+	 * See https://facebook.github.io/react/docs/pure-render-mixin.html
+	 */
+	var ReactComponentWithPureRenderMixin = {
+	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+	    return shallowCompare(this, nextProps, nextState);
+	  }
+	};
+
+	module.exports = ReactComponentWithPureRenderMixin;
+
+/***/ },
+/* 188 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-present, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	* @providesModule shallowCompare
+	*/
+
+	'use strict';
+
+	var shallowEqual = __webpack_require__(124);
+
+	/**
+	 * Does a shallow comparison for props and state.
+	 * See ReactComponentWithPureRenderMixin
+	 * See also https://facebook.github.io/react/docs/shallow-compare.html
+	 */
+	function shallowCompare(instance, nextProps, nextState) {
+	  return !shallowEqual(instance.props, nextProps) || !shallowEqual(instance.state, nextState);
+	}
+
+	module.exports = shallowCompare;
+
+/***/ },
+/* 189 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.PagerItem = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _common = __webpack_require__(33);
+
+	var _common2 = _interopRequireDefault(_common);
+
+	var _select = __webpack_require__(184);
+
+	var _select2 = _interopRequireDefault(_select);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Pager = function (_React$Component) {
+	    _inherits(Pager, _React$Component);
+
+	    function Pager(props) {
+	        _classCallCheck(this, Pager);
+
+	        var _this = _possibleConstructorReturn(this, (Pager.__proto__ || Object.getPrototypeOf(Pager)).call(this, props));
+
+	        _this.props = props;
+	        _this.state = {
+	            currentPage: props.currentPage
+	        };
+	        _this.onPageChanged = _this.onPageChanged.bind(_this);
+	        _this.updatePageSize = _this.updatePageSize.bind(_this);
+	        return _this;
+	    }
+
+	    _createClass(Pager, [{
+	        key: 'render',
+	        value: function render() {
+	            var _this2 = this;
+
+	            var tmpArray = _common2.default.getPagination(this.state.currentPage, this.props.totalPage);
+	            var pagers = tmpArray.map(function (tmp, i) {
+	                return _react2.default.createElement(PagerItem, { key: i, data: tmp, onChange: _this2.onPageChanged });
+	            });
+	            return _react2.default.createElement(
+	                'div',
+	                { className: 'ui grid' },
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'ten wide column' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'ui pagination menu' },
+	                        pagers
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'six wide right aligned column' },
+	                    _react2.default.createElement(
+	                        'label',
+	                        null,
+	                        'Show\xA0',
+	                        _react2.default.createElement(_select2.default, {
+	                            options: this.props.pageSizes,
+	                            stringOption: 'true',
+	                            selectedOptions: this.props.pageSizes.slice(0, 1),
+	                            onUpdate: this.updatePageSize }),
+	                        '\xA0items'
+	                    )
+	                )
+	            );
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            if (this.props !== nextProps) {
+	                this.setState({
+	                    currentPage: nextProps.currentPage,
+	                    totalPage: nextProps.totalPage
+	                });
+	            }
+	        }
+	    }, {
+	        key: 'onPageChanged',
+	        value: function onPageChanged(pageNum) {
+	            this.props.onPageChanged(pageNum);
+	        }
+	    }, {
+	        key: 'updatePageSize',
+	        value: function updatePageSize(selected) {
+	            var pageSize = selected[0];
+	            this.props.onPageSizeChanged(pageSize);
+	        }
+	    }]);
+
+	    return Pager;
+	}(_react2.default.Component);
+
+	exports.default = Pager;
+
+	var PagerItem = exports.PagerItem = function (_React$Component2) {
+	    _inherits(PagerItem, _React$Component2);
+
+	    function PagerItem(props) {
+	        _classCallCheck(this, PagerItem);
+
+	        var _this3 = _possibleConstructorReturn(this, (PagerItem.__proto__ || Object.getPrototypeOf(PagerItem)).call(this, props));
+
+	        _this3.props = props;
+	        _this3.state = {
+	            active: props.data.active
+	        };
+	        _this3.onChange = _this3.onChange.bind(_this3);
+	        return _this3;
+	    }
+
+	    _createClass(PagerItem, [{
+	        key: 'render',
+	        value: function render() {
+	            var data = this.props.data;
+	            var className = 'item ';
+	            if (data.disabled) className += 'disabled ';
+	            if (this.state.active) className += 'active ';
+	            var text = data.text;
+	            if (text === '<') {
+	                text = _react2.default.createElement('i', { className: 'left chevron icon' });
+	            } else if (text === '>') {
+	                text = _react2.default.createElement('i', { className: 'right chevron icon' });
+	            }
+	            if (data.disabled || data.active) {
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: className },
+	                    text
+	                );
+	            } else {
+	                return _react2.default.createElement(
+	                    'a',
+	                    { className: className, onClick: this.onChange },
+	                    text
+	                );
+	            }
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            if (this.props !== nextProps) {
+	                this.setState({ active: nextProps.data.active });
+	            }
+	        }
+	    }, {
+	        key: 'onChange',
+	        value: function onChange(e) {
+	            e.stopPropagation();
+	            this.props.onChange(this.props.data.target);
+	        }
+	    }]);
+
+	    return PagerItem;
+	}(_react2.default.Component);
+
+/***/ },
 /* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -23131,33 +23142,27 @@
 	    }, {
 	        key: 'toggle',
 	        value: function toggle() {
+	            var _this3 = this;
+
 	            var state = this.state;
+	            var commit = this.props.commit;
 	            if (state.loading) {
 	                return;
 	            }
 	            if (state.expanded) {
-	                this.setState(function () {
-	                    state.expanded = false;
-	                    state.loading = false;
-	                    return state;
-	                });
+	                this.setState({ expanded: false, loading: false });
 	                return;
 	            }
-	            if (!state.expanded) {
-	                var commit = this.props.commit;
-	                if (commit.files !== null) {
-	                    state.expanded = true;
-	                    this.setState(state);
-	                    return;
-	                }
-	                state.loading = true;
-	                this.setState(state);
-	                commit.files = _git2.default.getFilesByCommitHash(commit.hash);
-	                state.loading = false;
-	                state.expanded = true;
-	                this.setState(state);
+	            if (commit.files !== null) {
+	                this.setState({ expanded: true });
 	                return;
 	            }
+
+	            this.setState({ loading: true });
+	            _git2.default.getFilesByCommitHash(commit.hash).then(function (files) {
+	                commit.files = files;
+	                _this3.setState({ loading: false, expanded: true });
+	            });
 	        }
 	    }]);
 
@@ -23182,7 +23187,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _select = __webpack_require__(189);
+	var _select = __webpack_require__(184);
 
 	var _select2 = _interopRequireDefault(_select);
 

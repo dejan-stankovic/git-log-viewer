@@ -80,31 +80,23 @@ export default class Row extends React.Component {
 
     toggle() {
         let state = this.state;
+        let commit = this.props.commit;
         if (state.loading) {
             return;
         }
         if (state.expanded) {
-            this.setState(() => {
-                state.expanded = false;
-                state.loading = false;
-                return state;
-            });
+            this.setState({ expanded: false, loading: false });
             return;
         }
-        if (!state.expanded) {
-            let commit = this.props.commit;
-            if (commit.files !== null) {
-                state.expanded = true;
-                this.setState(state);
-                return;
-            }
-            state.loading = true;
-            this.setState(state);
-            commit.files = Git.getFilesByCommitHash(commit.hash);
-            state.loading = false;
-            state.expanded = true;
-            this.setState(state);
+        if (commit.files !== null) {
+            this.setState({ expanded: true });
             return;
         }
+
+        this.setState({ loading: true });
+        Git.getFilesByCommitHash(commit.hash).then(files => {
+            commit.files = files;
+            this.setState({ loading: false, expanded: true });
+        });
     }
 }

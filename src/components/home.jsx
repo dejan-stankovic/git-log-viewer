@@ -36,6 +36,10 @@ export default class Home extends React.Component {
         );
     }
 
+    componentDidMount() {
+        this.loader = ReactDOM.findDOMNode(this.refs.loader);
+    }
+
     chooseDir() {
         ipcRenderer.send(AppConst.CHANNEL_SHOW_DIR_DIALOG, AppConst.CHANNEL_SELECTED_DIR);
         ipcRenderer.once(AppConst.CHANNEL_SELECTED_DIR, this.collectData);
@@ -43,25 +47,33 @@ export default class Home extends React.Component {
 
     collectData(e, path) {
         this.showLoader();
-        Common.executeAsync(() => {
-            if (!Common.isValidGitDirectory(path[0])) {
-                Common.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
-                this.hideLoader();
-                return;
-            }
+        process.chdir(path[0]);
+        let promises = [];
+        promises.push(Git.getURL());
+        promises.push(Git.getCurrentBranch());
+        promises.push(Git.getBranches());
+        promises.push(Git.getUsers());
+        promises.push(Git.getCommitsCount());
+        Promise.all(promises).then(values => {
             let repository = new Repository();
-            repository.collectData();
+            repository.url = values[0];
+            repository.currentBranch = values[1];
+            repository.branches = values[2];
+            repository.users = values[3];
+            repository.commitsCount = values[4];
             Common.renderPage(<Detail repository={repository}/>);
+        }).catch(err => {
+            console.error(err);
+            Common.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
+            this.hideLoader();
         });
     }
 
     showLoader() {
-        let loader = ReactDOM.findDOMNode(this.refs.loader);
-        loader.className = '';
+        this.loader.className = '';
     }
 
     hideLoader() {
-        let loader = ReactDOM.findDOMNode(this.refs.loader);
-        loader.className = 'glv-hidden';
+        this.loader.className = 'glv-hidden';
     }
 }
