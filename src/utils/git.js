@@ -88,6 +88,12 @@ export default class Git {
         if (message !== '') {
             cmd += ' --grep=' + message.toLowerCase();
         }
+        if (fromDate !== '') {
+            cmd += ' --since=' + fromDate;
+        }
+        if (toDate !== '') {
+            cmd += ' --before=' + toDate;
+        }
         if (branch !== '') cmd += ' ' + branch;
         return new Promise((resolve, reject) => {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
@@ -114,6 +120,12 @@ export default class Git {
         }
         if (message !== '') {
             cmd += ' --grep=' + message.toLowerCase();
+        }
+        if (fromDate !== '') {
+            cmd += ' --since=' + fromDate;
+        }
+        if (toDate !== '') {
+            cmd += ' --before=' + toDate;
         }
         cmd += ' --max-count=' + pageSize + ' --skip=' + (page - 1) * pageSize;
         if (branch !== '') cmd += ' ' + branch;

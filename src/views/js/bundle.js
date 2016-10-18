@@ -21429,7 +21429,7 @@
 		CHANNEL_SHOW_DIR_DIALOG: 'show-dir-dialog',
 		CHANNEL_SELECTED_DIR: 'selected-dir',
 		CHANNEL_SHOW_ERR_BOX: 'show-err-box',
-		PAGER_SIZE_AVAIABLE: [50, 100, 150, 200],
+		PAGER_SIZE_AVAIABLE: [50, 100, 150, 200, 300, 500],
 		PAGER_DEFAULT_SIZE: 50,
 		EXEC_OPTIONS: { maxBuffer: 1000 * 1024 }
 	});
@@ -21749,7 +21749,7 @@
 	                for (var _iterator2 = users[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 	                    var user = _step2.value;
 
-	                    cmd += ' --author=' + user.email;
+	                    cmd += ' --committer=' + user.email;
 	                }
 	            } catch (err) {
 	                _didIteratorError2 = true;
@@ -21768,6 +21768,12 @@
 
 	            if (message !== '') {
 	                cmd += ' --grep=' + message.toLowerCase();
+	            }
+	            if (fromDate !== '') {
+	                cmd += ' --since=' + fromDate;
+	            }
+	            if (toDate !== '') {
+	                cmd += ' --before=' + toDate;
 	            }
 	            if (branch !== '') cmd += ' ' + branch;
 	            return new Promise(function (resolve, reject) {
@@ -21807,7 +21813,7 @@
 	                for (var _iterator3 = users[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 	                    var user = _step3.value;
 
-	                    cmd += ' --author=' + user.email;
+	                    cmd += ' --committer=' + user.email;
 	                }
 	            } catch (err) {
 	                _didIteratorError3 = true;
@@ -21826,6 +21832,12 @@
 
 	            if (message !== '') {
 	                cmd += ' --grep=' + message.toLowerCase();
+	            }
+	            if (fromDate !== '') {
+	                cmd += ' --since=' + fromDate;
+	            }
+	            if (toDate !== '') {
+	                cmd += ' --before=' + toDate;
 	            }
 	            cmd += ' --max-count=' + pageSize + ' --skip=' + (page - 1) * pageSize;
 	            if (branch !== '') cmd += ' ' + branch;
@@ -22773,7 +22785,8 @@
 	                    totalPage: this.state.totalPage,
 	                    onPageChanged: this.changePage,
 	                    onPageSizeChanged: this.changePageSize,
-	                    pageSizes: AppConst.PAGER_SIZE_AVAIABLE }),
+	                    pageSizes: AppConst.PAGER_SIZE_AVAIABLE,
+	                    pageSize: this.state.pageSize }),
 	                _react2.default.createElement(
 	                    'div',
 	                    { className: 'ui vertically divided grid' },
@@ -22906,7 +22919,8 @@
 
 	        _this.props = props;
 	        _this.state = {
-	            currentPage: props.currentPage
+	            currentPage: props.currentPage,
+	            pageSize: _this.props.pageSize
 	        };
 	        _this.onPageChanged = _this.onPageChanged.bind(_this);
 	        _this.updatePageSize = _this.updatePageSize.bind(_this);
@@ -22944,7 +22958,7 @@
 	                        _react2.default.createElement(_select2.default, {
 	                            options: this.props.pageSizes,
 	                            stringOption: 'true',
-	                            selectedOptions: this.props.pageSizes.slice(0, 1),
+	                            selectedOptions: [this.state.pageSize],
 	                            onUpdate: this.updatePageSize }),
 	                        '\xA0items'
 	                    )
@@ -22957,7 +22971,8 @@
 	            if (this.props !== nextProps) {
 	                this.setState({
 	                    currentPage: nextProps.currentPage,
-	                    totalPage: nextProps.totalPage
+	                    totalPage: nextProps.totalPage,
+	                    pageSize: nextProps.pageSize
 	                });
 	            }
 	        }

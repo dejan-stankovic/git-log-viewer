@@ -8,7 +8,8 @@ export default class Pager extends React.Component {
         super(props);
         this.props = props;
         this.state = {
-            currentPage: props.currentPage
+            currentPage: props.currentPage,
+            pageSize: this.props.pageSize
         };
         this.onPageChanged = this.onPageChanged.bind(this);
         this.updatePageSize = this.updatePageSize.bind(this);
@@ -26,7 +27,7 @@ export default class Pager extends React.Component {
                         <Select
                             options={this.props.pageSizes}
                             stringOption="true"
-                            selectedOptions={this.props.pageSizes.slice(0, 1)}
+                            selectedOptions={[this.state.pageSize]}
                             onUpdate={this.updatePageSize}/>
                         &nbsp;items
                     </label>
@@ -39,7 +40,8 @@ export default class Pager extends React.Component {
         if (this.props !== nextProps) {
             this.setState({
                 currentPage: nextProps.currentPage,
-                totalPage: nextProps.totalPage
+                totalPage: nextProps.totalPage,
+                pageSize: nextProps.pageSize
             });
         }
     }

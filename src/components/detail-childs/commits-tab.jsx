@@ -51,7 +51,8 @@ export default class CommitsTab extends React.Component {
                     totalPage={this.state.totalPage}
                     onPageChanged={this.changePage}
                     onPageSizeChanged={this.changePageSize}
-                    pageSizes={AppConst.PAGER_SIZE_AVAIABLE}/>
+                    pageSizes={AppConst.PAGER_SIZE_AVAIABLE}
+                    pageSize={this.state.pageSize}/>
                 <div className="ui vertically divided grid">{rows}</div>
             </div>
         );
