@@ -21881,6 +21881,20 @@
 	                });
 	            });
 	        }
+	    }, {
+	        key: 'fetchAll',
+	        value: function fetchAll() {
+	            var cmd = 'git fetch --all';
+	            return new Promise(function (resolve, reject) {
+	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    resolve(stdout);
+	                });
+	            });
+	        }
 	    }]);
 
 	    return Git;
@@ -22059,6 +22073,7 @@
 	        _this.showLoader = _this.showLoader.bind(_this);
 	        _this.hideLoader = _this.hideLoader.bind(_this);
 	        _this.changeBranch = _this.changeBranch.bind(_this);
+	        _this.fetchAll = _this.fetchAll.bind(_this);
 	        return _this;
 	    }
 
@@ -22073,6 +22088,11 @@
 	                'div',
 	                null,
 	                _react2.default.createElement(_backHomeBtn2.default, null),
+	                _react2.default.createElement(
+	                    'button',
+	                    { className: 'ui button', onClick: this.fetchAll },
+	                    'Fetch all'
+	                ),
 	                _react2.default.createElement(_select2.default, {
 	                    options: state.repository.branches,
 	                    stringOption: 'true',
@@ -22131,6 +22151,16 @@
 	            }).catch(function (err) {
 	                _common2.default.showErrorBox('Error', 'Could not get information of new branch.');
 	                _this2.hideLoader();
+	            });
+	        }
+	    }, {
+	        key: 'fetchAll',
+	        value: function fetchAll() {
+	            var _this3 = this;
+
+	            this.showLoader();
+	            _git2.default.fetchAll().then(function () {
+	                _this3.changeBranch([_this3.state.repository.currentBranch]);
 	            });
 	        }
 	    }]);

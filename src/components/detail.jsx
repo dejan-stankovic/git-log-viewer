@@ -18,6 +18,7 @@ export default class Detail extends React.Component {
         this.showLoader = this.showLoader.bind(this);
         this.hideLoader = this.hideLoader.bind(this);
         this.changeBranch = this.changeBranch.bind(this);
+        this.fetchAll = this.fetchAll.bind(this);
     }
 
     render() {
@@ -28,6 +29,7 @@ export default class Detail extends React.Component {
         return (
             <div>
                 <BackButton/>
+                <button className="ui button" onClick={this.fetchAll}>Fetch all</button>
                 <Select
                     options={state.repository.branches}
                     stringOption="true"
@@ -75,5 +77,12 @@ export default class Detail extends React.Component {
             Common.showErrorBox('Error', 'Could not get information of new branch.');
             this.hideLoader();
         });
+    }
+
+    fetchAll() {
+        this.showLoader();
+        Git.fetchAll().then(() => {
+            this.changeBranch([this.state.repository.currentBranch]);
+        })
     }
 }

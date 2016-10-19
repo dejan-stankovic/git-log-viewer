@@ -168,4 +168,17 @@ export default class Git {
             });
         });
     }
+
+    static fetchAll() {
+        let cmd = 'git fetch --all';
+        return new Promise((resolve, reject) => {
+            exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(error);
+                    reject(error);
+                }
+                resolve(stdout);
+            });
+        });
+    }
 }
