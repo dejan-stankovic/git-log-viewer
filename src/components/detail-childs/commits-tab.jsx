@@ -44,12 +44,10 @@ export default class CommitsTab extends React.Component {
             }
             rows = this.commits.map((commit) => <Row key={commit.hash} commit={commit}/>);
         }
-        let filterBtnText = this.state.showFilter ? 'Hide filter' : 'Show filter';
-
         return (
             <div>
                 <button className="ui basic button" onClick={this.toggleFilter}>
-                    <i className="filter icon"></i> {filterBtnText}
+                    <i className="filter icon"></i> {this.state.showFilter ? 'Hide filter' : 'Show filter'}
                 </button>
                 <br/><br/>
                 <Filter active={this.state.showFilter} users={this.props.repository.users} search={this.search}/>

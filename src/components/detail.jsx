@@ -83,6 +83,9 @@ export default class Detail extends React.Component {
         this.showLoader();
         Git.fetchAll().then(() => {
             this.changeBranch([this.state.repository.currentBranch]);
-        })
+        }).catch(stderr => {
+            Common.showErrorBox('Fetch Error', stderr);
+            this.hideLoader();
+        });
     }
 }

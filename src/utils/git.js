@@ -175,7 +175,7 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(error);
+                    reject(stderr);
                 }
                 resolve(stdout);
             });

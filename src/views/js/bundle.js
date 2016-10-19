@@ -21889,7 +21889,7 @@
 	                (0, _child_process.exec)(cmd, AppConst.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(error);
+	                        reject(stderr);
 	                    }
 	                    resolve(stdout);
 	                });
@@ -21917,6 +21917,7 @@
 	var Commit = exports.Commit = function Commit(hash, username, email, date, message) {
 	    _classCallCheck(this, Commit);
 
+	    this.checked = false;
 	    this.hash = hash;
 	    this.username = username;
 	    this.email = email;
@@ -22161,6 +22162,9 @@
 	            this.showLoader();
 	            _git2.default.fetchAll().then(function () {
 	                _this3.changeBranch([_this3.state.repository.currentBranch]);
+	            }).catch(function (stderr) {
+	                _common2.default.showErrorBox('Fetch Error', stderr);
+	                _this3.hideLoader();
 	            });
 	        }
 	    }]);
@@ -23336,8 +23340,11 @@
 	        _this.props = props;
 	        _this.state = {
 	            loading: false,
-	            expanded: false
+	            expanded: false,
+	            checked: props.checked
 	        };
+
+	        _this.toggleChecked = _this.toggleChecked.bind(_this);
 	        return _this;
 	    }
 
@@ -23445,7 +23452,7 @@
 	                            _react2.default.createElement(
 	                                'div',
 	                                { className: 'ui checkbox' },
-	                                _react2.default.createElement('input', { type: 'checkbox', name: 'example' }),
+	                                _react2.default.createElement('input', { type: 'checkbox', checked: this.state.checked, onChange: this.toggleChecked }),
 	                                _react2.default.createElement('label', null)
 	                            )
 	                        )
@@ -23479,6 +23486,11 @@
 	            );
 	        }
 	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            this.setState({ checked: nextProps.commit.checked });
+	        }
+	    }, {
 	        key: 'toggle',
 	        value: function toggle() {
 	            var _this3 = this;
@@ -23502,6 +23514,12 @@
 	                commit.files = files;
 	                _this3.setState({ loading: false, expanded: true });
 	            });
+	        }
+	    }, {
+	        key: 'toggleChecked',
+	        value: function toggleChecked() {
+	            this.props.commit.checked = !this.props.commit.checked;
+	            this.setState({ checked: this.props.commit.checked });
 	        }
 	    }]);
 
