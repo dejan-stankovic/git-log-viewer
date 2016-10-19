@@ -15,6 +15,7 @@ export default class CommitsTab extends React.Component {
         this.state = {
             currentBranch: props.repository.currentBranch,
             loading: true,
+            showFilter: false,
             currentPage: 1,
             pageSize: AppConst.PAGER_DEFAULT_SIZE,
             totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
@@ -26,6 +27,7 @@ export default class CommitsTab extends React.Component {
             toDate: ''
         };
 
+        this.toggleFilter = this.toggleFilter.bind(this);
         this.changePage = this.changePage.bind(this);
         this.changePageSize = this.changePageSize.bind(this);
         this.getData = this.getData.bind(this);
@@ -42,10 +44,15 @@ export default class CommitsTab extends React.Component {
             }
             rows = this.commits.map((commit) => <Row key={commit.hash} commit={commit}/>);
         }
+        let filterBtnText = this.state.showFilter ? 'Hide filter' : 'Show filter';
 
         return (
             <div>
-                <Filter users={this.props.repository.users} search={this.search}/>
+                <button className="ui basic button" onClick={this.toggleFilter}>
+                    <i className="filter icon"></i> {filterBtnText}
+                </button>
+                <br/><br/>
+                <Filter active={this.state.showFilter} users={this.props.repository.users} search={this.search}/>
                 <Pager
                     currentPage={this.state.currentPage}
                     totalPage={this.state.totalPage}
@@ -67,6 +74,10 @@ export default class CommitsTab extends React.Component {
             this.state.currentBranch = nextProps.repository.currentBranch;
             this.getData();
         }
+    }
+
+    toggleFilter() {
+        this.setState({ showFilter: !this.state.showFilter });
     }
 
     changePage(page) {

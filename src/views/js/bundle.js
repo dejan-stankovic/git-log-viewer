@@ -22769,6 +22769,7 @@
 	        _this.state = {
 	            currentBranch: props.repository.currentBranch,
 	            loading: true,
+	            showFilter: false,
 	            currentPage: 1,
 	            pageSize: AppConst.PAGER_DEFAULT_SIZE,
 	            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
@@ -22780,6 +22781,7 @@
 	            toDate: ''
 	        };
 
+	        _this.toggleFilter = _this.toggleFilter.bind(_this);
 	        _this.changePage = _this.changePage.bind(_this);
 	        _this.changePageSize = _this.changePageSize.bind(_this);
 	        _this.getData = _this.getData.bind(_this);
@@ -22805,11 +22807,21 @@
 	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit });
 	                });
 	            }
+	            var filterBtnText = this.state.showFilter ? 'Hide filter' : 'Show filter';
 
 	            return _react2.default.createElement(
 	                'div',
 	                null,
-	                _react2.default.createElement(_filter2.default, { users: this.props.repository.users, search: this.search }),
+	                _react2.default.createElement(
+	                    'button',
+	                    { className: 'ui basic button', onClick: this.toggleFilter },
+	                    _react2.default.createElement('i', { className: 'filter icon' }),
+	                    ' ',
+	                    filterBtnText
+	                ),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement(_filter2.default, { active: this.state.showFilter, users: this.props.repository.users, search: this.search }),
 	                _react2.default.createElement(_pager2.default, {
 	                    currentPage: this.state.currentPage,
 	                    totalPage: this.state.totalPage,
@@ -22836,6 +22848,11 @@
 	                this.state.currentBranch = nextProps.repository.currentBranch;
 	                this.getData();
 	            }
+	        }
+	    }, {
+	        key: 'toggleFilter',
+	        value: function toggleFilter() {
+	            this.setState({ showFilter: !this.state.showFilter });
 	        }
 	    }, {
 	        key: 'changePage',
@@ -23126,9 +23143,8 @@
 	        var _this = _possibleConstructorReturn(this, (Filter.__proto__ || Object.getPrototypeOf(Filter)).call(this, props));
 
 	        _this.props = props;
-	        _this.state = { active: false, selectedUsers: [] };
+	        _this.state = { active: props.active, selectedUsers: [] };
 
-	        _this.toggle = _this.toggle.bind(_this);
 	        _this.selectUsers = _this.selectUsers.bind(_this);
 	        _this.search = _this.search.bind(_this);
 	        _this.clear = _this.clear.bind(_this);
@@ -23138,12 +23154,7 @@
 	    _createClass(Filter, [{
 	        key: 'render',
 	        value: function render() {
-	            var className = 'glv-hidden';
-	            var buttonText = 'Show filter';
-	            if (this.state.active) {
-	                className = '';
-	                buttonText = 'Hide filter';
-	            }
+	            var className = this.state.active ? '' : 'glv-hidden';
 	            var allUsers = this.props.users.map(function (user) {
 	                user.disp = _react2.default.createElement(
 	                    'div',
@@ -23167,96 +23178,83 @@
 	            };
 	            return _react2.default.createElement(
 	                'div',
-	                null,
-	                _react2.default.createElement(
-	                    'button',
-	                    { className: 'ui basic button', onClick: this.toggle },
-	                    _react2.default.createElement('i', { className: 'filter icon' }),
-	                    ' ',
-	                    buttonText
-	                ),
-	                _react2.default.createElement('br', null),
-	                _react2.default.createElement('br', null),
+	                { className: 'ui form ' + className },
 	                _react2.default.createElement(
 	                    'div',
-	                    { className: 'ui form ' + className },
+	                    { className: 'fields' },
 	                    _react2.default.createElement(
 	                        'div',
-	                        { className: 'fields' },
+	                        { className: 'sixteen wide field' },
 	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'sixteen wide field' },
-	                            _react2.default.createElement(
-	                                'label',
-	                                null,
-	                                'Users'
-	                            ),
-	                            _react2.default.createElement(_select2.default, {
-	                                options: allUsers,
-	                                valueAttr: 'email',
-	                                textAttr: 'name',
-	                                optionAttr: 'disp',
-	                                selectedAttr: 'name',
-	                                multiple: 'true',
-	                                searchable: 'true',
-	                                placeHolder: 'Select users',
-	                                onUpdate: this.selectUsers,
-	                                customFilter: userFilter,
-	                                selectedOptions: this.state.selectedUsers })
-	                        )
+	                            'label',
+	                            null,
+	                            'Users'
+	                        ),
+	                        _react2.default.createElement(_select2.default, {
+	                            options: allUsers,
+	                            valueAttr: 'email',
+	                            textAttr: 'name',
+	                            optionAttr: 'disp',
+	                            selectedAttr: 'name',
+	                            multiple: 'true',
+	                            searchable: 'true',
+	                            placeHolder: 'Select users',
+	                            onUpdate: this.selectUsers,
+	                            customFilter: userFilter,
+	                            selectedOptions: this.state.selectedUsers })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'fields' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'ten wide field' },
+	                        _react2.default.createElement(
+	                            'label',
+	                            null,
+	                            'Commit message'
+	                        ),
+	                        _react2.default.createElement('input', { type: 'text', placeholder: 'Message', ref: 'message' })
 	                    ),
 	                    _react2.default.createElement(
 	                        'div',
-	                        { className: 'fields' },
+	                        { className: 'three wide field' },
 	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'ten wide field' },
-	                            _react2.default.createElement(
-	                                'label',
-	                                null,
-	                                'Commit message'
-	                            ),
-	                            _react2.default.createElement('input', { type: 'text', placeholder: 'Message', ref: 'message' })
+	                            'label',
+	                            null,
+	                            'From date'
 	                        ),
-	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'three wide field' },
-	                            _react2.default.createElement(
-	                                'label',
-	                                null,
-	                                'From date'
-	                            ),
-	                            _react2.default.createElement('input', { type: 'date', placeholder: 'From', ref: 'fromDate' })
-	                        ),
-	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'three wide field' },
-	                            _react2.default.createElement(
-	                                'label',
-	                                null,
-	                                'To date'
-	                            ),
-	                            _react2.default.createElement('input', { type: 'date', placeholder: 'To', ref: 'toDate' })
-	                        )
+	                        _react2.default.createElement('input', { type: 'date', placeholder: 'From', ref: 'fromDate' })
 	                    ),
 	                    _react2.default.createElement(
 	                        'div',
-	                        { className: 'fields' },
+	                        { className: 'three wide field' },
 	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'field' },
-	                            _react2.default.createElement(
-	                                'button',
-	                                { className: 'ui blue button', onClick: this.search },
-	                                _react2.default.createElement('i', { className: 'search icon' }),
-	                                ' Search'
-	                            ),
-	                            _react2.default.createElement(
-	                                'button',
-	                                { className: 'ui button', onClick: this.clear },
-	                                _react2.default.createElement('i', { className: 'undo icon' }),
-	                                ' Clear'
-	                            )
+	                            'label',
+	                            null,
+	                            'To date'
+	                        ),
+	                        _react2.default.createElement('input', { type: 'date', placeholder: 'To', ref: 'toDate' })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'fields' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'field' },
+	                        _react2.default.createElement(
+	                            'button',
+	                            { className: 'ui blue button', onClick: this.search },
+	                            _react2.default.createElement('i', { className: 'search icon' }),
+	                            ' Search'
+	                        ),
+	                        _react2.default.createElement(
+	                            'button',
+	                            { className: 'ui button', onClick: this.clear },
+	                            _react2.default.createElement('i', { className: 'undo icon' }),
+	                            ' Clear'
 	                        )
 	                    )
 	                )
@@ -23270,9 +23268,9 @@
 	            this.toDate = _reactDom2.default.findDOMNode(this.refs.toDate);
 	        }
 	    }, {
-	        key: 'toggle',
-	        value: function toggle() {
-	            this.setState({ active: !this.state.active });
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            this.setState({ active: nextProps.active });
 	        }
 	    }, {
 	        key: 'selectUsers',

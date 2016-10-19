@@ -7,21 +7,15 @@ export default class Filter extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
-        this.state = { active: false, selectedUsers: [] };
+        this.state = { active: props.active, selectedUsers: [] };
 
-        this.toggle = this.toggle.bind(this);
         this.selectUsers = this.selectUsers.bind(this);
         this.search = this.search.bind(this);
         this.clear = this.clear.bind(this);
     }
 
     render() {
-        let className = 'glv-hidden';
-        let buttonText = 'Show filter';
-        if (this.state.active) {
-            className = '';
-            buttonText = 'Hide filter';
-        }
+        let className = this.state.active ? '' : 'glv-hidden';
         let allUsers = this.props.users.map(user => {
             user.disp = <div><strong>{user.name}</strong><br/>{user.email}</div>;
             return user;
@@ -34,52 +28,46 @@ export default class Filter extends React.Component {
             return false;
         };
         return (
-            <div>
-                <button className="ui basic button" onClick={this.toggle}>
-                    <i className="filter icon"></i> {buttonText}
-                </button>
-                <br/><br/>
-                <div className={'ui form ' + className}>
-                    <div className="fields">
-                        <div className="sixteen wide field">
-                            <label>Users</label>
-                            <Select
-                                options={allUsers}
-                                valueAttr="email"
-                                textAttr="name"
-                                optionAttr="disp"
-                                selectedAttr="name"
-                                multiple="true"
-                                searchable="true"
-                                placeHolder="Select users"
-                                onUpdate={this.selectUsers}
-                                customFilter={userFilter}
-                                selectedOptions={this.state.selectedUsers}/>
-                        </div>
+            <div className={'ui form ' + className}>
+                <div className="fields">
+                    <div className="sixteen wide field">
+                        <label>Users</label>
+                        <Select
+                            options={allUsers}
+                            valueAttr="email"
+                            textAttr="name"
+                            optionAttr="disp"
+                            selectedAttr="name"
+                            multiple="true"
+                            searchable="true"
+                            placeHolder="Select users"
+                            onUpdate={this.selectUsers}
+                            customFilter={userFilter}
+                            selectedOptions={this.state.selectedUsers}/>
                     </div>
-                    <div className="fields">
-                        <div className="ten wide field">
-                            <label>Commit message</label>
-                            <input type="text" placeholder="Message" ref="message"/>
-                        </div>
-                        <div className="three wide field">
-                            <label>From date</label>
-                            <input type="date" placeholder="From" ref="fromDate"/>
-                        </div>
-                        <div className="three wide field">
-                            <label>To date</label>
-                            <input type="date" placeholder="To" ref="toDate"/>
-                        </div>
+                </div>
+                <div className="fields">
+                    <div className="ten wide field">
+                        <label>Commit message</label>
+                        <input type="text" placeholder="Message" ref="message"/>
                     </div>
-                    <div className="fields">
-                        <div className="field">
-                            <button className="ui blue button" onClick={this.search}>
-                                <i className="search icon"></i> Search
-                            </button>
-                            <button className="ui button" onClick={this.clear}>
-                                <i className="undo icon"></i> Clear
-                            </button>
-                        </div>
+                    <div className="three wide field">
+                        <label>From date</label>
+                        <input type="date" placeholder="From" ref="fromDate"/>
+                    </div>
+                    <div className="three wide field">
+                        <label>To date</label>
+                        <input type="date" placeholder="To" ref="toDate"/>
+                    </div>
+                </div>
+                <div className="fields">
+                    <div className="field">
+                        <button className="ui blue button" onClick={this.search}>
+                            <i className="search icon"></i> Search
+                        </button>
+                        <button className="ui button" onClick={this.clear}>
+                            <i className="undo icon"></i> Clear
+                        </button>
                     </div>
                 </div>
             </div>
@@ -92,8 +80,8 @@ export default class Filter extends React.Component {
         this.toDate = ReactDOM.findDOMNode(this.refs.toDate);
     }
 
-    toggle() {
-        this.setState({ active: !this.state.active });
+    componentWillReceiveProps(nextProps) {
+        this.setState({ active: nextProps.active });
     }
 
     selectUsers(users) {
@@ -101,7 +89,8 @@ export default class Filter extends React.Component {
     }
 
     search() {
-        this.props.search(this.state.selectedUsers, this.message.value, this.fromDate.value, this.toDate.value);
+        this.props.search(this.state.selectedUsers, this.message.value, 
+            this.fromDate.value, this.toDate.value);
     }
 
     clear() {
