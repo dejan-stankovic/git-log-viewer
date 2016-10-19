@@ -18,7 +18,8 @@ export default class CommitsTab extends React.Component {
             showFilter: false,
             currentPage: 1,
             pageSize: AppConst.PAGER_DEFAULT_SIZE,
-            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
+            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE),
+            allSelected: false
         };
         this.filter = {
             users: [],
@@ -26,8 +27,11 @@ export default class CommitsTab extends React.Component {
             fromDate: '',
             toDate: ''
         };
+        this.checkedRows = new Map();
 
         this.toggleFilter = this.toggleFilter.bind(this);
+        this.toggleAll = this.toggleAll.bind(this);
+        this.toggleRow = this.toggleRow.bind(this);
         this.changePage = this.changePage.bind(this);
         this.changePageSize = this.changePageSize.bind(this);
         this.getData = this.getData.bind(this);
@@ -42,12 +46,15 @@ export default class CommitsTab extends React.Component {
             if (this.commits === null) {
                 return this.showError('Empty data', 'Could not read commit log from Git directory. Please try again.');
             }
-            rows = this.commits.map((commit) => <Row key={commit.hash} commit={commit}/>);
+            rows = this.commits.map((commit) => <Row key={commit.hash} commit={commit} toggleSelect={this.toggleRow}/>);
         }
         return (
             <div>
                 <button className="ui basic button" onClick={this.toggleFilter}>
                     <i className="filter icon"></i> {this.state.showFilter ? 'Hide filter' : 'Show filter'}
+                </button>
+                <button className="ui basic button" onClick={this.toggleAll}>
+                    {this.state.allSelected ? 'Deselect all' : 'Select all'}
                 </button>
                 <br/><br/>
                 <Filter active={this.state.showFilter} users={this.props.repository.users} search={this.search}/>
@@ -76,6 +83,37 @@ export default class CommitsTab extends React.Component {
 
     toggleFilter() {
         this.setState({ showFilter: !this.state.showFilter });
+    }
+
+    toggleAll() {
+        if (!this.commits) return;
+        let checkboxes = document.getElementsByName('commit');
+        let checked = true;
+        if (this.state.allSelected) {
+            checked = false;
+            this.checkedRows = new Map();
+        } else {
+            this.commits.map(commit => {
+                this.checkedRows.set(commit.hash, commit);
+            })
+        }
+        for (let checkbox of checkboxes) {
+            checkbox.checked = checked;
+        }
+        this.setState({ allSelected: checked });
+    }
+
+    toggleRow(commit) {
+        if (this.checkedRows.has(commit.hash)) {
+            // Deselect
+            this.checkedRows.delete(commit.hash);
+            this.setState({ allSelected: false });
+        } else {
+            this.checkedRows.set(commit.hash, commit);
+            if (this.checkedRows.size === this.commits.length) {
+                this.setState({ allSelected: true });
+            }
+        }
     }
 
     changePage(page) {

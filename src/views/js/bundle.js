@@ -21917,7 +21917,6 @@
 	var Commit = exports.Commit = function Commit(hash, username, email, date, message) {
 	    _classCallCheck(this, Commit);
 
-	    this.checked = false;
 	    this.hash = hash;
 	    this.username = username;
 	    this.email = email;
@@ -22776,7 +22775,8 @@
 	            showFilter: false,
 	            currentPage: 1,
 	            pageSize: AppConst.PAGER_DEFAULT_SIZE,
-	            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE)
+	            totalPage: Math.ceil(props.repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE),
+	            allSelected: false
 	        };
 	        _this.filter = {
 	            users: [],
@@ -22784,8 +22784,11 @@
 	            fromDate: '',
 	            toDate: ''
 	        };
+	        _this.checkedRows = new Map();
 
 	        _this.toggleFilter = _this.toggleFilter.bind(_this);
+	        _this.toggleAll = _this.toggleAll.bind(_this);
+	        _this.toggleRow = _this.toggleRow.bind(_this);
 	        _this.changePage = _this.changePage.bind(_this);
 	        _this.changePageSize = _this.changePageSize.bind(_this);
 	        _this.getData = _this.getData.bind(_this);
@@ -22796,6 +22799,8 @@
 	    _createClass(CommitsTab, [{
 	        key: 'render',
 	        value: function render() {
+	            var _this2 = this;
+
 	            var rows = null;
 	            if (this.state.loading) {
 	                rows = _react2.default.createElement(
@@ -22808,11 +22813,9 @@
 	                    return this.showError('Empty data', 'Could not read commit log from Git directory. Please try again.');
 	                }
 	                rows = this.commits.map(function (commit) {
-	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit });
+	                    return _react2.default.createElement(_row2.default, { key: commit.hash, commit: commit, toggleSelect: _this2.toggleRow });
 	                });
 	            }
-	            var filterBtnText = this.state.showFilter ? 'Hide filter' : 'Show filter';
-
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -22821,7 +22824,12 @@
 	                    { className: 'ui basic button', onClick: this.toggleFilter },
 	                    _react2.default.createElement('i', { className: 'filter icon' }),
 	                    ' ',
-	                    filterBtnText
+	                    this.state.showFilter ? 'Hide filter' : 'Show filter'
+	                ),
+	                _react2.default.createElement(
+	                    'button',
+	                    { className: 'ui basic button', onClick: this.toggleAll },
+	                    this.state.allSelected ? 'Deselect all' : 'Select all'
 	                ),
 	                _react2.default.createElement('br', null),
 	                _react2.default.createElement('br', null),
@@ -22859,6 +22867,65 @@
 	            this.setState({ showFilter: !this.state.showFilter });
 	        }
 	    }, {
+	        key: 'toggleAll',
+	        value: function toggleAll() {
+	            var _this3 = this;
+
+	            if (!this.commits) return;
+	            var checkboxes = document.getElementsByName('commit');
+	            var checked = true;
+	            if (this.state.allSelected) {
+	                checked = false;
+	                this.checkedRows = new Map();
+	            } else {
+	                this.commits.map(function (commit) {
+	                    _this3.checkedRows.set(commit.hash, commit);
+	                });
+	            }
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = checkboxes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var checkbox = _step.value;
+
+	                    checkbox.checked = checked;
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            console.log(this.checkedRows);
+	            this.setState({ allSelected: checked });
+	        }
+	    }, {
+	        key: 'toggleRow',
+	        value: function toggleRow(commit) {
+	            if (this.checkedRows.has(commit.hash)) {
+	                // Deselect
+	                this.checkedRows.delete(commit.hash);
+	                this.setState({ allSelected: false });
+	            } else {
+	                this.checkedRows.set(commit.hash, commit);
+	                if (this.checkedRows.size === this.commits.length) {
+	                    this.setState({ allSelected: true });
+	                }
+	            }
+	            console.log(this.checkedRows);
+	        }
+	    }, {
 	        key: 'changePage',
 	        value: function changePage(page) {
 	            this.state.currentPage = page;
@@ -22873,20 +22940,20 @@
 	    }, {
 	        key: 'getData',
 	        value: function getData() {
-	            var _this2 = this;
+	            var _this4 = this;
 
 	            this.setState({ loading: true });
 	            var currentBranch = this.props.repository.currentBranch;
 
 	            _git2.default.getCommitsCount(currentBranch, this.filter.users, this.filter.message, this.filter.fromDate, this.filter.toDate).then(function (count) {
-	                _this2.state.totalPage = Math.ceil(count / _this2.state.pageSize);
-	                if (_this2.state.currentPage > _this2.state.totalPage) {
-	                    _this2.state.currentPage = _this2.state.totalPage;
+	                _this4.state.totalPage = Math.ceil(count / _this4.state.pageSize);
+	                if (_this4.state.currentPage > _this4.state.totalPage) {
+	                    _this4.state.currentPage = _this4.state.totalPage;
 	                }
-	                return _git2.default.getCommits(_this2.state.currentPage, _this2.state.pageSize, currentBranch, _this2.filter.users, _this2.filter.message, _this2.filter.fromDate, _this2.filter.toDate);
+	                return _git2.default.getCommits(_this4.state.currentPage, _this4.state.pageSize, currentBranch, _this4.filter.users, _this4.filter.message, _this4.filter.fromDate, _this4.filter.toDate);
 	            }).then(function (commits) {
-	                _this2.commits = commits;
-	                _this2.setState({ loading: false });
+	                _this4.commits = commits;
+	                _this4.setState({ loading: false });
 	            });
 	        }
 	    }, {
@@ -23340,11 +23407,8 @@
 	        _this.props = props;
 	        _this.state = {
 	            loading: false,
-	            expanded: false,
-	            checked: props.checked
+	            expanded: false
 	        };
-
-	        _this.toggleChecked = _this.toggleChecked.bind(_this);
 	        return _this;
 	    }
 
@@ -23452,7 +23516,9 @@
 	                            _react2.default.createElement(
 	                                'div',
 	                                { className: 'ui checkbox' },
-	                                _react2.default.createElement('input', { type: 'checkbox', checked: this.state.checked, onChange: this.toggleChecked }),
+	                                _react2.default.createElement('input', { type: 'checkbox', name: 'commit', onClick: function onClick() {
+	                                        return _this2.props.toggleSelect(commit);
+	                                    } }),
 	                                _react2.default.createElement('label', null)
 	                            )
 	                        )
@@ -23486,11 +23552,6 @@
 	            );
 	        }
 	    }, {
-	        key: 'componentWillReceiveProps',
-	        value: function componentWillReceiveProps(nextProps) {
-	            this.setState({ checked: nextProps.commit.checked });
-	        }
-	    }, {
 	        key: 'toggle',
 	        value: function toggle() {
 	            var _this3 = this;
@@ -23514,12 +23575,6 @@
 	                commit.files = files;
 	                _this3.setState({ loading: false, expanded: true });
 	            });
-	        }
-	    }, {
-	        key: 'toggleChecked',
-	        value: function toggleChecked() {
-	            this.props.commit.checked = !this.props.commit.checked;
-	            this.setState({ checked: this.props.commit.checked });
 	        }
 	    }]);
 

@@ -57,7 +57,7 @@ export default class Row extends React.Component {
                         </div>
                         <div className="right aligned four wide column glv-column">
                             <div className="ui checkbox">
-                                <input type="checkbox" name="example"/>
+                                <input type="checkbox" name="commit" onClick={() => this.props.toggleSelect(commit)}/>
                                 <label></label>
                             </div>
                         </div>
