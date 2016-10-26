@@ -1,4 +1,5 @@
 const electron = require('electron');
+const Excel = require('./src/utils/excel.js');
 const AppConst = require('./src/constants/app.js')
 const app = electron.app;
 const ipcMain = electron.ipcMain;
