@@ -1,6 +1,7 @@
 import Common from 'utils/common.js';
 import Git from 'utils/git.js';
 import PagerAction from 'modules/detail/actions/pager.js';
+import SelectionAction from 'modules/detail/actions/selection.js';
 
 export default class CommitsAction {
     static startGetCommits() {
@@ -36,6 +37,9 @@ export default class CommitsAction {
     }
 
     static endGetCommits(commits) {
-        return Common.getAction('END_GET_COMMITS', commits);
+        return dispatch => {
+            dispatch(SelectionAction.deselectAll());
+            dispatch(Common.getAction('END_GET_COMMITS', commits));
+        }
     }
 }

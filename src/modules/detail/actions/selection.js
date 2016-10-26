@@ -28,4 +28,11 @@ export default class SelectionTab {
 			dispatch(Common.getAction('UPDATE_SELECTION', { isAll, indexes }));
 		}
 	}
+
+	static deselectAll() {
+		return Common.getAction('UPDATE_SELECTION', {
+			isAll: false,
+			indexes: []
+		});
+	}
 }
