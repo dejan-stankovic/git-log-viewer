@@ -8,8 +8,18 @@ module.exports = {
         loaders: [{
             test: /.jsx?$/,
             loader: 'babel-loader',
-            exclude: /node-modules/
+            exclude: /node-modules/,
+            query: {
+                "presets": ["es2015", "react"],
+                "compact": false
+            }
         }]
+    },
+    resolve: {
+        extensions: ['', '.js', '.jsx'],
+        root: [
+            path.resolve('./src')
+        ]
     },
     target: "electron"
 };

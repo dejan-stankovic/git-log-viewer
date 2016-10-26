@@ -40,11 +40,15 @@
 }
 
 .glv-container {
-    padding: 20px;
+    padding: 10px;
 }
 
 .glv-centered {
     text-align: center;
+}
+
+.glv-margin-top {
+    margin-top: 10px !important;
 }
 
 .glv-commit-msg {

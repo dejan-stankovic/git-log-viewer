@@ -1,12 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ipcRenderer } from 'electron';
-import * as AppConst from '../appconst.js';
-import Git from '../utils/git.js';
-import Common from '../utils/common.js';
-import Repository from '../models/repo.js';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import { Provider } from 'react-redux';
+import Immutable from 'seamless-immutable';
+import AppConst from 'constants/app.js';
+import Git from 'utils/git.js';
+import Common from 'utils/common.js';
+import Repository from 'models/repo.js';
 
-import Detail from './detail.jsx';
+import Detail from 'modules/detail/detail.jsx';
+import detailReducer from 'modules/detail/reducers';
 
 export default class Home extends React.Component {
     constructor() {
@@ -61,9 +66,18 @@ export default class Home extends React.Component {
             repository.branches = values[2];
             repository.users = values[3];
             repository.commitsCount = values[4];
-            Common.renderPage(<Detail repository={repository}/>);
+            let initialState = Immutable({
+                repository: repository,
+                pager: {
+                    current: 1,
+                    size: AppConst.PAGER_DEFAULT_SIZE,
+                    total: Math.ceil(repository.commitsCount / AppConst.PAGER_DEFAULT_SIZE),
+                }
+            });
+            let store = createStore(detailReducer, initialState, applyMiddleware(thunk));
+            Common.renderPage(<Provider store={store}><Detail/></Provider>);
         }).catch(err => {
-            console.error(err);
+            throw err;
             Common.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
             this.hideLoader();
         });

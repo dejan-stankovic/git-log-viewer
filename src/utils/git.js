@@ -1,8 +1,7 @@
 import { exec } from 'child_process';
-import * as AppConst from '../appconst.js';
-
-import { Commit, CommitFile } from '../models/commit.js';
-import User from '../models/user.js';
+import AppConst from 'constants/app.js';
+import { Commit, CommitFile } from 'models/commit.js';
+import User from 'models/user.js';
 
 export default class Git {
     static getURL() {
@@ -43,7 +42,7 @@ export default class Git {
                 let result = [];
                 for (let branch of branches) {
                     branch = branch.trim();
-                    if (branch === '') continue;
+                    if (branch === '' || branch.indexOf('->') > -1) continue;
                     if (branch.substring(0, 2) === '* ') {
                         branch = branch.substring(2);
                     }

@@ -1,18 +1,14 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
-import Select from '../shared/select.jsx';
-
-export default class InformationTab extends React.Component {
+class Information extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
-        this.state = {
-            repository: props.repository
-        }
     }
 
     render() {
-        let repository = this.state.repository;
+        let repository = this.props.repository;
     	let branches = [];
     	for (let branch of repository.branches) {
             if (branch.substring(0, 7) === 'remotes') {
@@ -59,3 +55,11 @@ export default class InformationTab extends React.Component {
         )
     }
 }
+
+const mapStateToProps = state => {
+    return {
+        repository: state.repository
+    };
+}
+
+export default connect(mapStateToProps)(Information);

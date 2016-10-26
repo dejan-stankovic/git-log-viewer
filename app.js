@@ -1,5 +1,5 @@
 const electron = require('electron');
-const AppConst = require('./src/appconst.js')
+const AppConst = require('./src/constants/app.js')
 const app = electron.app;
 const ipcMain = electron.ipcMain;
 const dialog = electron.dialog;

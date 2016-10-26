@@ -1,32 +1,25 @@
 import React from 'react';
-import Git from '../../utils/git.js';
+import Git from 'utils/git.js';
 
-export default class Row extends React.Component {
+export default class CommitsItem extends React.Component {
     constructor(props) {
         super(props);
         this.props = props;
         this.state = {
             loading: false,
-            expanded: false
+            expanded: false,
+            files: null
         };
     }
 
     render() {
-        if (this.props.commit === null) {
-            return null;
-        }
-        let commit = this.props.commit;
-        let loadingClass = this.state.loading ? ' loading' : '';
-        let buttonClass = '';
-        if (this.state.loading) {
-            buttonClass += ' loading';
-        }
-        if (!this.state.expanded) {
-            buttonClass += ' violet';
-        }
+        let { commit } = this.props;
+        let { loading, expanded, files } = this.state;
+        if (commit === null) return null;
+        let loadingClass = loading ? ' loading' : '';
         let detail = null;
-        if (this.state.expanded && commit.files !== null) {
-            let lis = commit.files.map((file, i) => <li key={i}>{file.filePath}</li>);
+        if (expanded && files) {
+            let lis = files.map((file, i) => <li key={i}>{file.filePath}</li>);
             detail = (
                 <div className="ui grid glv-grid">
                     <div className="column">
@@ -57,7 +50,7 @@ export default class Row extends React.Component {
                         </div>
                         <div className="right aligned four wide column glv-column">
                             <div className="ui checkbox">
-                                <input type="checkbox" name="commit" onClick={() => this.props.toggleSelect(commit)}/>
+                                <input type="checkbox" name="commit"/>
                                 <label></label>
                             </div>
                         </div>
@@ -67,8 +60,8 @@ export default class Row extends React.Component {
                             <p className="glv-commit-msg">{commit.message}</p>
                         </div>
                         <div className="right aligned four wide column glv-column glv-column-btn">
-                            <button className={'tiny ui button' + buttonClass} onClick={() => {this.toggle()}}>
-                                {this.state.expanded ? 'Less' : 'More'}
+                            <button className={'tiny ui button' + loadingClass} onClick={() => {this.toggle()}}>
+                                {expanded ? 'Less' : 'More'}
                             </button>
                         </div>
                     </div>
@@ -79,24 +72,17 @@ export default class Row extends React.Component {
     }
 
     toggle() {
-        let state = this.state;
-        let commit = this.props.commit;
-        if (state.loading) {
-            return;
-        }
-        if (state.expanded) {
-            this.setState({ expanded: false, loading: false });
-            return;
-        }
-        if (commit.files !== null) {
-            this.setState({ expanded: true });
-            return;
-        }
+        let { loading, expanded, files } = this.state;
+        if (loading) return;
+        if (expanded) return this.setState({ expanded: false, loading: false });
+        if (files !== null) return this.setState({ expanded: true });
 
         this.setState({ loading: true });
-        Git.getFilesByCommitHash(commit.hash).then(files => {
-            commit.files = files;
-            this.setState({ loading: false, expanded: true });
-        });
+        Git.getFilesByCommitHash(this.props.commit.hash)
+            .then(files => {
+                this.setState({ loading: false, expanded: true, files: files });
+            }).catch(err => {
+                this.setState({ loading: false });
+            });
     }
 }

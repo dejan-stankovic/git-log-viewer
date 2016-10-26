@@ -1,5 +1,6 @@
 import React from 'react';
-import Common from './utils/common.js';
-import Home from './components/home.jsx';
+import ReactDOM from 'react-dom';
+import Common from 'utils/common.js';
+import Home from 'modules/home/home.jsx';
 
 Common.renderPage(<Home/>);
