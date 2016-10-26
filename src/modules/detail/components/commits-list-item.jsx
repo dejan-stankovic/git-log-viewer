@@ -13,7 +13,7 @@ export default class CommitsItem extends React.Component {
     }
 
     render() {
-        let { commit } = this.props;
+        let { commit, checked, onChange } = this.props;
         let { loading, expanded, files } = this.state;
         if (commit === null) return null;
         let loadingClass = loading ? ' loading' : '';
@@ -50,7 +50,7 @@ export default class CommitsItem extends React.Component {
                         </div>
                         <div className="right aligned four wide column glv-column">
                             <div className="ui checkbox">
-                                <input type="checkbox" name="commit"/>
+                                <input type="checkbox" checked={checked} onChange={onChange}/>
                                 <label></label>
                             </div>
                         </div>

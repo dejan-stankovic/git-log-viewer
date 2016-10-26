@@ -21,5 +21,7 @@ export default Object.freeze({
 	UPDATE_REPOSITORY: 500,
 	CHANGE_BRANCH: 501,
 
-	CHANGE_TAB: 600
+	CHANGE_TAB: 600,
+
+	UPDATE_SELECTION: 700
 })

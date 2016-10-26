@@ -21357,7 +21357,9 @@
 		UPDATE_REPOSITORY: 500,
 		CHANGE_BRANCH: 501,
 
-		CHANGE_TAB: 600
+		CHANGE_TAB: 600,
+
+		UPDATE_SELECTION: 700
 	});
 
 /***/ },
@@ -21414,7 +21416,7 @@
 
 	var _detail2 = _interopRequireDefault(_detail);
 
-	var _reducers = __webpack_require__(232);
+	var _reducers = __webpack_require__(233);
 
 	var _reducers2 = _interopRequireDefault(_reducers);
 
@@ -24318,17 +24320,17 @@
 
 	var _actions = __webpack_require__(208);
 
-	var _common3 = __webpack_require__(215);
+	var _common3 = __webpack_require__(216);
 
 	var _home = __webpack_require__(176);
 
 	var _home2 = _interopRequireDefault(_home);
 
-	var _commits = __webpack_require__(226);
+	var _commits = __webpack_require__(227);
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _information = __webpack_require__(231);
+	var _information = __webpack_require__(232);
 
 	var _information2 = _interopRequireDefault(_information);
 
@@ -24423,9 +24425,9 @@
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+		value: true
 	});
-	exports.TabAction = exports.RepositoryAction = exports.PagerAction = exports.LoadingAction = exports.FilterAction = exports.CommitsAction = undefined;
+	exports.TabAction = exports.SelectionAction = exports.RepositoryAction = exports.PagerAction = exports.LoadingAction = exports.FilterAction = exports.CommitsAction = undefined;
 
 	var _commits = __webpack_require__(209);
 
@@ -24447,7 +24449,11 @@
 
 	var _repository2 = _interopRequireDefault(_repository);
 
-	var _tab = __webpack_require__(214);
+	var _selection = __webpack_require__(214);
+
+	var _selection2 = _interopRequireDefault(_selection);
+
+	var _tab = __webpack_require__(215);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
@@ -24458,6 +24464,7 @@
 	exports.LoadingAction = _loading2.default;
 	exports.PagerAction = _pager2.default;
 	exports.RepositoryAction = _repository2.default;
+	exports.SelectionAction = _selection2.default;
 	exports.TabAction = _tab2.default;
 
 /***/ },
@@ -24880,6 +24887,82 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var SelectionTab = function () {
+		function SelectionTab() {
+			_classCallCheck(this, SelectionTab);
+		}
+
+		_createClass(SelectionTab, null, [{
+			key: 'toggleSelectAll',
+			value: function toggleSelectAll() {
+				return function (dispatch, getState) {
+					var _getState = getState();
+
+					var commits = _getState.commits;
+					var selection = _getState.selection;
+
+					var indexes = [],
+					    isAll = false;
+					if (!selection.isAll) {
+						indexes = commits.data.map(function (commit, i) {
+							return i;
+						});
+						isAll = true;
+					}
+					dispatch(_common2.default.getAction('UPDATE_SELECTION', { isAll: isAll, indexes: indexes }));
+				};
+			}
+		}, {
+			key: 'toggleSelect',
+			value: function toggleSelect(index) {
+				return function (dispatch, getState) {
+					var _getState2 = getState();
+
+					var commits = _getState2.commits;
+					var selection = _getState2.selection;
+
+					var indexes = [].concat(_toConsumableArray(selection.indexes)),
+					    isAll = selection.isAll;
+					var i = indexes.indexOf(index);
+					if (i === -1) {
+						indexes.push(index);
+						if (commits.data.length === indexes.length) isAll = true;
+					} else {
+						indexes.splice(i, 1);
+						if (isAll) isAll = false;
+					}
+					dispatch(_common2.default.getAction('UPDATE_SELECTION', { isAll: isAll, indexes: indexes }));
+				};
+			}
+		}]);
+
+		return SelectionTab;
+	}();
+
+	exports.default = SelectionTab;
+
+/***/ },
+/* 215 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _common = __webpack_require__(171);
+
+	var _common2 = _interopRequireDefault(_common);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var TabAction = function () {
@@ -24900,7 +24983,7 @@
 	exports.default = TabAction;
 
 /***/ },
-/* 215 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24910,21 +24993,21 @@
 	});
 	exports.Tab = exports.SelectType = exports.Select = exports.Pager = exports.Loader = exports.Button = undefined;
 
-	var _button = __webpack_require__(216);
+	var _button = __webpack_require__(217);
 
 	var _button2 = _interopRequireDefault(_button);
 
-	var _loader = __webpack_require__(217);
+	var _loader = __webpack_require__(218);
 
 	var _loader2 = _interopRequireDefault(_loader);
 
-	var _pager = __webpack_require__(218);
+	var _pager = __webpack_require__(219);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _select = __webpack_require__(219);
+	var _select = __webpack_require__(220);
 
-	var _tab = __webpack_require__(225);
+	var _tab = __webpack_require__(226);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
@@ -24938,7 +25021,7 @@
 	exports.Tab = _tab2.default;
 
 /***/ },
-/* 216 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24968,7 +25051,7 @@
 	};
 
 /***/ },
-/* 217 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -24992,7 +25075,7 @@
 	};
 
 /***/ },
-/* 218 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25005,7 +25088,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _select = __webpack_require__(219);
+	var _select = __webpack_require__(220);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25112,7 +25195,7 @@
 	};
 
 /***/ },
-/* 219 */
+/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25132,11 +25215,11 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _reactAddonsPureRenderMixin = __webpack_require__(220);
+	var _reactAddonsPureRenderMixin = __webpack_require__(221);
 
 	var _reactAddonsPureRenderMixin2 = _interopRequireDefault(_reactAddonsPureRenderMixin);
 
-	var _selectList = __webpack_require__(223);
+	var _selectList = __webpack_require__(224);
 
 	var _selectList2 = _interopRequireDefault(_selectList);
 
@@ -25430,15 +25513,15 @@
 	exports.SelectType = SelectType;
 
 /***/ },
-/* 220 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(221);
+	module.exports = __webpack_require__(222);
 
 /***/ },
-/* 221 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -25454,7 +25537,7 @@
 
 	'use strict';
 
-	var shallowCompare = __webpack_require__(222);
+	var shallowCompare = __webpack_require__(223);
 
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -25491,7 +25574,7 @@
 	module.exports = ReactComponentWithPureRenderMixin;
 
 /***/ },
-/* 222 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -25521,7 +25604,7 @@
 	module.exports = shallowCompare;
 
 /***/ },
-/* 223 */
+/* 224 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25534,7 +25617,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _selectListItem = __webpack_require__(224);
+	var _selectListItem = __webpack_require__(225);
 
 	var _selectListItem2 = _interopRequireDefault(_selectListItem);
 
@@ -25592,7 +25675,7 @@
 	};
 
 /***/ },
-/* 224 */
+/* 225 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25635,7 +25718,7 @@
 	};
 
 /***/ },
-/* 225 */
+/* 226 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25694,7 +25777,7 @@
 	exports.default = Tab;
 
 /***/ },
-/* 226 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25715,17 +25798,17 @@
 
 	var _app2 = _interopRequireDefault(_app);
 
-	var _common = __webpack_require__(215);
+	var _common = __webpack_require__(216);
 
-	var _commitsControl = __webpack_require__(227);
+	var _commitsControl = __webpack_require__(228);
 
 	var _commitsControl2 = _interopRequireDefault(_commitsControl);
 
-	var _commitsFilter = __webpack_require__(228);
+	var _commitsFilter = __webpack_require__(229);
 
 	var _commitsFilter2 = _interopRequireDefault(_commitsFilter);
 
-	var _commitsList = __webpack_require__(229);
+	var _commitsList = __webpack_require__(230);
 
 	var _commitsList2 = _interopRequireDefault(_commitsList);
 
@@ -25809,7 +25892,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Commits);
 
 /***/ },
-/* 227 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25826,7 +25909,7 @@
 
 	var _reactRedux = __webpack_require__(193);
 
-	var _common = __webpack_require__(215);
+	var _common = __webpack_require__(216);
 
 	var _actions = __webpack_require__(208);
 
@@ -25853,13 +25936,26 @@
 		_createClass(CommitsControl, [{
 			key: 'render',
 			value: function render() {
-				var filter = this.props.filter;
+				var _props = this.props;
+				var filter = _props.filter;
+				var selection = _props.selection;
+				var toggleFilter = _props.toggleFilter;
+				var toggleSelectAll = _props.toggleSelectAll;
 
 				var filterBtn = filter.active ? 'Hide filter' : 'Show filter';
+				var selectBtn = selection.isAll ? 'Deselect All' : 'Select All';
 				return _react2.default.createElement(
 					'div',
 					{ className: 'glv-margin-top' },
-					_react2.default.createElement(_common.Button, { buttonClass: 'basic', iconClass: 'filter left', label: filterBtn, onClick: this.props.toggleFilter })
+					_react2.default.createElement(_common.Button, {
+						buttonClass: 'basic',
+						iconClass: 'filter left',
+						label: filterBtn,
+						onClick: toggleFilter }),
+					_react2.default.createElement(_common.Button, {
+						buttonClass: 'basic',
+						label: selectBtn,
+						onClick: toggleSelectAll })
 				);
 			}
 		}]);
@@ -25869,20 +25965,24 @@
 
 	var mapStateToProps = function mapStateToProps(state) {
 		return {
-			filter: state.filter
+			filter: state.filter,
+			selection: state.selection
 		};
 	};
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 		return {
 			toggleFilter: function toggleFilter() {
 				return dispatch(_actions.FilterAction.toggleFilter());
+			},
+			toggleSelectAll: function toggleSelectAll() {
+				return dispatch(_actions.SelectionAction.toggleSelectAll());
 			}
 		};
 	};
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(CommitsControl);
 
 /***/ },
-/* 228 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25903,7 +26003,7 @@
 
 	var _reactRedux = __webpack_require__(193);
 
-	var _common = __webpack_require__(215);
+	var _common = __webpack_require__(216);
 
 	var _actions = __webpack_require__(208);
 
@@ -26100,7 +26200,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(CommitsFilter);
 
 /***/ },
-/* 229 */
+/* 230 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26117,9 +26217,9 @@
 
 	var _reactRedux = __webpack_require__(193);
 
-	var _common = __webpack_require__(215);
+	var _common = __webpack_require__(216);
 
-	var _commitsListItem = __webpack_require__(230);
+	var _commitsListItem = __webpack_require__(231);
 
 	var _commitsListItem2 = _interopRequireDefault(_commitsListItem);
 
@@ -26148,12 +26248,24 @@
 	    _createClass(CommitsList, [{
 	        key: 'render',
 	        value: function render() {
-	            var commits = this.props.commits;
+	            var _props = this.props;
+	            var commits = _props.commits;
+	            var selection = _props.selection;
+	            var toggleSelect = _props.toggleSelect;
+
 	            if (commits.loading) {
 	                return _react2.default.createElement(_common.Loader, { text: 'Getting Commit Logs' });
 	            } else {
-	                var items = commits.data.map(function (commit) {
-	                    return _react2.default.createElement(_commitsListItem2.default, { key: commit.hash, commit: commit });
+	                var items = commits.data.map(function (commit, i) {
+	                    var checked = false;
+	                    if (selection.indexes.indexOf(i) > -1) checked = true;
+	                    return _react2.default.createElement(_commitsListItem2.default, {
+	                        key: commit.hash,
+	                        commit: commit,
+	                        checked: checked,
+	                        onChange: function onChange() {
+	                            return toggleSelect(i);
+	                        } });
 	                });
 	                return _react2.default.createElement(
 	                    'div',
@@ -26174,20 +26286,24 @@
 
 	var mapStateToProps = function mapStateToProps(state) {
 	    return {
-	        commits: state.commits
+	        commits: state.commits,
+	        selection: state.selection
 	    };
 	};
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 	    return {
 	        getCommits: function getCommits() {
 	            return dispatch(_actions.CommitsAction.getCommits(true));
+	        },
+	        toggleSelect: function toggleSelect(i) {
+	            return dispatch(_actions.SelectionAction.toggleSelect(i));
 	        }
 	    };
 	};
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(CommitsList);
 
 /***/ },
-/* 230 */
+/* 231 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26236,7 +26352,10 @@
 	        value: function render() {
 	            var _this2 = this;
 
-	            var commit = this.props.commit;
+	            var _props = this.props;
+	            var commit = _props.commit;
+	            var checked = _props.checked;
+	            var onChange = _props.onChange;
 	            var _state = this.state;
 	            var loading = _state.loading;
 	            var expanded = _state.expanded;
@@ -26331,7 +26450,7 @@
 	                            _react2.default.createElement(
 	                                'div',
 	                                { className: 'ui checkbox' },
-	                                _react2.default.createElement('input', { type: 'checkbox', name: 'commit' }),
+	                                _react2.default.createElement('input', { type: 'checkbox', checked: checked, onChange: onChange }),
 	                                _react2.default.createElement('label', null)
 	                            )
 	                        )
@@ -26393,7 +26512,7 @@
 	exports.default = CommitsItem;
 
 /***/ },
-/* 231 */
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26616,7 +26735,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps)(Information);
 
 /***/ },
-/* 232 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26625,38 +26744,42 @@
 	  value: true
 	});
 
-	var _reduxSeamlessImmutable = __webpack_require__(233);
+	var _reduxSeamlessImmutable = __webpack_require__(234);
 
-	var _commits = __webpack_require__(242);
+	var _commits = __webpack_require__(243);
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _filter = __webpack_require__(243);
+	var _filter = __webpack_require__(244);
 
 	var _filter2 = _interopRequireDefault(_filter);
 
-	var _loading = __webpack_require__(244);
+	var _loading = __webpack_require__(245);
 
 	var _loading2 = _interopRequireDefault(_loading);
 
-	var _pager = __webpack_require__(245);
+	var _pager = __webpack_require__(246);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _repository = __webpack_require__(246);
+	var _repository = __webpack_require__(247);
 
 	var _repository2 = _interopRequireDefault(_repository);
 
-	var _tab = __webpack_require__(247);
+	var _selection = __webpack_require__(248);
+
+	var _selection2 = _interopRequireDefault(_selection);
+
+	var _tab = __webpack_require__(249);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	exports.default = (0, _reduxSeamlessImmutable.combineReducers)({ commits: _commits2.default, loading: _loading2.default, filter: _filter2.default, pager: _pager2.default, repository: _repository2.default, tab: _tab2.default });
+	exports.default = (0, _reduxSeamlessImmutable.combineReducers)({ commits: _commits2.default, loading: _loading2.default, filter: _filter2.default, pager: _pager2.default, repository: _repository2.default, selection: _selection2.default, tab: _tab2.default });
 
 /***/ },
-/* 233 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26666,15 +26789,15 @@
 	});
 	exports.stateTransformer = exports.routerReducer = exports.combineReducers = undefined;
 
-	var _combineReducers = __webpack_require__(234);
+	var _combineReducers = __webpack_require__(235);
 
 	var _combineReducers2 = _interopRequireDefault(_combineReducers);
 
-	var _routerReducer = __webpack_require__(235);
+	var _routerReducer = __webpack_require__(236);
 
 	var _routerReducer2 = _interopRequireDefault(_routerReducer);
 
-	var _stateTransformer = __webpack_require__(241);
+	var _stateTransformer = __webpack_require__(242);
 
 	var _stateTransformer2 = _interopRequireDefault(_stateTransformer);
 
@@ -26687,7 +26810,7 @@
 	exports.stateTransformer = _stateTransformer2.default;
 
 /***/ },
-/* 234 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26724,7 +26847,7 @@
 	}
 
 /***/ },
-/* 235 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26738,7 +26861,7 @@
 
 	var _seamlessImmutable2 = _interopRequireDefault(_seamlessImmutable);
 
-	var _reactRouterRedux = __webpack_require__(236);
+	var _reactRouterRedux = __webpack_require__(237);
 
 	function _interopRequireDefault(obj) {
 	  return obj && obj.__esModule ? obj : { default: obj };
@@ -26761,7 +26884,7 @@
 	}
 
 /***/ },
-/* 236 */
+/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26771,7 +26894,7 @@
 	});
 	exports.routerMiddleware = exports.routerActions = exports.goForward = exports.goBack = exports.go = exports.replace = exports.push = exports.CALL_HISTORY_METHOD = exports.routerReducer = exports.LOCATION_CHANGE = exports.syncHistoryWithStore = undefined;
 
-	var _reducer = __webpack_require__(237);
+	var _reducer = __webpack_require__(238);
 
 	Object.defineProperty(exports, 'LOCATION_CHANGE', {
 	  enumerable: true,
@@ -26786,7 +26909,7 @@
 	  }
 	});
 
-	var _actions = __webpack_require__(238);
+	var _actions = __webpack_require__(239);
 
 	Object.defineProperty(exports, 'CALL_HISTORY_METHOD', {
 	  enumerable: true,
@@ -26831,11 +26954,11 @@
 	  }
 	});
 
-	var _sync = __webpack_require__(239);
+	var _sync = __webpack_require__(240);
 
 	var _sync2 = _interopRequireDefault(_sync);
 
-	var _middleware = __webpack_require__(240);
+	var _middleware = __webpack_require__(241);
 
 	var _middleware2 = _interopRequireDefault(_middleware);
 
@@ -26847,7 +26970,7 @@
 	exports.routerMiddleware = _middleware2['default'];
 
 /***/ },
-/* 237 */
+/* 238 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -26899,7 +27022,7 @@
 	}
 
 /***/ },
-/* 238 */
+/* 239 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -26941,7 +27064,7 @@
 	var routerActions = exports.routerActions = { push: push, replace: replace, go: go, goBack: goBack, goForward: goForward };
 
 /***/ },
-/* 239 */
+/* 240 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26962,7 +27085,7 @@
 
 	exports['default'] = syncHistoryWithStore;
 
-	var _reducer = __webpack_require__(237);
+	var _reducer = __webpack_require__(238);
 
 	var defaultSelectLocationState = function defaultSelectLocationState(state) {
 	  return state.routing;
@@ -27102,7 +27225,7 @@
 	}
 
 /***/ },
-/* 240 */
+/* 241 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27112,7 +27235,7 @@
 	});
 	exports['default'] = routerMiddleware;
 
-	var _actions = __webpack_require__(238);
+	var _actions = __webpack_require__(239);
 
 	function _toConsumableArray(arr) {
 	  if (Array.isArray(arr)) {
@@ -27148,7 +27271,7 @@
 	}
 
 /***/ },
-/* 241 */
+/* 242 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -27162,7 +27285,7 @@
 	}
 
 /***/ },
-/* 242 */
+/* 243 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27196,7 +27319,7 @@
 	};
 
 /***/ },
-/* 243 */
+/* 244 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27255,7 +27378,7 @@
 	};
 
 /***/ },
-/* 244 */
+/* 245 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27286,7 +27409,7 @@
 	};
 
 /***/ },
-/* 245 */
+/* 246 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27319,7 +27442,7 @@
 	};
 
 /***/ },
-/* 246 */
+/* 247 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27349,7 +27472,40 @@
 	};
 
 /***/ },
-/* 247 */
+/* 248 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _actiontype = __webpack_require__(175);
+
+	var _actiontype2 = _interopRequireDefault(_actiontype);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var initState = {
+	    isAll: false,
+	    indexes: []
+	};
+
+	exports.default = function () {
+	    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initState;
+	    var action = arguments[1];
+
+	    switch (action.type) {
+	        case _actiontype2.default.UPDATE_SELECTION:
+	            return state.merge(action.data);
+	        default:
+	            return state;
+	    }
+	};
+
+/***/ },
+/* 249 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

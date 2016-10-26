@@ -17,6 +17,7 @@ function createMainWindow() {
         title: "Git Log Viewer"
     });
     win.loadURL(`file://${__dirname}/src/views/index.html`);
+    win.setMenu(null);
     win.webContents.openDevTools();
     win.on('closed', onClosed);
     return win;
