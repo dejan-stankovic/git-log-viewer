@@ -24433,11 +24433,11 @@
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _filter = __webpack_require__(211);
+	var _filter = __webpack_require__(212);
 
 	var _filter2 = _interopRequireDefault(_filter);
 
-	var _loading = __webpack_require__(212);
+	var _loading = __webpack_require__(213);
 
 	var _loading2 = _interopRequireDefault(_loading);
 
@@ -24445,11 +24445,11 @@
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _repository = __webpack_require__(213);
+	var _repository = __webpack_require__(214);
 
 	var _repository2 = _interopRequireDefault(_repository);
 
-	var _selection = __webpack_require__(214);
+	var _selection = __webpack_require__(211);
 
 	var _selection2 = _interopRequireDefault(_selection);
 
@@ -24491,6 +24491,10 @@
 
 	var _pager2 = _interopRequireDefault(_pager);
 
+	var _selection = __webpack_require__(211);
+
+	var _selection2 = _interopRequireDefault(_selection);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -24513,11 +24517,12 @@
 	            return function (dispatch, getState) {
 	                dispatch(_this.startGetCommits());
 
-	                var _getState = getState();
+	                var _getState = getState(),
+	                    repository = _getState.repository,
+	                    pager = _getState.pager,
+	                    filter = _getState.filter,
+	                    promise = void 0;
 
-	                var repository = _getState.repository;
-	                var pager = _getState.pager;
-	                var filter = _getState.filter;var promise = void 0;
 	                if (isUpdateTotalPage) {
 	                    promise = _git2.default.getCommitsCount(repository.currentBranch, filter.users, filter.message, filter.fromDate, filter.toDate);
 	                } else {
@@ -24541,7 +24546,10 @@
 	    }, {
 	        key: 'endGetCommits',
 	        value: function endGetCommits(commits) {
-	            return _common2.default.getAction('END_GET_COMMITS', commits);
+	            return function (dispatch) {
+	                dispatch(_selection2.default.deselectAll());
+	                dispatch(_common2.default.getAction('END_GET_COMMITS', commits));
+	            };
 	        }
 	    }]);
 
@@ -24591,10 +24599,9 @@
 	        key: 'changePageSize',
 	        value: function changePageSize(size) {
 	            return function (dispatch, getState) {
-	                var _getState = getState();
-
-	                var repository = _getState.repository;
-	                var pager = _getState.pager;
+	                var _getState = getState(),
+	                    repository = _getState.repository,
+	                    pager = _getState.pager;
 
 	                if (size === pager.size) return;
 	                dispatch(_common2.default.getAction('CHANGE_PAGE_SIZE', size));
@@ -24615,6 +24622,88 @@
 
 /***/ },
 /* 211 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _common = __webpack_require__(171);
+
+	var _common2 = _interopRequireDefault(_common);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var SelectionTab = function () {
+		function SelectionTab() {
+			_classCallCheck(this, SelectionTab);
+		}
+
+		_createClass(SelectionTab, null, [{
+			key: 'toggleSelectAll',
+			value: function toggleSelectAll() {
+				return function (dispatch, getState) {
+					var _getState = getState(),
+					    commits = _getState.commits,
+					    selection = _getState.selection;
+
+					var indexes = [],
+					    isAll = false;
+					if (!selection.isAll) {
+						indexes = commits.data.map(function (commit, i) {
+							return i;
+						});
+						isAll = true;
+					}
+					dispatch(_common2.default.getAction('UPDATE_SELECTION', { isAll: isAll, indexes: indexes }));
+				};
+			}
+		}, {
+			key: 'toggleSelect',
+			value: function toggleSelect(index) {
+				return function (dispatch, getState) {
+					var _getState2 = getState(),
+					    commits = _getState2.commits,
+					    selection = _getState2.selection;
+
+					var indexes = [].concat(_toConsumableArray(selection.indexes)),
+					    isAll = selection.isAll;
+					var i = indexes.indexOf(index);
+					if (i === -1) {
+						indexes.push(index);
+						if (commits.data.length === indexes.length) isAll = true;
+					} else {
+						indexes.splice(i, 1);
+						if (isAll) isAll = false;
+					}
+					dispatch(_common2.default.getAction('UPDATE_SELECTION', { isAll: isAll, indexes: indexes }));
+				};
+			}
+		}, {
+			key: 'deselectAll',
+			value: function deselectAll() {
+				return _common2.default.getAction('UPDATE_SELECTION', {
+					isAll: false,
+					indexes: []
+				});
+			}
+		}]);
+
+		return SelectionTab;
+	}();
+
+	exports.default = SelectionTab;
+
+/***/ },
+/* 212 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24664,9 +24753,8 @@
 	        key: 'setUserInput',
 	        value: function setUserInput(keyword) {
 	            return function (dispatch, getState) {
-	                var _getState = getState();
-
-	                var filter = _getState.filter;
+	                var _getState = getState(),
+	                    filter = _getState.filter;
 
 	                var key = keyword.toLowerCase();
 	                var filteredUsers = filter.allUsers.filter(function (user) {
@@ -24719,7 +24807,7 @@
 	exports.default = FilterAction;
 
 /***/ },
-/* 212 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24761,7 +24849,7 @@
 	exports.default = LoadingAction;
 
 /***/ },
-/* 213 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24784,11 +24872,11 @@
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _filter = __webpack_require__(211);
+	var _filter = __webpack_require__(212);
 
 	var _filter2 = _interopRequireDefault(_filter);
 
-	var _loading = __webpack_require__(212);
+	var _loading = __webpack_require__(213);
 
 	var _loading2 = _interopRequireDefault(_loading);
 
@@ -24825,9 +24913,8 @@
 	                dispatch(_loading2.default.startLoading());
 	                var promises = [];
 
-	                var _getState = getState();
-
-	                var repository = _getState.repository;
+	                var _getState = getState(),
+	                    repository = _getState.repository;
 
 	                promises.push(_git2.default.getBranches());
 	                promises.push(_git2.default.getUsers(repository.currentBranch));
@@ -24868,82 +24955,6 @@
 	}();
 
 	exports.default = PagerAction;
-
-/***/ },
-/* 214 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _common = __webpack_require__(171);
-
-	var _common2 = _interopRequireDefault(_common);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var SelectionTab = function () {
-		function SelectionTab() {
-			_classCallCheck(this, SelectionTab);
-		}
-
-		_createClass(SelectionTab, null, [{
-			key: 'toggleSelectAll',
-			value: function toggleSelectAll() {
-				return function (dispatch, getState) {
-					var _getState = getState();
-
-					var commits = _getState.commits;
-					var selection = _getState.selection;
-
-					var indexes = [],
-					    isAll = false;
-					if (!selection.isAll) {
-						indexes = commits.data.map(function (commit, i) {
-							return i;
-						});
-						isAll = true;
-					}
-					dispatch(_common2.default.getAction('UPDATE_SELECTION', { isAll: isAll, indexes: indexes }));
-				};
-			}
-		}, {
-			key: 'toggleSelect',
-			value: function toggleSelect(index) {
-				return function (dispatch, getState) {
-					var _getState2 = getState();
-
-					var commits = _getState2.commits;
-					var selection = _getState2.selection;
-
-					var indexes = [].concat(_toConsumableArray(selection.indexes)),
-					    isAll = selection.isAll;
-					var i = indexes.indexOf(index);
-					if (i === -1) {
-						indexes.push(index);
-						if (commits.data.length === indexes.length) isAll = true;
-					} else {
-						indexes.splice(i, 1);
-						if (isAll) isAll = false;
-					}
-					dispatch(_common2.default.getAction('UPDATE_SELECTION', { isAll: isAll, indexes: indexes }));
-				};
-			}
-		}]);
-
-		return SelectionTab;
-	}();
-
-	exports.default = SelectionTab;
 
 /***/ },
 /* 215 */
@@ -25296,10 +25307,10 @@
 	    }, {
 	        key: 'getClass',
 	        value: function getClass() {
-	            var _props = this.props;
-	            var type = _props.type;
-	            var search = _props.search;
-	            var multiple = _props.multiple;
+	            var _props = this.props,
+	                type = _props.type,
+	                search = _props.search,
+	                multiple = _props.multiple;
 
 	            var className = 'ui dropdown glv-dropdown ';
 	            if (this.state.active) className += 'active visible ';
@@ -25319,13 +25330,13 @@
 	        value: function renderSelected() {
 	            var _this2 = this;
 
-	            var _props2 = this.props;
-	            var selectedOptions = _props2.selectedOptions;
-	            var placeHolder = _props2.placeHolder;
-	            var multiple = _props2.multiple;
-	            var stringOption = _props2.stringOption;
-	            var selectedAttr = _props2.selectedAttr;
-	            var valueAttr = _props2.valueAttr;
+	            var _props2 = this.props,
+	                selectedOptions = _props2.selectedOptions,
+	                placeHolder = _props2.placeHolder,
+	                multiple = _props2.multiple,
+	                stringOption = _props2.stringOption,
+	                selectedAttr = _props2.selectedAttr,
+	                valueAttr = _props2.valueAttr;
 
 	            if (selectedOptions.length === 0) {
 	                return _react2.default.createElement(
@@ -25387,12 +25398,12 @@
 	    }, {
 	        key: 'renderSelectList',
 	        value: function renderSelectList() {
-	            var _props3 = this.props;
-	            var options = _props3.options;
-	            var selectedOptions = _props3.selectedOptions;
-	            var stringOption = _props3.stringOption;
-	            var valueAttr = _props3.valueAttr;
-	            var optionAttr = _props3.optionAttr;
+	            var _props3 = this.props,
+	                options = _props3.options,
+	                selectedOptions = _props3.selectedOptions,
+	                stringOption = _props3.stringOption,
+	                valueAttr = _props3.valueAttr,
+	                optionAttr = _props3.optionAttr;
 
 	            if (!this.state.active) return null;
 	            return _react2.default.createElement(_selectList2.default, {
@@ -25406,11 +25417,11 @@
 	    }, {
 	        key: 'inputChange',
 	        value: function inputChange() {
-	            var _props4 = this.props;
-	            var selectedOptions = _props4.selectedOptions;
-	            var placeHolder = _props4.placeHolder;
-	            var multiple = _props4.multiple;
-	            var onInputChange = _props4.onInputChange;
+	            var _props4 = this.props,
+	                selectedOptions = _props4.selectedOptions,
+	                placeHolder = _props4.placeHolder,
+	                multiple = _props4.multiple,
+	                onInputChange = _props4.onInputChange;
 
 	            var keyword = this.inputText.value;
 	            if (selectedOptions.length === 0) {
@@ -25431,10 +25442,10 @@
 	    }, {
 	        key: 'onSelect',
 	        value: function onSelect(option, selected) {
-	            var _props5 = this.props;
-	            var search = _props5.search;
-	            var multiple = _props5.multiple;
-	            var onChange = _props5.onChange;
+	            var _props5 = this.props,
+	                search = _props5.search,
+	                multiple = _props5.multiple,
+	                onChange = _props5.onChange;
 
 	            var selectedOptions = [].concat(_toConsumableArray(this.props.selectedOptions));
 
@@ -25921,6 +25932,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	var actions = [{ text: "Export selected commits", value: 1 }, { text: "Create Merge diff report from selected", value: 2 }];
+
 	var CommitsControl = function (_React$Component) {
 		_inherits(CommitsControl, _React$Component);
 
@@ -25930,17 +25943,19 @@
 			var _this = _possibleConstructorReturn(this, (CommitsControl.__proto__ || Object.getPrototypeOf(CommitsControl)).call(this, props));
 
 			_this.props = props;
+			_this.renderAction = _this.renderAction.bind(_this);
+			_this.doAction = _this.doAction.bind(_this);
 			return _this;
 		}
 
 		_createClass(CommitsControl, [{
 			key: 'render',
 			value: function render() {
-				var _props = this.props;
-				var filter = _props.filter;
-				var selection = _props.selection;
-				var toggleFilter = _props.toggleFilter;
-				var toggleSelectAll = _props.toggleSelectAll;
+				var _props = this.props,
+				    filter = _props.filter,
+				    selection = _props.selection,
+				    toggleFilter = _props.toggleFilter,
+				    toggleSelectAll = _props.toggleSelectAll;
 
 				var filterBtn = filter.active ? 'Hide filter' : 'Show filter';
 				var selectBtn = selection.isAll ? 'Deselect All' : 'Select All';
@@ -25955,9 +25970,25 @@
 					_react2.default.createElement(_common.Button, {
 						buttonClass: 'basic',
 						label: selectBtn,
-						onClick: toggleSelectAll })
+						onClick: toggleSelectAll }),
+					this.renderAction()
 				);
 			}
+		}, {
+			key: 'renderAction',
+			value: function renderAction() {
+				var selection = this.props.selection;
+
+				if (selection.indexes.length === 0) return null;
+				return _react2.default.createElement(_common.Select, {
+					type: _common.SelectType.BUTTON,
+					options: actions,
+					placeHolder: 'Choose an action',
+					onChange: this.doAction });
+			}
+		}, {
+			key: 'doAction',
+			value: function doAction() {}
 		}]);
 
 		return CommitsControl;
@@ -26030,17 +26061,17 @@
 	    _createClass(CommitsFilter, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props;
-	            var active = _props.active;
-	            var filter = _props.filter;
-	            var repository = _props.repository;
-	            var setUserInput = _props.setUserInput;
-	            var setUsers = _props.setUsers;
-	            var setMessage = _props.setMessage;
-	            var setFromDate = _props.setFromDate;
-	            var setToDate = _props.setToDate;
-	            var search = _props.search;
-	            var reset = _props.reset;
+	            var _props = this.props,
+	                active = _props.active,
+	                filter = _props.filter,
+	                repository = _props.repository,
+	                setUserInput = _props.setUserInput,
+	                setUsers = _props.setUsers,
+	                setMessage = _props.setMessage,
+	                setFromDate = _props.setFromDate,
+	                setToDate = _props.setToDate,
+	                search = _props.search,
+	                reset = _props.reset;
 
 	            if (!filter.active) return null;
 
@@ -26131,9 +26162,9 @@
 	    }, {
 	        key: 'componentWillMount',
 	        value: function componentWillMount() {
-	            var _props2 = this.props;
-	            var repository = _props2.repository;
-	            var updateFilter = _props2.updateFilter;
+	            var _props2 = this.props,
+	                repository = _props2.repository,
+	                updateFilter = _props2.updateFilter;
 
 	            var users = repository.users.map(function (user) {
 	                return Object.assign({}, user, {
@@ -26248,10 +26279,10 @@
 	    _createClass(CommitsList, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props;
-	            var commits = _props.commits;
-	            var selection = _props.selection;
-	            var toggleSelect = _props.toggleSelect;
+	            var _props = this.props,
+	                commits = _props.commits,
+	                selection = _props.selection,
+	                toggleSelect = _props.toggleSelect;
 
 	            if (commits.loading) {
 	                return _react2.default.createElement(_common.Loader, { text: 'Getting Commit Logs' });
@@ -26352,14 +26383,14 @@
 	        value: function render() {
 	            var _this2 = this;
 
-	            var _props = this.props;
-	            var commit = _props.commit;
-	            var checked = _props.checked;
-	            var onChange = _props.onChange;
-	            var _state = this.state;
-	            var loading = _state.loading;
-	            var expanded = _state.expanded;
-	            var files = _state.files;
+	            var _props = this.props,
+	                commit = _props.commit,
+	                checked = _props.checked,
+	                onChange = _props.onChange;
+	            var _state = this.state,
+	                loading = _state.loading,
+	                expanded = _state.expanded,
+	                files = _state.files;
 
 	            if (commit === null) return null;
 	            var loadingClass = loading ? ' loading' : '';
@@ -26488,10 +26519,10 @@
 	        value: function toggle() {
 	            var _this3 = this;
 
-	            var _state2 = this.state;
-	            var loading = _state2.loading;
-	            var expanded = _state2.expanded;
-	            var files = _state2.files;
+	            var _state2 = this.state,
+	                loading = _state2.loading,
+	                expanded = _state2.expanded,
+	                files = _state2.files;
 
 	            if (loading) return;
 	            if (expanded) return this.setState({ expanded: false, loading: false });

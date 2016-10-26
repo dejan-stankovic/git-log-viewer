@@ -1,12 +1,19 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Button } from 'modules/common';
+import { Button, Select, SelectType } from 'modules/common';
 import { FilterAction, SelectionAction } from 'modules/detail/actions';
+
+const actions = [
+	{ text: "Export selected commits", value: 1 },
+	{ text: "Create Merge diff report from selected", value: 2 }
+];
 
 class CommitsControl extends React.Component {
 	constructor(props) {
 		super(props);
 		this.props = props;
+		this.renderAction = this.renderAction.bind(this);
+		this.doAction = this.doAction.bind(this);
 	}
 
 	render() {
@@ -24,9 +31,22 @@ class CommitsControl extends React.Component {
 					buttonClass="basic"
 					label={selectBtn}
 					onClick={toggleSelectAll}/>
+					{this.renderAction()}
 			</div>
 		);
 	}
+
+	renderAction() {
+		let { selection } = this.props;
+		if (selection.indexes.length === 0) return null;
+		return <Select
+					type={SelectType.BUTTON}
+					options={actions}
+					placeHolder="Choose an action"
+					onChange={this.doAction}/>
+	}
+
+	doAction() {}
 }
 
 const mapStateToProps = state => {
