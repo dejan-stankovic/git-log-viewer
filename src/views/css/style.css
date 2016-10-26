@@ -35,6 +35,7 @@
     src: url('../fonts/lato/Lato-BoldItalic.ttf');
 }
 
+/* Custom scroll */
 ::-webkit-scrollbar-track {
     background-color: transparent;
 }
@@ -47,6 +48,18 @@
 ::-webkit-scrollbar-thumb {
     border-radius: 0px;
     background-color: #cacbcd;
+}
+
+/* Disable selection */
+:not(input):not(textarea),
+:not(input):not(textarea)::after,
+:not(input):not(textarea)::before {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+input, button, textarea, :focus {
+    outline: none;
 }
 
 .glv-hidden {
