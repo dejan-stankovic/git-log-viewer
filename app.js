@@ -1,5 +1,5 @@
 const electron = require('electron');
-const Excel = require('./src/utils/excel.js');
+const Report = require('./src/utils/report.js');
 const AppConst = require('./src/constants/app.js')
 const app = electron.app;
 const ipcMain = electron.ipcMain;
@@ -50,4 +50,25 @@ ipcMain.on(AppConst.CHANNEL_SHOW_DIR_DIALOG, (event, channelName) => {
 
 ipcMain.on(AppConst.CHANNEL_SHOW_ERR_BOX, (event, title, content) => {
     dialog.showErrorBox(title, content);
+});
+
+ipcMain.on(AppConst.CHANNEL_COMMITS_REPORT, (event, commits) => {
+    dialog.showSaveDialog({
+        filters: [{ name: 'Excel Document', extensions: ['xlsx'] }]
+    }, (file) => {
+        Report.exportCommitsReport(commits, file)
+            .then(() => {
+                dialog.showMessageBox(mainWindow, {
+                    type: 'info',
+                    title: 'Done',
+                    buttons: ['OK'],
+                    message: 'Report has been successfully created',
+                    detail: 'Path: ' + file
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                dialog.showErrorBox('Error', 'Could not create report');
+            });
+    });
 });

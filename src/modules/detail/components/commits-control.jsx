@@ -1,7 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { ipcRenderer } from 'electron';
+import AppConst from 'constants/app.js';
+import Git from 'utils/git.js';
 import { Button, Select, SelectType } from 'modules/common';
-import { FilterAction, SelectionAction } from 'modules/detail/actions';
+import { ControlAction, FilterAction, SelectionAction } from 'modules/detail/actions';
 
 const actions = [
 	{ text: "Export selected commits", value: 1 },
@@ -13,6 +16,7 @@ class CommitsControl extends React.Component {
 		super(props);
 		this.props = props;
 		this.renderAction = this.renderAction.bind(this);
+		this.renderLoader = this.renderLoader.bind(this);
 		this.doAction = this.doAction.bind(this);
 	}
 
@@ -32,6 +36,7 @@ class CommitsControl extends React.Component {
 					label={selectBtn}
 					onClick={toggleSelectAll}/>
 					{this.renderAction()}
+					{this.renderLoader()}
 			</div>
 		);
 	}
@@ -46,17 +51,32 @@ class CommitsControl extends React.Component {
 					onChange={this.doAction}/>
 	}
 
-	doAction() {}
+	renderLoader() {
+		if (!this.props.control.loading) return null;
+		return <div className="ui active inline small loader"></div>
+	}
+
+	doAction(opts) {
+		let type = opts[0].value;
+		let { commits, control, selection, startAction, stopAction } = this.props;
+		if (type === 1) {
+			ipcRenderer.send(AppConst.CHANNEL_COMMITS_REPORT, commits.data);
+		}
+	}
 }
 
 const mapStateToProps = state => {
 	return {
+		commits: state.commits,
+		control: state.control,
 		filter: state.filter,
 		selection: state.selection
 	};
 }
 const mapDispatchToProps = dispatch => {
 	return {
+		startAction: () => dispatch(ControlAction.startAction()),
+		stopAction: () => dispatch(ControlAction.stopAction()),
 		toggleFilter: () => dispatch(FilterAction.toggleFilter()),
 		toggleSelectAll: () => dispatch(SelectionAction.toggleSelectAll())
 	};

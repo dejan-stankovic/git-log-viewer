@@ -168,6 +168,25 @@ export default class Git {
         });
     }
 
+    static getFilesByCommits(commits) {
+        return new Promise((resolve, reject) => {
+            let promises = [];
+            for (let commit of commits) {
+                promises.push(this.getFilesByCommitHash(commit.hash));
+            }
+            Promise.all(promises).then(values => {
+                let data = values.map((value, i) => {
+                    let commit = commits[i].asMutable({deep: true});
+                    commit.files = value;
+                    return commit;
+                });
+                resolve(data);
+            }).catch(err => {
+                reject(null);
+            });
+        });
+    }
+
     static fetchAll() {
         let cmd = 'git fetch --all';
         return new Promise((resolve, reject) => {

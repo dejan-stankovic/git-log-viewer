@@ -21320,6 +21320,7 @@
 		CHANNEL_SHOW_DIR_DIALOG: 'show-dir-dialog',
 		CHANNEL_SELECTED_DIR: 'selected-dir',
 		CHANNEL_SHOW_ERR_BOX: 'show-err-box',
+		CHANNEL_COMMITS_REPORT: 'export-commits-report',
 		PAGER_SIZE_AVAIABLE: [50, 100, 150, 200, 300, 500],
 		PAGER_DEFAULT_SIZE: 50,
 		EXEC_OPTIONS: { maxBuffer: 1000 * 1024 }
@@ -21359,7 +21360,10 @@
 
 		CHANGE_TAB: 600,
 
-		UPDATE_SELECTION: 700
+		UPDATE_SELECTION: 700,
+
+		CONTROL_START_ACTION: 800,
+		CONTROL_STOP_ACTION: 801
 	});
 
 /***/ },
@@ -21416,7 +21420,7 @@
 
 	var _detail2 = _interopRequireDefault(_detail);
 
-	var _reducers = __webpack_require__(233);
+	var _reducers = __webpack_require__(234);
 
 	var _reducers2 = _interopRequireDefault(_reducers);
 
@@ -24174,6 +24178,51 @@
 	            });
 	        }
 	    }, {
+	        key: 'getFilesByCommits',
+	        value: function getFilesByCommits(commits) {
+	            var _this = this;
+
+	            return new Promise(function (resolve, reject) {
+	                var promises = [];
+	                var _iteratorNormalCompletion4 = true;
+	                var _didIteratorError4 = false;
+	                var _iteratorError4 = undefined;
+
+	                try {
+	                    for (var _iterator4 = commits[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+	                        var commit = _step4.value;
+
+	                        promises.push(_this.getFilesByCommitHash(commit.hash));
+	                    }
+	                } catch (err) {
+	                    _didIteratorError4 = true;
+	                    _iteratorError4 = err;
+	                } finally {
+	                    try {
+	                        if (!_iteratorNormalCompletion4 && _iterator4.return) {
+	                            _iterator4.return();
+	                        }
+	                    } finally {
+	                        if (_didIteratorError4) {
+	                            throw _iteratorError4;
+	                        }
+	                    }
+	                }
+
+	                Promise.all(promises).then(function (values) {
+	                    console.log(values);
+	                    var data = values.map(function (value, i) {
+	                        var commit = commits[i].asMutable({ deep: true });
+	                        commit.files = value;
+	                        return commit;
+	                    });
+	                    resolve(data);
+	                }).catch(function (err) {
+	                    reject(null);
+	                });
+	            });
+	        }
+	    }, {
 	        key: 'fetchAll',
 	        value: function fetchAll() {
 	            var cmd = 'git fetch --all';
@@ -24320,17 +24369,17 @@
 
 	var _actions = __webpack_require__(208);
 
-	var _common3 = __webpack_require__(216);
+	var _common3 = __webpack_require__(217);
 
 	var _home = __webpack_require__(176);
 
 	var _home2 = _interopRequireDefault(_home);
 
-	var _commits = __webpack_require__(227);
+	var _commits = __webpack_require__(228);
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _information = __webpack_require__(232);
+	var _information = __webpack_require__(233);
 
 	var _information2 = _interopRequireDefault(_information);
 
@@ -24427,17 +24476,21 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.TabAction = exports.SelectionAction = exports.RepositoryAction = exports.PagerAction = exports.LoadingAction = exports.FilterAction = exports.CommitsAction = undefined;
+	exports.TabAction = exports.SelectionAction = exports.RepositoryAction = exports.PagerAction = exports.LoadingAction = exports.FilterAction = exports.ControlAction = exports.CommitsAction = undefined;
 
 	var _commits = __webpack_require__(209);
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _filter = __webpack_require__(212);
+	var _control = __webpack_require__(212);
+
+	var _control2 = _interopRequireDefault(_control);
+
+	var _filter = __webpack_require__(213);
 
 	var _filter2 = _interopRequireDefault(_filter);
 
-	var _loading = __webpack_require__(213);
+	var _loading = __webpack_require__(214);
 
 	var _loading2 = _interopRequireDefault(_loading);
 
@@ -24445,7 +24498,7 @@
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _repository = __webpack_require__(214);
+	var _repository = __webpack_require__(215);
 
 	var _repository2 = _interopRequireDefault(_repository);
 
@@ -24453,13 +24506,14 @@
 
 	var _selection2 = _interopRequireDefault(_selection);
 
-	var _tab = __webpack_require__(215);
+	var _tab = __webpack_require__(216);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.CommitsAction = _commits2.default;
+	exports.ControlAction = _control2.default;
 	exports.FilterAction = _filter2.default;
 	exports.LoadingAction = _loading2.default;
 	exports.PagerAction = _pager2.default;
@@ -24517,12 +24571,11 @@
 	            return function (dispatch, getState) {
 	                dispatch(_this.startGetCommits());
 
-	                var _getState = getState(),
-	                    repository = _getState.repository,
-	                    pager = _getState.pager,
-	                    filter = _getState.filter,
-	                    promise = void 0;
+	                var _getState = getState();
 
+	                var repository = _getState.repository;
+	                var pager = _getState.pager;
+	                var filter = _getState.filter;var promise = void 0;
 	                if (isUpdateTotalPage) {
 	                    promise = _git2.default.getCommitsCount(repository.currentBranch, filter.users, filter.message, filter.fromDate, filter.toDate);
 	                } else {
@@ -24599,9 +24652,10 @@
 	        key: 'changePageSize',
 	        value: function changePageSize(size) {
 	            return function (dispatch, getState) {
-	                var _getState = getState(),
-	                    repository = _getState.repository,
-	                    pager = _getState.pager;
+	                var _getState = getState();
+
+	                var repository = _getState.repository;
+	                var pager = _getState.pager;
 
 	                if (size === pager.size) return;
 	                dispatch(_common2.default.getAction('CHANGE_PAGE_SIZE', size));
@@ -24651,9 +24705,10 @@
 			key: 'toggleSelectAll',
 			value: function toggleSelectAll() {
 				return function (dispatch, getState) {
-					var _getState = getState(),
-					    commits = _getState.commits,
-					    selection = _getState.selection;
+					var _getState = getState();
+
+					var commits = _getState.commits;
+					var selection = _getState.selection;
 
 					var indexes = [],
 					    isAll = false;
@@ -24670,9 +24725,10 @@
 			key: 'toggleSelect',
 			value: function toggleSelect(index) {
 				return function (dispatch, getState) {
-					var _getState2 = getState(),
-					    commits = _getState2.commits,
-					    selection = _getState2.selection;
+					var _getState2 = getState();
+
+					var commits = _getState2.commits;
+					var selection = _getState2.selection;
 
 					var indexes = [].concat(_toConsumableArray(selection.indexes)),
 					    isAll = selection.isAll;
@@ -24704,6 +24760,48 @@
 
 /***/ },
 /* 212 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _common = __webpack_require__(171);
+
+	var _common2 = _interopRequireDefault(_common);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var ControlAction = function () {
+		function ControlAction() {
+			_classCallCheck(this, ControlAction);
+		}
+
+		_createClass(ControlAction, null, [{
+			key: 'startAction',
+			value: function startAction() {
+				return _common2.default.getAction('CONTROL_START_ACTION');
+			}
+		}, {
+			key: 'stopAction',
+			value: function stopAction() {
+				return _common2.default.getAction('CONTROL_STOP_ACTION');
+			}
+		}]);
+
+		return ControlAction;
+	}();
+
+	exports.default = ControlAction;
+
+/***/ },
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24753,8 +24851,9 @@
 	        key: 'setUserInput',
 	        value: function setUserInput(keyword) {
 	            return function (dispatch, getState) {
-	                var _getState = getState(),
-	                    filter = _getState.filter;
+	                var _getState = getState();
+
+	                var filter = _getState.filter;
 
 	                var key = keyword.toLowerCase();
 	                var filteredUsers = filter.allUsers.filter(function (user) {
@@ -24807,7 +24906,7 @@
 	exports.default = FilterAction;
 
 /***/ },
-/* 213 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24849,7 +24948,7 @@
 	exports.default = LoadingAction;
 
 /***/ },
-/* 214 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24872,11 +24971,11 @@
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _filter = __webpack_require__(212);
+	var _filter = __webpack_require__(213);
 
 	var _filter2 = _interopRequireDefault(_filter);
 
-	var _loading = __webpack_require__(213);
+	var _loading = __webpack_require__(214);
 
 	var _loading2 = _interopRequireDefault(_loading);
 
@@ -24913,8 +25012,9 @@
 	                dispatch(_loading2.default.startLoading());
 	                var promises = [];
 
-	                var _getState = getState(),
-	                    repository = _getState.repository;
+	                var _getState = getState();
+
+	                var repository = _getState.repository;
 
 	                promises.push(_git2.default.getBranches());
 	                promises.push(_git2.default.getUsers(repository.currentBranch));
@@ -24957,7 +25057,7 @@
 	exports.default = PagerAction;
 
 /***/ },
-/* 215 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24994,7 +25094,7 @@
 	exports.default = TabAction;
 
 /***/ },
-/* 216 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25004,21 +25104,21 @@
 	});
 	exports.Tab = exports.SelectType = exports.Select = exports.Pager = exports.Loader = exports.Button = undefined;
 
-	var _button = __webpack_require__(217);
+	var _button = __webpack_require__(218);
 
 	var _button2 = _interopRequireDefault(_button);
 
-	var _loader = __webpack_require__(218);
+	var _loader = __webpack_require__(219);
 
 	var _loader2 = _interopRequireDefault(_loader);
 
-	var _pager = __webpack_require__(219);
+	var _pager = __webpack_require__(220);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _select = __webpack_require__(220);
+	var _select = __webpack_require__(221);
 
-	var _tab = __webpack_require__(226);
+	var _tab = __webpack_require__(227);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
@@ -25032,7 +25132,7 @@
 	exports.Tab = _tab2.default;
 
 /***/ },
-/* 217 */
+/* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25062,7 +25162,7 @@
 	};
 
 /***/ },
-/* 218 */
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -25086,7 +25186,7 @@
 	};
 
 /***/ },
-/* 219 */
+/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25099,7 +25199,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _select = __webpack_require__(220);
+	var _select = __webpack_require__(221);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25206,7 +25306,7 @@
 	};
 
 /***/ },
-/* 220 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25226,11 +25326,11 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _reactAddonsPureRenderMixin = __webpack_require__(221);
+	var _reactAddonsPureRenderMixin = __webpack_require__(222);
 
 	var _reactAddonsPureRenderMixin2 = _interopRequireDefault(_reactAddonsPureRenderMixin);
 
-	var _selectList = __webpack_require__(224);
+	var _selectList = __webpack_require__(225);
 
 	var _selectList2 = _interopRequireDefault(_selectList);
 
@@ -25307,10 +25407,10 @@
 	    }, {
 	        key: 'getClass',
 	        value: function getClass() {
-	            var _props = this.props,
-	                type = _props.type,
-	                search = _props.search,
-	                multiple = _props.multiple;
+	            var _props = this.props;
+	            var type = _props.type;
+	            var search = _props.search;
+	            var multiple = _props.multiple;
 
 	            var className = 'ui dropdown glv-dropdown ';
 	            if (this.state.active) className += 'active visible ';
@@ -25330,13 +25430,13 @@
 	        value: function renderSelected() {
 	            var _this2 = this;
 
-	            var _props2 = this.props,
-	                selectedOptions = _props2.selectedOptions,
-	                placeHolder = _props2.placeHolder,
-	                multiple = _props2.multiple,
-	                stringOption = _props2.stringOption,
-	                selectedAttr = _props2.selectedAttr,
-	                valueAttr = _props2.valueAttr;
+	            var _props2 = this.props;
+	            var selectedOptions = _props2.selectedOptions;
+	            var placeHolder = _props2.placeHolder;
+	            var multiple = _props2.multiple;
+	            var stringOption = _props2.stringOption;
+	            var selectedAttr = _props2.selectedAttr;
+	            var valueAttr = _props2.valueAttr;
 
 	            if (selectedOptions.length === 0) {
 	                return _react2.default.createElement(
@@ -25398,12 +25498,12 @@
 	    }, {
 	        key: 'renderSelectList',
 	        value: function renderSelectList() {
-	            var _props3 = this.props,
-	                options = _props3.options,
-	                selectedOptions = _props3.selectedOptions,
-	                stringOption = _props3.stringOption,
-	                valueAttr = _props3.valueAttr,
-	                optionAttr = _props3.optionAttr;
+	            var _props3 = this.props;
+	            var options = _props3.options;
+	            var selectedOptions = _props3.selectedOptions;
+	            var stringOption = _props3.stringOption;
+	            var valueAttr = _props3.valueAttr;
+	            var optionAttr = _props3.optionAttr;
 
 	            if (!this.state.active) return null;
 	            return _react2.default.createElement(_selectList2.default, {
@@ -25417,11 +25517,11 @@
 	    }, {
 	        key: 'inputChange',
 	        value: function inputChange() {
-	            var _props4 = this.props,
-	                selectedOptions = _props4.selectedOptions,
-	                placeHolder = _props4.placeHolder,
-	                multiple = _props4.multiple,
-	                onInputChange = _props4.onInputChange;
+	            var _props4 = this.props;
+	            var selectedOptions = _props4.selectedOptions;
+	            var placeHolder = _props4.placeHolder;
+	            var multiple = _props4.multiple;
+	            var onInputChange = _props4.onInputChange;
 
 	            var keyword = this.inputText.value;
 	            if (selectedOptions.length === 0) {
@@ -25442,10 +25542,10 @@
 	    }, {
 	        key: 'onSelect',
 	        value: function onSelect(option, selected) {
-	            var _props5 = this.props,
-	                search = _props5.search,
-	                multiple = _props5.multiple,
-	                onChange = _props5.onChange;
+	            var _props5 = this.props;
+	            var search = _props5.search;
+	            var multiple = _props5.multiple;
+	            var onChange = _props5.onChange;
 
 	            var selectedOptions = [].concat(_toConsumableArray(this.props.selectedOptions));
 
@@ -25524,15 +25624,15 @@
 	exports.SelectType = SelectType;
 
 /***/ },
-/* 221 */
+/* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	module.exports = __webpack_require__(222);
+	module.exports = __webpack_require__(223);
 
 /***/ },
-/* 222 */
+/* 223 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -25548,7 +25648,7 @@
 
 	'use strict';
 
-	var shallowCompare = __webpack_require__(223);
+	var shallowCompare = __webpack_require__(224);
 
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -25585,7 +25685,7 @@
 	module.exports = ReactComponentWithPureRenderMixin;
 
 /***/ },
-/* 223 */
+/* 224 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -25615,7 +25715,7 @@
 	module.exports = shallowCompare;
 
 /***/ },
-/* 224 */
+/* 225 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25628,7 +25728,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _selectListItem = __webpack_require__(225);
+	var _selectListItem = __webpack_require__(226);
 
 	var _selectListItem2 = _interopRequireDefault(_selectListItem);
 
@@ -25686,7 +25786,7 @@
 	};
 
 /***/ },
-/* 225 */
+/* 226 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25729,7 +25829,7 @@
 	};
 
 /***/ },
-/* 226 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25788,7 +25888,7 @@
 	exports.default = Tab;
 
 /***/ },
-/* 227 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25809,17 +25909,17 @@
 
 	var _app2 = _interopRequireDefault(_app);
 
-	var _common = __webpack_require__(216);
+	var _common = __webpack_require__(217);
 
-	var _commitsControl = __webpack_require__(228);
+	var _commitsControl = __webpack_require__(229);
 
 	var _commitsControl2 = _interopRequireDefault(_commitsControl);
 
-	var _commitsFilter = __webpack_require__(229);
+	var _commitsFilter = __webpack_require__(230);
 
 	var _commitsFilter2 = _interopRequireDefault(_commitsFilter);
 
-	var _commitsList = __webpack_require__(230);
+	var _commitsList = __webpack_require__(231);
 
 	var _commitsList2 = _interopRequireDefault(_commitsList);
 
@@ -25903,7 +26003,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Commits);
 
 /***/ },
-/* 228 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25920,7 +26020,17 @@
 
 	var _reactRedux = __webpack_require__(193);
 
-	var _common = __webpack_require__(216);
+	var _electron = __webpack_require__(173);
+
+	var _app = __webpack_require__(174);
+
+	var _app2 = _interopRequireDefault(_app);
+
+	var _git = __webpack_require__(203);
+
+	var _git2 = _interopRequireDefault(_git);
+
+	var _common = __webpack_require__(217);
 
 	var _actions = __webpack_require__(208);
 
@@ -25944,6 +26054,7 @@
 
 			_this.props = props;
 			_this.renderAction = _this.renderAction.bind(_this);
+			_this.renderLoader = _this.renderLoader.bind(_this);
 			_this.doAction = _this.doAction.bind(_this);
 			return _this;
 		}
@@ -25951,11 +26062,11 @@
 		_createClass(CommitsControl, [{
 			key: 'render',
 			value: function render() {
-				var _props = this.props,
-				    filter = _props.filter,
-				    selection = _props.selection,
-				    toggleFilter = _props.toggleFilter,
-				    toggleSelectAll = _props.toggleSelectAll;
+				var _props = this.props;
+				var filter = _props.filter;
+				var selection = _props.selection;
+				var toggleFilter = _props.toggleFilter;
+				var toggleSelectAll = _props.toggleSelectAll;
 
 				var filterBtn = filter.active ? 'Hide filter' : 'Show filter';
 				var selectBtn = selection.isAll ? 'Deselect All' : 'Select All';
@@ -25971,7 +26082,8 @@
 						buttonClass: 'basic',
 						label: selectBtn,
 						onClick: toggleSelectAll }),
-					this.renderAction()
+					this.renderAction(),
+					this.renderLoader()
 				);
 			}
 		}, {
@@ -25987,8 +26099,26 @@
 					onChange: this.doAction });
 			}
 		}, {
+			key: 'renderLoader',
+			value: function renderLoader() {
+				if (!this.props.control.loading) return null;
+				return _react2.default.createElement('div', { className: 'ui active inline small loader' });
+			}
+		}, {
 			key: 'doAction',
-			value: function doAction() {}
+			value: function doAction(opts) {
+				var type = opts[0].value;
+				var _props2 = this.props;
+				var commits = _props2.commits;
+				var control = _props2.control;
+				var selection = _props2.selection;
+				var startAction = _props2.startAction;
+				var stopAction = _props2.stopAction;
+
+				if (type === 1) {
+					_electron.ipcRenderer.send(_app2.default.CHANNEL_COMMITS_REPORT, commits.data);
+				}
+			}
 		}]);
 
 		return CommitsControl;
@@ -25996,12 +26126,20 @@
 
 	var mapStateToProps = function mapStateToProps(state) {
 		return {
+			commits: state.commits,
+			control: state.control,
 			filter: state.filter,
 			selection: state.selection
 		};
 	};
 	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 		return {
+			startAction: function startAction() {
+				return dispatch(_actions.ControlAction.startAction());
+			},
+			stopAction: function stopAction() {
+				return dispatch(_actions.ControlAction.stopAction());
+			},
 			toggleFilter: function toggleFilter() {
 				return dispatch(_actions.FilterAction.toggleFilter());
 			},
@@ -26013,7 +26151,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(CommitsControl);
 
 /***/ },
-/* 229 */
+/* 230 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26034,7 +26172,7 @@
 
 	var _reactRedux = __webpack_require__(193);
 
-	var _common = __webpack_require__(216);
+	var _common = __webpack_require__(217);
 
 	var _actions = __webpack_require__(208);
 
@@ -26061,17 +26199,17 @@
 	    _createClass(CommitsFilter, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props,
-	                active = _props.active,
-	                filter = _props.filter,
-	                repository = _props.repository,
-	                setUserInput = _props.setUserInput,
-	                setUsers = _props.setUsers,
-	                setMessage = _props.setMessage,
-	                setFromDate = _props.setFromDate,
-	                setToDate = _props.setToDate,
-	                search = _props.search,
-	                reset = _props.reset;
+	            var _props = this.props;
+	            var active = _props.active;
+	            var filter = _props.filter;
+	            var repository = _props.repository;
+	            var setUserInput = _props.setUserInput;
+	            var setUsers = _props.setUsers;
+	            var setMessage = _props.setMessage;
+	            var setFromDate = _props.setFromDate;
+	            var setToDate = _props.setToDate;
+	            var search = _props.search;
+	            var reset = _props.reset;
 
 	            if (!filter.active) return null;
 
@@ -26162,9 +26300,9 @@
 	    }, {
 	        key: 'componentWillMount',
 	        value: function componentWillMount() {
-	            var _props2 = this.props,
-	                repository = _props2.repository,
-	                updateFilter = _props2.updateFilter;
+	            var _props2 = this.props;
+	            var repository = _props2.repository;
+	            var updateFilter = _props2.updateFilter;
 
 	            var users = repository.users.map(function (user) {
 	                return Object.assign({}, user, {
@@ -26231,7 +26369,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(CommitsFilter);
 
 /***/ },
-/* 230 */
+/* 231 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26248,9 +26386,9 @@
 
 	var _reactRedux = __webpack_require__(193);
 
-	var _common = __webpack_require__(216);
+	var _common = __webpack_require__(217);
 
-	var _commitsListItem = __webpack_require__(231);
+	var _commitsListItem = __webpack_require__(232);
 
 	var _commitsListItem2 = _interopRequireDefault(_commitsListItem);
 
@@ -26279,10 +26417,10 @@
 	    _createClass(CommitsList, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props,
-	                commits = _props.commits,
-	                selection = _props.selection,
-	                toggleSelect = _props.toggleSelect;
+	            var _props = this.props;
+	            var commits = _props.commits;
+	            var selection = _props.selection;
+	            var toggleSelect = _props.toggleSelect;
 
 	            if (commits.loading) {
 	                return _react2.default.createElement(_common.Loader, { text: 'Getting Commit Logs' });
@@ -26334,7 +26472,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(CommitsList);
 
 /***/ },
-/* 231 */
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26383,14 +26521,14 @@
 	        value: function render() {
 	            var _this2 = this;
 
-	            var _props = this.props,
-	                commit = _props.commit,
-	                checked = _props.checked,
-	                onChange = _props.onChange;
-	            var _state = this.state,
-	                loading = _state.loading,
-	                expanded = _state.expanded,
-	                files = _state.files;
+	            var _props = this.props;
+	            var commit = _props.commit;
+	            var checked = _props.checked;
+	            var onChange = _props.onChange;
+	            var _state = this.state;
+	            var loading = _state.loading;
+	            var expanded = _state.expanded;
+	            var files = _state.files;
 
 	            if (commit === null) return null;
 	            var loadingClass = loading ? ' loading' : '';
@@ -26519,10 +26657,10 @@
 	        value: function toggle() {
 	            var _this3 = this;
 
-	            var _state2 = this.state,
-	                loading = _state2.loading,
-	                expanded = _state2.expanded,
-	                files = _state2.files;
+	            var _state2 = this.state;
+	            var loading = _state2.loading;
+	            var expanded = _state2.expanded;
+	            var files = _state2.files;
 
 	            if (loading) return;
 	            if (expanded) return this.setState({ expanded: false, loading: false });
@@ -26543,7 +26681,7 @@
 	exports.default = CommitsItem;
 
 /***/ },
-/* 232 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26766,7 +26904,7 @@
 	exports.default = (0, _reactRedux.connect)(mapStateToProps)(Information);
 
 /***/ },
-/* 233 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26775,42 +26913,46 @@
 	  value: true
 	});
 
-	var _reduxSeamlessImmutable = __webpack_require__(234);
+	var _reduxSeamlessImmutable = __webpack_require__(235);
 
-	var _commits = __webpack_require__(243);
+	var _commits = __webpack_require__(244);
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _filter = __webpack_require__(244);
+	var _control = __webpack_require__(245);
+
+	var _control2 = _interopRequireDefault(_control);
+
+	var _filter = __webpack_require__(246);
 
 	var _filter2 = _interopRequireDefault(_filter);
 
-	var _loading = __webpack_require__(245);
+	var _loading = __webpack_require__(247);
 
 	var _loading2 = _interopRequireDefault(_loading);
 
-	var _pager = __webpack_require__(246);
+	var _pager = __webpack_require__(248);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _repository = __webpack_require__(247);
+	var _repository = __webpack_require__(249);
 
 	var _repository2 = _interopRequireDefault(_repository);
 
-	var _selection = __webpack_require__(248);
+	var _selection = __webpack_require__(250);
 
 	var _selection2 = _interopRequireDefault(_selection);
 
-	var _tab = __webpack_require__(249);
+	var _tab = __webpack_require__(251);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	exports.default = (0, _reduxSeamlessImmutable.combineReducers)({ commits: _commits2.default, loading: _loading2.default, filter: _filter2.default, pager: _pager2.default, repository: _repository2.default, selection: _selection2.default, tab: _tab2.default });
+	exports.default = (0, _reduxSeamlessImmutable.combineReducers)({ commits: _commits2.default, control: _control2.default, loading: _loading2.default, filter: _filter2.default, pager: _pager2.default, repository: _repository2.default, selection: _selection2.default, tab: _tab2.default });
 
 /***/ },
-/* 234 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26820,15 +26962,15 @@
 	});
 	exports.stateTransformer = exports.routerReducer = exports.combineReducers = undefined;
 
-	var _combineReducers = __webpack_require__(235);
+	var _combineReducers = __webpack_require__(236);
 
 	var _combineReducers2 = _interopRequireDefault(_combineReducers);
 
-	var _routerReducer = __webpack_require__(236);
+	var _routerReducer = __webpack_require__(237);
 
 	var _routerReducer2 = _interopRequireDefault(_routerReducer);
 
-	var _stateTransformer = __webpack_require__(242);
+	var _stateTransformer = __webpack_require__(243);
 
 	var _stateTransformer2 = _interopRequireDefault(_stateTransformer);
 
@@ -26841,7 +26983,7 @@
 	exports.stateTransformer = _stateTransformer2.default;
 
 /***/ },
-/* 235 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26878,7 +27020,7 @@
 	}
 
 /***/ },
-/* 236 */
+/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26892,7 +27034,7 @@
 
 	var _seamlessImmutable2 = _interopRequireDefault(_seamlessImmutable);
 
-	var _reactRouterRedux = __webpack_require__(237);
+	var _reactRouterRedux = __webpack_require__(238);
 
 	function _interopRequireDefault(obj) {
 	  return obj && obj.__esModule ? obj : { default: obj };
@@ -26915,7 +27057,7 @@
 	}
 
 /***/ },
-/* 237 */
+/* 238 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -26925,7 +27067,7 @@
 	});
 	exports.routerMiddleware = exports.routerActions = exports.goForward = exports.goBack = exports.go = exports.replace = exports.push = exports.CALL_HISTORY_METHOD = exports.routerReducer = exports.LOCATION_CHANGE = exports.syncHistoryWithStore = undefined;
 
-	var _reducer = __webpack_require__(238);
+	var _reducer = __webpack_require__(239);
 
 	Object.defineProperty(exports, 'LOCATION_CHANGE', {
 	  enumerable: true,
@@ -26940,7 +27082,7 @@
 	  }
 	});
 
-	var _actions = __webpack_require__(239);
+	var _actions = __webpack_require__(240);
 
 	Object.defineProperty(exports, 'CALL_HISTORY_METHOD', {
 	  enumerable: true,
@@ -26985,11 +27127,11 @@
 	  }
 	});
 
-	var _sync = __webpack_require__(240);
+	var _sync = __webpack_require__(241);
 
 	var _sync2 = _interopRequireDefault(_sync);
 
-	var _middleware = __webpack_require__(241);
+	var _middleware = __webpack_require__(242);
 
 	var _middleware2 = _interopRequireDefault(_middleware);
 
@@ -27001,7 +27143,7 @@
 	exports.routerMiddleware = _middleware2['default'];
 
 /***/ },
-/* 238 */
+/* 239 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27053,7 +27195,7 @@
 	}
 
 /***/ },
-/* 239 */
+/* 240 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27095,7 +27237,7 @@
 	var routerActions = exports.routerActions = { push: push, replace: replace, go: go, goBack: goBack, goForward: goForward };
 
 /***/ },
-/* 240 */
+/* 241 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27116,7 +27258,7 @@
 
 	exports['default'] = syncHistoryWithStore;
 
-	var _reducer = __webpack_require__(238);
+	var _reducer = __webpack_require__(239);
 
 	var defaultSelectLocationState = function defaultSelectLocationState(state) {
 	  return state.routing;
@@ -27256,7 +27398,7 @@
 	}
 
 /***/ },
-/* 241 */
+/* 242 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27266,7 +27408,7 @@
 	});
 	exports['default'] = routerMiddleware;
 
-	var _actions = __webpack_require__(239);
+	var _actions = __webpack_require__(240);
 
 	function _toConsumableArray(arr) {
 	  if (Array.isArray(arr)) {
@@ -27302,7 +27444,7 @@
 	}
 
 /***/ },
-/* 242 */
+/* 243 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -27316,7 +27458,7 @@
 	}
 
 /***/ },
-/* 243 */
+/* 244 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27350,7 +27492,41 @@
 	};
 
 /***/ },
-/* 244 */
+/* 245 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _actiontype = __webpack_require__(175);
+
+	var _actiontype2 = _interopRequireDefault(_actiontype);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var initState = {
+	    loading: false
+	};
+
+	exports.default = function () {
+	    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initState;
+	    var action = arguments[1];
+
+	    switch (action.type) {
+	        case _actiontype2.default.CONTROL_START_ACTION:
+	            return state.set('loading', true);
+	        case _actiontype2.default.CONTROL_STOP_ACTION:
+	            return state.set('loading', false);
+	        default:
+	            return state;
+	    }
+	};
+
+/***/ },
+/* 246 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27409,7 +27585,7 @@
 	};
 
 /***/ },
-/* 245 */
+/* 247 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27440,7 +27616,7 @@
 	};
 
 /***/ },
-/* 246 */
+/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27473,7 +27649,7 @@
 	};
 
 /***/ },
-/* 247 */
+/* 249 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27503,7 +27679,7 @@
 	};
 
 /***/ },
-/* 248 */
+/* 250 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27536,7 +27712,7 @@
 	};
 
 /***/ },
-/* 249 */
+/* 251 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
