@@ -1,6 +1,6 @@
 const { Workbook } = require('exceljs');
 
-module.exports = class Excel {
+module.exports = class Report {
     constructor() {
         this.workbook = new Workbook();
     }
