@@ -3,7 +3,7 @@ import AppConst from 'constants/app.js';
 import { Commit, CommitFile } from 'models/commit.js';
 import User from 'models/user.js';
 
-export default class Git {
+module.exports = class Git {
     static getURL() {
         return new Promise((resolve, reject) => {
             let cmd = 'git config --get remote.origin.url';

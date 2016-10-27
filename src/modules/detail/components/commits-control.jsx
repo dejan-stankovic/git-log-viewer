@@ -58,9 +58,20 @@ class CommitsControl extends React.Component {
 
 	doAction(opts) {
 		let type = opts[0].value;
-		let { commits, control, selection, startAction, stopAction } = this.props;
+		let { commits, control, repository, selection, startAction, stopAction } = this.props;
+		let selectedCommits = [];
+		for (let i = 0; i < commits.data.length; i++) {
+			if (selection.indexes.indexOf(i) > -1)
+				selectedCommits.push(commits.data[i]);
+		}
 		if (type === 1) {
-			ipcRenderer.send(AppConst.CHANNEL_COMMITS_REPORT, commits.data);
+			ipcRenderer.send(AppConst.CHANNEL_COMMITS_REPORT, selectedCommits);
+		} else if (type === 2) {
+			let data = {
+				repository,
+				commits: selectedCommits
+			}
+			ipcRenderer.send(AppConst.CHANNEL_MERGE_DIFF_REPORT, data);
 		}
 	}
 }
@@ -70,6 +81,7 @@ const mapStateToProps = state => {
 		commits: state.commits,
 		control: state.control,
 		filter: state.filter,
+		repository: state.repository,
 		selection: state.selection
 	};
 }

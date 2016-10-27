@@ -2,8 +2,25 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-    entry: "./src/index.js",
-    output: { path: __dirname + '/src/views/js', filename: 'bundle.js' },
+    entry: {
+        main: "./src/main.js",
+        modal: './src/modal.js',
+        vendor: [
+            'electron',
+            'react',
+            'react-addons-pure-render-mixin',
+            'react-dom',
+            'react-redux',
+            'redux',
+            'redux-seamless-immutable',
+            'redux-thunk',
+            'seamless-immutable'
+        ]
+    },
+    output: {
+        path: __dirname + '/src/views/js',
+        filename: '[name].bundle.js'
+    },
     module: {
         loaders: [{
             test: /.jsx?$/,
@@ -21,5 +38,8 @@ module.exports = {
             path.resolve('./src')
         ]
     },
-    target: "electron"
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js')
+    ],
+    target: "electron-renderer"
 };

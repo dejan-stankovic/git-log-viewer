@@ -1,7 +1,7 @@
 const path = require('path');
 const { Workbook } = require('exceljs');
 
-const TEMPLATE_PATH = path.resolve(require.main.filename, '../templates')
+const TEMPLATE_PATH = path.resolve(require.main.filename, '../templates');
 
 module.exports = class Report {
 
@@ -26,6 +26,9 @@ module.exports = class Report {
                 .then(() => resolve())
                 .catch(err => reject(err));
         });
+    }
 
+    static exportMergeDiffReport(commits, file) {
+    	
     }
 }

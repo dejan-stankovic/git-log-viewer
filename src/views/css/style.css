@@ -35,7 +35,9 @@
     src: url('../fonts/lato/Lato-BoldItalic.ttf');
 }
 
+
 /* Custom scroll */
+
 ::-webkit-scrollbar-track {
     background-color: transparent;
 }
@@ -50,7 +52,9 @@
     background-color: #cacbcd;
 }
 
+
 /* Disable selection */
+
 :not(input):not(textarea),
 :not(input):not(textarea)::after,
 :not(input):not(textarea)::before {
@@ -58,7 +62,11 @@
     user-select: none;
     cursor: default;
 }
-input, button, textarea, :focus {
+
+input,
+button,
+textarea,
+:focus {
     outline: none;
 }
 
@@ -109,4 +117,51 @@ input, button, textarea, :focus {
     position: absolute;
     top: -1000px;
     left: -1000px;
+}
+
+
+/* Modal */
+
+.glv-modal {
+    width: 100%;
+    height: 100%;
+}
+
+#modal-loader {
+    height: 420px;
+}
+
+.glv-modal-top {
+    width: 100%;
+    height: 420px;
+    padding: 10px;
+    overflow: hidden;
+}
+
+#list-files {
+    height: 295px;
+    width: 100%;
+    overflow-y: scroll;
+    word-break: break-all;
+    border: 1px solid #D4D4D5;
+    border-radius: 3px;
+    margin-top: 5px;
+}
+
+#branches {
+    max-height: 250px;
+    overflow-y: scroll;
+}
+
+#branches .item {
+    min-width: 200px;
+    max-width: 400px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.glv-modal-bottom {
+    text-align: right;
+    padding: 10px;
+    border-top: 1px solid #D4D4D5;
 }

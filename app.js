@@ -1,9 +1,6 @@
-const electron = require('electron');
+const { BrowserWindow, app, ipcMain, dialog } = require('electron');
 const Report = require('./src/utils/report.js');
 const AppConst = require('./src/constants/app.js')
-const app = electron.app;
-const ipcMain = electron.ipcMain;
-const dialog = electron.dialog;
 
 let mainWindow;
 
@@ -12,7 +9,7 @@ function onClosed() {
 }
 
 function createMainWindow() {
-    const win = new electron.BrowserWindow({
+    const win = new BrowserWindow({
         width: 1024,
         height: 768,
         title: "Git Log Viewer"
@@ -71,4 +68,18 @@ ipcMain.on(AppConst.CHANNEL_COMMITS_REPORT, (event, commits) => {
                 dialog.showErrorBox('Error', 'Could not create report');
             });
     });
+});
+
+ipcMain.on(AppConst.CHANNEL_MERGE_DIFF_REPORT, (event, data) => {
+    let child = new BrowserWindow({
+        parent: mainWindow,
+        modal: true,
+        show: true,
+        frame: false,
+        resizable: false,
+        width: 640,
+        height: 480
+    });
+    child.data = data;
+    child.loadURL(`file://${__dirname}/src/views/modal.html`);
 });

@@ -4,6 +4,7 @@ module.exports = Object.freeze({
 	CHANNEL_SELECTED_DIR: 'selected-dir',
 	CHANNEL_SHOW_ERR_BOX: 'show-err-box',
 	CHANNEL_COMMITS_REPORT: 'export-commits-report',
+	CHANNEL_MERGE_DIFF_REPORT: 'export-merge-diff-report',
 	PAGER_SIZE_AVAIABLE: [50, 100, 150, 200, 300, 500],
 	PAGER_DEFAULT_SIZE: 50,
 	EXEC_OPTIONS: { maxBuffer: 1000 * 1024 }
