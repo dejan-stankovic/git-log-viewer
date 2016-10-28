@@ -80,7 +80,7 @@ webpackJsonp([0],{
 
 	var _detail2 = _interopRequireDefault(_detail);
 
-	var _reducers = __webpack_require__(234);
+	var _reducers = __webpack_require__(235);
 
 	var _reducers2 = _interopRequireDefault(_reducers);
 
@@ -299,7 +299,7 @@ webpackJsonp([0],{
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _information = __webpack_require__(233);
+	var _information = __webpack_require__(234);
 
 	var _information2 = _interopRequireDefault(_information);
 
@@ -493,11 +493,12 @@ webpackJsonp([0],{
 	            return function (dispatch, getState) {
 	                dispatch(_this.startGetCommits());
 
-	                var _getState = getState();
+	                var _getState = getState(),
+	                    repository = _getState.repository,
+	                    pager = _getState.pager,
+	                    filter = _getState.filter,
+	                    promise = void 0;
 
-	                var repository = _getState.repository;
-	                var pager = _getState.pager;
-	                var filter = _getState.filter;var promise = void 0;
 	                if (isUpdateTotalPage) {
 	                    promise = _git2.default.getCommitsCount(repository.currentBranch, filter.users, filter.message, filter.fromDate, filter.toDate);
 	                } else {
@@ -575,10 +576,9 @@ webpackJsonp([0],{
 	        key: 'changePageSize',
 	        value: function changePageSize(size) {
 	            return function (dispatch, getState) {
-	                var _getState = getState();
-
-	                var repository = _getState.repository;
-	                var pager = _getState.pager;
+	                var _getState = getState(),
+	                    repository = _getState.repository,
+	                    pager = _getState.pager;
 
 	                if (size === pager.size) return;
 	                dispatch(_common2.default.getAction('CHANGE_PAGE_SIZE', size));
@@ -629,10 +629,9 @@ webpackJsonp([0],{
 			key: 'toggleSelectAll',
 			value: function toggleSelectAll() {
 				return function (dispatch, getState) {
-					var _getState = getState();
-
-					var commits = _getState.commits;
-					var selection = _getState.selection;
+					var _getState = getState(),
+					    commits = _getState.commits,
+					    selection = _getState.selection;
 
 					var indexes = [],
 					    isAll = false;
@@ -649,10 +648,9 @@ webpackJsonp([0],{
 			key: 'toggleSelect',
 			value: function toggleSelect(index) {
 				return function (dispatch, getState) {
-					var _getState2 = getState();
-
-					var commits = _getState2.commits;
-					var selection = _getState2.selection;
+					var _getState2 = getState(),
+					    commits = _getState2.commits,
+					    selection = _getState2.selection;
 
 					var indexes = [].concat(_toConsumableArray(selection.indexes)),
 					    isAll = selection.isAll;
@@ -777,9 +775,8 @@ webpackJsonp([0],{
 	        key: 'setUserInput',
 	        value: function setUserInput(keyword) {
 	            return function (dispatch, getState) {
-	                var _getState = getState();
-
-	                var filter = _getState.filter;
+	                var _getState = getState(),
+	                    filter = _getState.filter;
 
 	                var key = keyword.toLowerCase();
 	                var filteredUsers = filter.allUsers.filter(function (user) {
@@ -940,9 +937,8 @@ webpackJsonp([0],{
 	                dispatch(_loading2.default.startLoading());
 	                var promises = [];
 
-	                var _getState = getState();
-
-	                var repository = _getState.repository;
+	                var _getState = getState(),
+	                    repository = _getState.repository;
 
 	                promises.push(_git2.default.getBranches());
 	                promises.push(_git2.default.getUsers(repository.currentBranch));
@@ -1051,11 +1047,11 @@ webpackJsonp([0],{
 
 	var _commitsControl2 = _interopRequireDefault(_commitsControl);
 
-	var _commitsFilter = __webpack_require__(230);
+	var _commitsFilter = __webpack_require__(231);
 
 	var _commitsFilter2 = _interopRequireDefault(_commitsFilter);
 
-	var _commitsList = __webpack_require__(231);
+	var _commitsList = __webpack_require__(232);
 
 	var _commitsList2 = _interopRequireDefault(_commitsList);
 
@@ -1151,6 +1147,10 @@ webpackJsonp([0],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _path = __webpack_require__(230);
+
+	var _path2 = _interopRequireDefault(_path);
+
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
@@ -1199,11 +1199,11 @@ webpackJsonp([0],{
 		_createClass(CommitsControl, [{
 			key: 'render',
 			value: function render() {
-				var _props = this.props;
-				var filter = _props.filter;
-				var selection = _props.selection;
-				var toggleFilter = _props.toggleFilter;
-				var toggleSelectAll = _props.toggleSelectAll;
+				var _props = this.props,
+				    filter = _props.filter,
+				    selection = _props.selection,
+				    toggleFilter = _props.toggleFilter,
+				    toggleSelectAll = _props.toggleSelectAll;
 
 				var filterBtn = filter.active ? 'Hide filter' : 'Show filter';
 				var selectBtn = selection.isAll ? 'Deselect All' : 'Select All';
@@ -1245,13 +1245,13 @@ webpackJsonp([0],{
 			key: 'doAction',
 			value: function doAction(opts) {
 				var type = opts[0].value;
-				var _props2 = this.props;
-				var commits = _props2.commits;
-				var control = _props2.control;
-				var repository = _props2.repository;
-				var selection = _props2.selection;
-				var startAction = _props2.startAction;
-				var stopAction = _props2.stopAction;
+				var _props2 = this.props,
+				    commits = _props2.commits,
+				    control = _props2.control,
+				    repository = _props2.repository,
+				    selection = _props2.selection,
+				    startAction = _props2.startAction,
+				    stopAction = _props2.stopAction;
 
 				var selectedCommits = [];
 				for (var i = 0; i < commits.data.length; i++) {
@@ -1262,11 +1262,12 @@ webpackJsonp([0],{
 				} else if (type === 2) {
 					var data = {
 						gitdir: process.cwd(),
+						project: _path2.default.basename(repository.url),
 						branches: repository.branches,
 						currentBranch: repository.currentBranch,
 						commits: selectedCommits
 					};
-					_electron.ipcRenderer.send(_app2.default.CHANNEL_MERGE_DIFF_REPORT, data);
+					_electron.ipcRenderer.send(_app2.default.CHANNEL_SHOW_MODAL, data);
 				}
 			}
 		}]);
@@ -1304,6 +1305,13 @@ webpackJsonp([0],{
 /***/ },
 
 /***/ 230:
+/***/ function(module, exports) {
+
+	module.exports = require("path");
+
+/***/ },
+
+/***/ 231:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1351,17 +1359,17 @@ webpackJsonp([0],{
 	    _createClass(CommitsFilter, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props;
-	            var active = _props.active;
-	            var filter = _props.filter;
-	            var repository = _props.repository;
-	            var setUserInput = _props.setUserInput;
-	            var setUsers = _props.setUsers;
-	            var setMessage = _props.setMessage;
-	            var setFromDate = _props.setFromDate;
-	            var setToDate = _props.setToDate;
-	            var search = _props.search;
-	            var reset = _props.reset;
+	            var _props = this.props,
+	                active = _props.active,
+	                filter = _props.filter,
+	                repository = _props.repository,
+	                setUserInput = _props.setUserInput,
+	                setUsers = _props.setUsers,
+	                setMessage = _props.setMessage,
+	                setFromDate = _props.setFromDate,
+	                setToDate = _props.setToDate,
+	                search = _props.search,
+	                reset = _props.reset;
 
 	            if (!filter.active) return null;
 
@@ -1452,9 +1460,9 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'componentWillMount',
 	        value: function componentWillMount() {
-	            var _props2 = this.props;
-	            var repository = _props2.repository;
-	            var updateFilter = _props2.updateFilter;
+	            var _props2 = this.props,
+	                repository = _props2.repository,
+	                updateFilter = _props2.updateFilter;
 
 	            var users = repository.users.map(function (user) {
 	                return Object.assign({}, user, {
@@ -1522,7 +1530,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 231:
+/***/ 232:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1541,7 +1549,7 @@ webpackJsonp([0],{
 
 	var _common = __webpack_require__(217);
 
-	var _commitsListItem = __webpack_require__(232);
+	var _commitsListItem = __webpack_require__(233);
 
 	var _commitsListItem2 = _interopRequireDefault(_commitsListItem);
 
@@ -1570,10 +1578,10 @@ webpackJsonp([0],{
 	    _createClass(CommitsList, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props;
-	            var commits = _props.commits;
-	            var selection = _props.selection;
-	            var toggleSelect = _props.toggleSelect;
+	            var _props = this.props,
+	                commits = _props.commits,
+	                selection = _props.selection,
+	                toggleSelect = _props.toggleSelect;
 
 	            if (commits.loading) {
 	                return _react2.default.createElement(_common.Loader, { text: 'Getting Commit Logs' });
@@ -1626,7 +1634,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 232:
+/***/ 233:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1675,14 +1683,14 @@ webpackJsonp([0],{
 	        value: function render() {
 	            var _this2 = this;
 
-	            var _props = this.props;
-	            var commit = _props.commit;
-	            var checked = _props.checked;
-	            var onChange = _props.onChange;
-	            var _state = this.state;
-	            var loading = _state.loading;
-	            var expanded = _state.expanded;
-	            var files = _state.files;
+	            var _props = this.props,
+	                commit = _props.commit,
+	                checked = _props.checked,
+	                onChange = _props.onChange;
+	            var _state = this.state,
+	                loading = _state.loading,
+	                expanded = _state.expanded,
+	                files = _state.files;
 
 	            if (commit === null) return null;
 	            var loadingClass = loading ? ' loading' : '';
@@ -1811,10 +1819,10 @@ webpackJsonp([0],{
 	        value: function toggle() {
 	            var _this3 = this;
 
-	            var _state2 = this.state;
-	            var loading = _state2.loading;
-	            var expanded = _state2.expanded;
-	            var files = _state2.files;
+	            var _state2 = this.state,
+	                loading = _state2.loading,
+	                expanded = _state2.expanded,
+	                files = _state2.files;
 
 	            if (loading) return;
 	            if (expanded) return this.setState({ expanded: false, loading: false });
@@ -1836,7 +1844,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 233:
+/***/ 234:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2060,7 +2068,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 234:
+/***/ 235:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2069,37 +2077,37 @@ webpackJsonp([0],{
 	  value: true
 	});
 
-	var _reduxSeamlessImmutable = __webpack_require__(235);
+	var _reduxSeamlessImmutable = __webpack_require__(236);
 
-	var _commits = __webpack_require__(244);
+	var _commits = __webpack_require__(245);
 
 	var _commits2 = _interopRequireDefault(_commits);
 
-	var _control = __webpack_require__(245);
+	var _control = __webpack_require__(246);
 
 	var _control2 = _interopRequireDefault(_control);
 
-	var _filter = __webpack_require__(246);
+	var _filter = __webpack_require__(247);
 
 	var _filter2 = _interopRequireDefault(_filter);
 
-	var _loading = __webpack_require__(247);
+	var _loading = __webpack_require__(248);
 
 	var _loading2 = _interopRequireDefault(_loading);
 
-	var _pager = __webpack_require__(248);
+	var _pager = __webpack_require__(249);
 
 	var _pager2 = _interopRequireDefault(_pager);
 
-	var _repository = __webpack_require__(249);
+	var _repository = __webpack_require__(250);
 
 	var _repository2 = _interopRequireDefault(_repository);
 
-	var _selection = __webpack_require__(250);
+	var _selection = __webpack_require__(251);
 
 	var _selection2 = _interopRequireDefault(_selection);
 
-	var _tab = __webpack_require__(251);
+	var _tab = __webpack_require__(252);
 
 	var _tab2 = _interopRequireDefault(_tab);
 
@@ -2109,7 +2117,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 244:
+/***/ 245:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2144,7 +2152,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 245:
+/***/ 246:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2179,7 +2187,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 246:
+/***/ 247:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2239,7 +2247,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 247:
+/***/ 248:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2271,7 +2279,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 248:
+/***/ 249:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2305,7 +2313,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 249:
+/***/ 250:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2336,7 +2344,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 250:
+/***/ 251:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2370,7 +2378,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 251:
+/***/ 252:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

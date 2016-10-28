@@ -3,15 +3,12 @@ import { remote } from 'electron';
 import { Button } from 'modules/common';
 
 export default props => {
-	const closeModal = () => {
-		remote.getCurrentWindow().destroy();
-	}
 	return (
 		<div className="glv-modal-bottom">
 			<Button
 				buttonClass="black deny"
 				label="Cancel"
-				onClick={closeModal}/>
+				onClick={props.cancel}/>
 			<Button
 				buttonClass="positive right labeled icon"
 				disabled={props.disabled}

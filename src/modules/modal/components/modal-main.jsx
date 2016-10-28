@@ -17,7 +17,7 @@ export default class ModalMain extends React.Component {
 	render() {
 		let loader = null, form = null;
 		let { loading, progress } = this.state;
-		let { branches } = this.props.data;
+		let { currentBranch, branches } = this.props.data;
 		let { target, selectBranch } = this.props;
 		if (loading) {
 			loader = <Loader isFullscreen={true} className="inverted" text={`Loadng ${progress}%...`}/>;
@@ -27,8 +27,11 @@ export default class ModalMain extends React.Component {
 			})
 			form = (
 				<form className="ui form">
+					<div className="field">
+						<label>Current branch: {currentBranch}</label>
+					</div>
 	                <div className="field">
-	                    <label>Target Branch:</label>
+	                    <label>Target branch:</label>
 	                    <Select
 	                    	options={branches}
 	                    	selectedOptions={target}
@@ -58,6 +61,7 @@ export default class ModalMain extends React.Component {
 	getFilesOfCommit(index) {
 		let { commits } = this.props.data;
 		if (index >= commits.length) {
+			this.props.onLoaded(this.files);
 			return this.setState({
 				loading: false,
 				progress: 100

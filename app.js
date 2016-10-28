@@ -16,7 +16,7 @@ function createMainWindow() {
     });
     win.loadURL(`file://${__dirname}/src/views/index.html`);
     win.setMenu(null);
-    win.webContents.openDevTools();
+    // win.webContents.openDevTools();
     win.on('closed', onClosed);
     return win;
 }
@@ -53,6 +53,7 @@ ipcMain.on(AppConst.CHANNEL_COMMITS_REPORT, (event, commits) => {
     dialog.showSaveDialog({
         filters: [{ name: 'Excel Document', extensions: ['xlsx'] }]
     }, (file) => {
+        if (!file) return;
         Report.exportCommitsReport(commits, file)
             .then(() => {
                 dialog.showMessageBox(mainWindow, {
@@ -70,7 +71,7 @@ ipcMain.on(AppConst.CHANNEL_COMMITS_REPORT, (event, commits) => {
     });
 });
 
-ipcMain.on(AppConst.CHANNEL_MERGE_DIFF_REPORT, (event, data) => {
+ipcMain.on(AppConst.CHANNEL_SHOW_MODAL, (event, data) => {
     let child = new BrowserWindow({
         parent: mainWindow,
         modal: true,
@@ -80,7 +81,29 @@ ipcMain.on(AppConst.CHANNEL_MERGE_DIFF_REPORT, (event, data) => {
         width: 640,
         height: 480
     });
-    child.webContents.openDevTools();
+    // child.webContents.openDevTools();
     child.data = data;
     child.loadURL(`file://${__dirname}/src/views/modal.html`);
+});
+
+ipcMain.on(AppConst.CHANNEL_MERGE_DIFF_REPORT, (event, data) => {
+    dialog.showSaveDialog({
+        filters: [{ name: 'Excel Document', extensions: ['xlsx'] }]
+    }, (file) => {
+        if (!file) return;
+        Report.exportMergeDiffReport(data.files, data.project, data.currentBranch, data.targetBranch, file)
+            .then(() => {
+                dialog.showMessageBox(mainWindow, {
+                    type: 'info',
+                    title: 'Done',
+                    buttons: ['OK'],
+                    message: 'Report has been successfully created',
+                    detail: 'Path: ' + file
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                dialog.showErrorBox('Error', 'Could not create report');
+            });
+    });
 });

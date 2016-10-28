@@ -19,7 +19,7 @@ webpackJsonp([1],{
 
 	var _common2 = _interopRequireDefault(_common);
 
-	var _modal = __webpack_require__(252);
+	var _modal = __webpack_require__(253);
 
 	var _modal2 = _interopRequireDefault(_modal);
 
@@ -32,7 +32,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 252:
+/***/ 253:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47,11 +47,17 @@ webpackJsonp([1],{
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _modalMain = __webpack_require__(253);
+	var _electron = __webpack_require__(173);
+
+	var _app = __webpack_require__(174);
+
+	var _app2 = _interopRequireDefault(_app);
+
+	var _modalMain = __webpack_require__(254);
 
 	var _modalMain2 = _interopRequireDefault(_modalMain);
 
-	var _modalButtons = __webpack_require__(254);
+	var _modalButtons = __webpack_require__(255);
 
 	var _modalButtons2 = _interopRequireDefault(_modalButtons);
 
@@ -77,29 +83,57 @@ webpackJsonp([1],{
 				target: []
 			};
 			_this.selectBranch = _this.selectBranch.bind(_this);
+			_this.setFiles = _this.setFiles.bind(_this);
+			_this.process = _this.process.bind(_this);
 			return _this;
 		}
 
 		_createClass(Modal, [{
 			key: 'render',
 			value: function render() {
-				var _state = this.state;
-				var ready = _state.ready;
-				var target = _state.target;
+				var _state = this.state,
+				    ready = _state.ready,
+				    target = _state.target;
 
 				return _react2.default.createElement(
 					'div',
 					{ id: 'modal', className: 'glv-modal' },
-					_react2.default.createElement(_modalMain2.default, { data: this.props.data, target: target, selectBranch: this.selectBranch }),
-					_react2.default.createElement(_modalButtons2.default, { disabled: !ready, process: function process() {} })
+					_react2.default.createElement(_modalMain2.default, {
+						data: this.props.data,
+						target: target,
+						selectBranch: this.selectBranch,
+						onLoaded: this.setFiles }),
+					_react2.default.createElement(_modalButtons2.default, { disabled: !ready, cancel: this.closeModal, process: this.process })
 				);
+			}
+		}, {
+			key: 'closeModal',
+			value: function closeModal() {
+				_electron.remote.getCurrentWindow().destroy();
 			}
 		}, {
 			key: 'selectBranch',
 			value: function selectBranch(branches) {
 				var state = { target: branches };
-				if (branches[0] !== this.props.data.currentBranch) state.ready = true;
+				if (branches[0] !== this.props.data.currentBranch) state.ready = true;else state.ready = false;
 				this.setState(state);
+			}
+		}, {
+			key: 'setFiles',
+			value: function setFiles(files) {
+				this.files = files;
+			}
+		}, {
+			key: 'process',
+			value: function process() {
+				var data = {
+					files: this.files,
+					project: this.props.data.project,
+					currentBranch: this.props.data.currentBranch,
+					targetBranch: this.state.target[0]
+				};
+				_electron.ipcRenderer.send(_app2.default.CHANNEL_MERGE_DIFF_REPORT, data);
+				this.closeModal();
 			}
 		}]);
 
@@ -110,7 +144,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 253:
+/***/ 254:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -162,13 +196,15 @@ webpackJsonp([1],{
 			value: function render() {
 				var loader = null,
 				    form = null;
-				var _state = this.state;
-				var loading = _state.loading;
-				var progress = _state.progress;
-				var branches = this.props.data.branches;
-				var _props = this.props;
-				var target = _props.target;
-				var selectBranch = _props.selectBranch;
+				var _state = this.state,
+				    loading = _state.loading,
+				    progress = _state.progress;
+				var _props$data = this.props.data,
+				    currentBranch = _props$data.currentBranch,
+				    branches = _props$data.branches;
+				var _props = this.props,
+				    target = _props.target,
+				    selectBranch = _props.selectBranch;
 
 				if (loading) {
 					loader = _react2.default.createElement(_common.Loader, { isFullscreen: true, className: 'inverted', text: 'Loadng ' + progress + '%...' });
@@ -189,7 +225,17 @@ webpackJsonp([1],{
 							_react2.default.createElement(
 								'label',
 								null,
-								'Target Branch:'
+								'Current branch: ',
+								currentBranch
+							)
+						),
+						_react2.default.createElement(
+							'div',
+							{ className: 'field' },
+							_react2.default.createElement(
+								'label',
+								null,
+								'Target branch:'
 							),
 							_react2.default.createElement(_common.Select, {
 								options: branches,
@@ -234,6 +280,7 @@ webpackJsonp([1],{
 				var commits = this.props.data.commits;
 
 				if (index >= commits.length) {
+					this.props.onLoaded(this.files);
 					return this.setState({
 						loading: false,
 						progress: 100
@@ -287,7 +334,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 254:
+/***/ 255:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -307,16 +354,13 @@ webpackJsonp([1],{
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.default = function (props) {
-		var closeModal = function closeModal() {
-			_electron.remote.getCurrentWindow().destroy();
-		};
 		return _react2.default.createElement(
 			'div',
 			{ className: 'glv-modal-bottom' },
 			_react2.default.createElement(_common.Button, {
 				buttonClass: 'black deny',
 				label: 'Cancel',
-				onClick: closeModal }),
+				onClick: props.cancel }),
 			_react2.default.createElement(_common.Button, {
 				buttonClass: 'positive right labeled icon',
 				disabled: props.disabled,

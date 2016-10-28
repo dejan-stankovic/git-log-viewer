@@ -28,7 +28,22 @@ module.exports = class Report {
         });
     }
 
-    static exportMergeDiffReport(commits, file) {
-    	
+    static exportMergeDiffReport(files, project, currentBranch, targetBranch, output) {
+    	return new Promise((resolve, reject) => {
+            let wb = new Workbook();
+            wb.xlsx.readFile(path.resolve(TEMPLATE_PATH, 'diff.xlsx'))
+                .then(() => {
+                    let sheet = wb.getWorksheet(1);
+                    for (let i = 0; i < files.length; i++) {
+                        let file = files[i];
+                        let row = sheet.getRow(i + 2);
+                        row.getCell('A').value = i + 1;
+                        row.getCell('B').value = project;
+                    }
+                    return wb.xlsx.writeFile(output);
+                })
+                .then(() => resolve())
+                .catch(err => reject(err));
+        });
     }
 }

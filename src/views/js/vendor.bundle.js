@@ -104,7 +104,7 @@
 	__webpack_require__(33);
 	__webpack_require__(193);
 	__webpack_require__(177);
-	__webpack_require__(235);
+	__webpack_require__(236);
 	__webpack_require__(192);
 	module.exports = __webpack_require__(202);
 
@@ -21363,6 +21363,7 @@
 		CHANNEL_SHOW_DIR_DIALOG: 'show-dir-dialog',
 		CHANNEL_SELECTED_DIR: 'selected-dir',
 		CHANNEL_SHOW_ERR_BOX: 'show-err-box',
+		CHANNEL_SHOW_MODAL: 'show-modal',
 		CHANNEL_COMMITS_REPORT: 'export-commits-report',
 		CHANNEL_MERGE_DIFF_REPORT: 'export-merge-diff-report',
 		PAGER_SIZE_AVAIABLE: [50, 100, 150, 200, 300, 500],
@@ -24176,11 +24177,11 @@
 	exports.default = function (props) {
 		var className = 'ui button ',
 		    icon = null;
-		var buttonClass = props.buttonClass;
-		var iconClass = props.iconClass;
-		var disabled = props.disabled;
-		var label = props.label;
-		var onClick = props.onClick;
+		var buttonClass = props.buttonClass,
+		    iconClass = props.iconClass,
+		    disabled = props.disabled,
+		    label = props.label,
+		    onClick = props.onClick;
 
 		if (iconClass) {
 			icon = _react2.default.createElement('i', { className: 'icon ' + iconClass });
@@ -24213,8 +24214,8 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.default = function (props) {
-		var className = props.className;
-		var isFullscreen = props.isFullscreen;
+		var className = props.className,
+		    isFullscreen = props.isFullscreen;
 
 		if (!isFullscreen) {
 			return _react2.default.createElement(
@@ -24461,10 +24462,10 @@
 	    }, {
 	        key: 'getClass',
 	        value: function getClass() {
-	            var _props = this.props;
-	            var type = _props.type;
-	            var search = _props.search;
-	            var multiple = _props.multiple;
+	            var _props = this.props,
+	                type = _props.type,
+	                search = _props.search,
+	                multiple = _props.multiple;
 
 	            var className = 'ui dropdown glv-dropdown ';
 	            if (this.state.active) className += 'active visible ';
@@ -24484,13 +24485,13 @@
 	        value: function renderSelected() {
 	            var _this2 = this;
 
-	            var _props2 = this.props;
-	            var selectedOptions = _props2.selectedOptions;
-	            var placeHolder = _props2.placeHolder;
-	            var multiple = _props2.multiple;
-	            var stringOption = _props2.stringOption;
-	            var selectedAttr = _props2.selectedAttr;
-	            var valueAttr = _props2.valueAttr;
+	            var _props2 = this.props,
+	                selectedOptions = _props2.selectedOptions,
+	                placeHolder = _props2.placeHolder,
+	                multiple = _props2.multiple,
+	                stringOption = _props2.stringOption,
+	                selectedAttr = _props2.selectedAttr,
+	                valueAttr = _props2.valueAttr;
 
 	            if (selectedOptions.length === 0) {
 	                return _react2.default.createElement(
@@ -24552,12 +24553,12 @@
 	    }, {
 	        key: 'renderSelectList',
 	        value: function renderSelectList() {
-	            var _props3 = this.props;
-	            var options = _props3.options;
-	            var selectedOptions = _props3.selectedOptions;
-	            var stringOption = _props3.stringOption;
-	            var valueAttr = _props3.valueAttr;
-	            var optionAttr = _props3.optionAttr;
+	            var _props3 = this.props,
+	                options = _props3.options,
+	                selectedOptions = _props3.selectedOptions,
+	                stringOption = _props3.stringOption,
+	                valueAttr = _props3.valueAttr,
+	                optionAttr = _props3.optionAttr;
 
 	            if (!this.state.active) return null;
 	            return _react2.default.createElement(_selectList2.default, {
@@ -24571,11 +24572,11 @@
 	    }, {
 	        key: 'inputChange',
 	        value: function inputChange() {
-	            var _props4 = this.props;
-	            var selectedOptions = _props4.selectedOptions;
-	            var placeHolder = _props4.placeHolder;
-	            var multiple = _props4.multiple;
-	            var onInputChange = _props4.onInputChange;
+	            var _props4 = this.props,
+	                selectedOptions = _props4.selectedOptions,
+	                placeHolder = _props4.placeHolder,
+	                multiple = _props4.multiple,
+	                onInputChange = _props4.onInputChange;
 
 	            var keyword = this.inputText.value;
 	            if (selectedOptions.length === 0) {
@@ -24596,10 +24597,10 @@
 	    }, {
 	        key: 'onSelect',
 	        value: function onSelect(option, selected) {
-	            var _props5 = this.props;
-	            var search = _props5.search;
-	            var multiple = _props5.multiple;
-	            var onChange = _props5.onChange;
+	            var _props5 = this.props,
+	                search = _props5.search,
+	                multiple = _props5.multiple,
+	                onChange = _props5.onChange;
 
 	            var selectedOptions = [].concat(_toConsumableArray(this.props.selectedOptions));
 
@@ -24949,7 +24950,8 @@
 /* 232 */,
 /* 233 */,
 /* 234 */,
-/* 235 */
+/* 235 */,
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -24959,15 +24961,15 @@
 	});
 	exports.stateTransformer = exports.routerReducer = exports.combineReducers = undefined;
 
-	var _combineReducers = __webpack_require__(236);
+	var _combineReducers = __webpack_require__(237);
 
 	var _combineReducers2 = _interopRequireDefault(_combineReducers);
 
-	var _routerReducer = __webpack_require__(237);
+	var _routerReducer = __webpack_require__(238);
 
 	var _routerReducer2 = _interopRequireDefault(_routerReducer);
 
-	var _stateTransformer = __webpack_require__(243);
+	var _stateTransformer = __webpack_require__(244);
 
 	var _stateTransformer2 = _interopRequireDefault(_stateTransformer);
 
@@ -24980,7 +24982,7 @@
 	exports.stateTransformer = _stateTransformer2.default;
 
 /***/ },
-/* 236 */
+/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25017,7 +25019,7 @@
 	}
 
 /***/ },
-/* 237 */
+/* 238 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25031,7 +25033,7 @@
 
 	var _seamlessImmutable2 = _interopRequireDefault(_seamlessImmutable);
 
-	var _reactRouterRedux = __webpack_require__(238);
+	var _reactRouterRedux = __webpack_require__(239);
 
 	function _interopRequireDefault(obj) {
 	  return obj && obj.__esModule ? obj : { default: obj };
@@ -25054,7 +25056,7 @@
 	}
 
 /***/ },
-/* 238 */
+/* 239 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25064,7 +25066,7 @@
 	});
 	exports.routerMiddleware = exports.routerActions = exports.goForward = exports.goBack = exports.go = exports.replace = exports.push = exports.CALL_HISTORY_METHOD = exports.routerReducer = exports.LOCATION_CHANGE = exports.syncHistoryWithStore = undefined;
 
-	var _reducer = __webpack_require__(239);
+	var _reducer = __webpack_require__(240);
 
 	Object.defineProperty(exports, 'LOCATION_CHANGE', {
 	  enumerable: true,
@@ -25079,7 +25081,7 @@
 	  }
 	});
 
-	var _actions = __webpack_require__(240);
+	var _actions = __webpack_require__(241);
 
 	Object.defineProperty(exports, 'CALL_HISTORY_METHOD', {
 	  enumerable: true,
@@ -25124,11 +25126,11 @@
 	  }
 	});
 
-	var _sync = __webpack_require__(241);
+	var _sync = __webpack_require__(242);
 
 	var _sync2 = _interopRequireDefault(_sync);
 
-	var _middleware = __webpack_require__(242);
+	var _middleware = __webpack_require__(243);
 
 	var _middleware2 = _interopRequireDefault(_middleware);
 
@@ -25140,7 +25142,7 @@
 	exports.routerMiddleware = _middleware2['default'];
 
 /***/ },
-/* 239 */
+/* 240 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -25192,7 +25194,7 @@
 	}
 
 /***/ },
-/* 240 */
+/* 241 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -25234,7 +25236,7 @@
 	var routerActions = exports.routerActions = { push: push, replace: replace, go: go, goBack: goBack, goForward: goForward };
 
 /***/ },
-/* 241 */
+/* 242 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25255,7 +25257,7 @@
 
 	exports['default'] = syncHistoryWithStore;
 
-	var _reducer = __webpack_require__(239);
+	var _reducer = __webpack_require__(240);
 
 	var defaultSelectLocationState = function defaultSelectLocationState(state) {
 	  return state.routing;
@@ -25395,7 +25397,7 @@
 	}
 
 /***/ },
-/* 242 */
+/* 243 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -25405,7 +25407,7 @@
 	});
 	exports['default'] = routerMiddleware;
 
-	var _actions = __webpack_require__(240);
+	var _actions = __webpack_require__(241);
 
 	function _toConsumableArray(arr) {
 	  if (Array.isArray(arr)) {
@@ -25441,7 +25443,7 @@
 	}
 
 /***/ },
-/* 243 */
+/* 244 */
 /***/ function(module, exports) {
 
 	"use strict";

@@ -1,3 +1,4 @@
+import path from 'path';
 import React from 'react';
 import { connect } from 'react-redux';
 import { ipcRenderer } from 'electron';
@@ -69,11 +70,12 @@ class CommitsControl extends React.Component {
 		} else if (type === 2) {
 			let data = {
 				gitdir: process.cwd(),
+				project: path.basename(repository.url),
 				branches: repository.branches,
 				currentBranch: repository.currentBranch,
 				commits: selectedCommits
 			}
-			ipcRenderer.send(AppConst.CHANNEL_MERGE_DIFF_REPORT, data);
+			ipcRenderer.send(AppConst.CHANNEL_SHOW_MODAL, data);
 		}
 	}
 }
