@@ -3,8 +3,8 @@ const webpack = require('webpack');
 
 module.exports = {
     entry: {
-        main: "./src/main.js",
-        modal: './src/modal.js',
+        main: "./src/main.jsx",
+        modal: './src/modal.jsx',
         vendor: [
             'electron',
             'react',

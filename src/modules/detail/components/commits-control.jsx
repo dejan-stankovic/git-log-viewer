@@ -68,7 +68,9 @@ class CommitsControl extends React.Component {
 			ipcRenderer.send(AppConst.CHANNEL_COMMITS_REPORT, selectedCommits);
 		} else if (type === 2) {
 			let data = {
-				repository,
+				gitdir: process.cwd(),
+				branches: repository.branches,
+				currentBranch: repository.currentBranch,
 				commits: selectedCommits
 			}
 			ipcRenderer.send(AppConst.CHANNEL_MERGE_DIFF_REPORT, data);

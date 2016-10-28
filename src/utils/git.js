@@ -25,7 +25,7 @@ export default class Git {
                     console.error(error);
                     reject(error);
                 }
-                resolve(stdout);
+                resolve(stdout.replace(/[\r\n]+/g, ''));
             });
         });
     }
@@ -164,25 +164,6 @@ export default class Git {
                     match = regexp.exec(stdout);
                 }
                 resolve(files);
-            });
-        });
-    }
-
-    static getFilesByCommits(commits) {
-        return new Promise((resolve, reject) => {
-            let promises = [];
-            for (let commit of commits) {
-                promises.push(this.getFilesByCommitHash(commit.hash));
-            }
-            Promise.all(promises).then(values => {
-                let data = values.map((value, i) => {
-                    let commit = commits[i].asMutable({deep: true});
-                    commit.files = value;
-                    return commit;
-                });
-                resolve(data);
-            }).catch(err => {
-                reject(null);
             });
         });
     }

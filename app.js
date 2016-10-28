@@ -80,6 +80,7 @@ ipcMain.on(AppConst.CHANNEL_MERGE_DIFF_REPORT, (event, data) => {
         width: 640,
         height: 480
     });
+    child.webContents.openDevTools();
     child.data = data;
     child.loadURL(`file://${__dirname}/src/views/modal.html`);
 });

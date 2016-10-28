@@ -21252,16 +21252,165 @@
 	module.exports = ReactDOMNullInputValuePropHook;
 
 /***/ },
-/* 171 */,
-/* 172 */,
+/* 171 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(33);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _child_process = __webpack_require__(172);
+
+	var _electron = __webpack_require__(173);
+
+	var _app = __webpack_require__(174);
+
+	var _app2 = _interopRequireDefault(_app);
+
+	var _actiontype = __webpack_require__(175);
+
+	var _actiontype2 = _interopRequireDefault(_actiontype);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Common = function () {
+	    function Common() {
+	        _classCallCheck(this, Common);
+	    }
+
+	    _createClass(Common, null, [{
+	        key: 'renderPage',
+
+	        /**
+	         * Render whole page
+	         * @param  {React.Component} component
+	         * @return {void}
+	         */
+	        value: function renderPage(component) {
+	            _reactDom2.default.render(component, document.getElementById(_app2.default.HTML_APP_ID));
+	        }
+
+	        /**
+	         * Display error dialog
+	         * @param  {String} title   Title of error box
+	         * @param  {String} content Error content
+	         * @return {void}
+	         */
+
+	    }, {
+	        key: 'showErrorBox',
+	        value: function showErrorBox(title, content) {
+	            _electron.ipcRenderer.send(_app2.default.CHANNEL_SHOW_ERR_BOX, title, content);
+	        }
+
+	        /**
+	         * Action creator
+	         * @param  {String} type The key of action
+	         * @param  {Any} data    The data for action
+	         * @return {Object}      Action object
+	         */
+
+	    }, {
+	        key: 'getAction',
+	        value: function getAction(type, data) {
+	            var action = { type: _actiontype2.default[type] };
+	            if (typeof data !== 'undefined') {
+	                action.data = data;
+	            }
+	            return action;
+	        }
+	    }]);
+
+	    return Common;
+	}();
+
+	exports.default = Common;
+
+/***/ },
+/* 172 */
+/***/ function(module, exports) {
+
+	module.exports = require("child_process");
+
+/***/ },
 /* 173 */
 /***/ function(module, exports) {
 
 	module.exports = require("electron");
 
 /***/ },
-/* 174 */,
-/* 175 */,
+/* 174 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = Object.freeze({
+		HTML_APP_ID: 'app',
+		CHANNEL_SHOW_DIR_DIALOG: 'show-dir-dialog',
+		CHANNEL_SELECTED_DIR: 'selected-dir',
+		CHANNEL_SHOW_ERR_BOX: 'show-err-box',
+		CHANNEL_COMMITS_REPORT: 'export-commits-report',
+		CHANNEL_MERGE_DIFF_REPORT: 'export-merge-diff-report',
+		PAGER_SIZE_AVAIABLE: [50, 100, 150, 200, 300, 500],
+		PAGER_DEFAULT_SIZE: 50,
+		EXEC_OPTIONS: { maxBuffer: 1000 * 1024 }
+	});
+
+/***/ },
+/* 175 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.default = Object.freeze({
+		START_GET_COMMITS: 100,
+		END_GET_COMMITS: 101,
+
+		TOGGLE_FILTER: 200,
+		UPDATE_FILTER: 201,
+		SET_ALL_USERS: 202,
+		SET_USERS: 203,
+		SET_MESSAGE: 204,
+		SET_FROM_DATE: 205,
+		SET_TO_DATE: 206,
+		RESET_FILTER: 207,
+
+		START_LOADING: 300,
+		END_LOADING: 301,
+
+		CHANGE_PAGE: 400,
+		CHANGE_PAGE_SIZE: 401,
+		UPDATE_PAGER: 402,
+
+		UPDATE_REPOSITORY: 500,
+		CHANGE_BRANCH: 501,
+
+		CHANGE_TAB: 600,
+
+		UPDATE_SELECTION: 700,
+
+		CONTROL_START_ACTION: 800,
+		CONTROL_STOP_ACTION: 801
+	});
+
+/***/ },
 /* 176 */,
 /* 177 */
 /***/ function(module, exports, __webpack_require__) {
@@ -23602,9 +23751,364 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(185)(module)))
 
 /***/ },
-/* 203 */,
-/* 204 */,
-/* 205 */,
+/* 203 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _child_process = __webpack_require__(172);
+
+	var _app = __webpack_require__(174);
+
+	var _app2 = _interopRequireDefault(_app);
+
+	var _commit = __webpack_require__(204);
+
+	var _user = __webpack_require__(205);
+
+	var _user2 = _interopRequireDefault(_user);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Git = function () {
+	    function Git() {
+	        _classCallCheck(this, Git);
+	    }
+
+	    _createClass(Git, null, [{
+	        key: 'getURL',
+	        value: function getURL() {
+	            return new Promise(function (resolve, reject) {
+	                var cmd = 'git config --get remote.origin.url';
+	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    resolve(stdout);
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'getCurrentBranch',
+	        value: function getCurrentBranch() {
+	            return new Promise(function (resolve, reject) {
+	                var cmd = 'git rev-parse --abbrev-ref HEAD';
+	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    resolve(stdout.replace(/[\r\n]+/g, ''));
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'getBranches',
+	        value: function getBranches() {
+	            return new Promise(function (resolve, reject) {
+	                var cmd = 'git branch -a';
+	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    var branches = stdout.split(/[\r\n]+/g);
+	                    var result = [];
+	                    var _iteratorNormalCompletion = true;
+	                    var _didIteratorError = false;
+	                    var _iteratorError = undefined;
+
+	                    try {
+	                        for (var _iterator = branches[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                            var branch = _step.value;
+
+	                            branch = branch.trim();
+	                            if (branch === '' || branch.indexOf('->') > -1) continue;
+	                            if (branch.substring(0, 2) === '* ') {
+	                                branch = branch.substring(2);
+	                            }
+	                            result.push(branch);
+	                        }
+	                    } catch (err) {
+	                        _didIteratorError = true;
+	                        _iteratorError = err;
+	                    } finally {
+	                        try {
+	                            if (!_iteratorNormalCompletion && _iterator.return) {
+	                                _iterator.return();
+	                            }
+	                        } finally {
+	                            if (_didIteratorError) {
+	                                throw _iteratorError;
+	                            }
+	                        }
+	                    }
+
+	                    resolve(result);
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'getUsers',
+	        value: function getUsers() {
+	            var branch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+	            return new Promise(function (resolve, reject) {
+	                var cmd = 'git log --pretty=[%cE][%cN]';
+	                if (branch !== '') cmd += ' ' + branch;
+	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    var regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
+	                    var match = regexp.exec(stdout);
+	                    var emails = [];
+	                    var users = [];
+	                    while (match !== null) {
+	                        var email = match[1].toLowerCase();
+	                        if (emails.indexOf(email) === -1) {
+	                            emails.push(email);
+	                            users.push(new _user2.default(match[2], email));
+	                        }
+	                        match = regexp.exec(stdout);
+	                    }
+	                    resolve(users);
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'getCommitsCount',
+	        value: function getCommitsCount() {
+	            var branch = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+	            var users = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+	            var message = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+	            var fromDate = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
+	            var toDate = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
+
+	            var cmd = 'git log --pretty=%h --regexp-ignore-case';
+	            var _iteratorNormalCompletion2 = true;
+	            var _didIteratorError2 = false;
+	            var _iteratorError2 = undefined;
+
+	            try {
+	                for (var _iterator2 = users[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                    var user = _step2.value;
+
+	                    cmd += ' --committer=' + user.email;
+	                }
+	            } catch (err) {
+	                _didIteratorError2 = true;
+	                _iteratorError2 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                        _iterator2.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError2) {
+	                        throw _iteratorError2;
+	                    }
+	                }
+	            }
+
+	            if (message !== '') {
+	                cmd += ' --grep=' + message.toLowerCase();
+	            }
+	            if (fromDate !== '') {
+	                cmd += ' --since=' + fromDate;
+	            }
+	            if (toDate !== '') {
+	                cmd += ' --before=' + toDate;
+	            }
+	            if (branch !== '') cmd += ' ' + branch;
+	            return new Promise(function (resolve, reject) {
+	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    var lines = stdout.split(/[\r\n]+/g);
+	                    resolve(lines.length);
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'getCommits',
+	        value: function getCommits() {
+	            var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+	            var pageSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _app2.default.PAGER_DEFAULT_SIZE;
+	            var branch = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+	            var users = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
+	            var message = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
+	            var fromDate = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : '';
+	            var toDate = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : '';
+
+	            if (isNaN(page) || page < 1) {
+	                page = 1;
+	            }
+	            if (isNaN(pageSize) || pageSize < 1) {
+	                pageSize = _app2.default.PAGER_DEFAULT_SIZE;
+	            }
+	            var cmd = 'git log --pretty=[%H][%cN][%cE][%cd][%s] --date=format:"%Y/%m/%d %H:%M:%S" --regexp-ignore-case';
+	            var _iteratorNormalCompletion3 = true;
+	            var _didIteratorError3 = false;
+	            var _iteratorError3 = undefined;
+
+	            try {
+	                for (var _iterator3 = users[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                    var user = _step3.value;
+
+	                    cmd += ' --committer=' + user.email;
+	                }
+	            } catch (err) {
+	                _didIteratorError3 = true;
+	                _iteratorError3 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	                        _iterator3.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError3) {
+	                        throw _iteratorError3;
+	                    }
+	                }
+	            }
+
+	            if (message !== '') {
+	                cmd += ' --grep=' + message.toLowerCase();
+	            }
+	            if (fromDate !== '') {
+	                cmd += ' --since=' + fromDate;
+	            }
+	            if (toDate !== '') {
+	                cmd += ' --before=' + toDate;
+	            }
+	            cmd += ' --max-count=' + pageSize + ' --skip=' + (page - 1) * pageSize;
+	            if (branch !== '') cmd += ' ' + branch;
+	            return new Promise(function (resolve, reject) {
+	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    var commits = [];
+	                    var regexp = /\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+)\][\r\n]+/g;
+	                    var match = regexp.exec(stdout);
+	                    while (match !== null) {
+	                        var commit = new _commit.Commit(match[1], match[2], match[3], match[4], match[5]);
+	                        commits.push(commit);
+	                        match = regexp.exec(stdout);
+	                    }
+	                    resolve(commits);
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'getFilesByCommitHash',
+	        value: function getFilesByCommitHash(hash) {
+	            var cmd = 'git log -m -1 --pretty= --name-status ' + hash;
+	            return new Promise(function (resolve, reject) {
+	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(error);
+	                    }
+	                    var files = [];
+	                    var regexp = /(\w+)\s+(\S+)(\s+(\S+))?[\r\n]+/g;
+	                    var match = regexp.exec(stdout);
+	                    while (match !== null) {
+	                        var file = new _commit.CommitFile(match[1], match[2]);
+	                        files.push(file);
+	                        match = regexp.exec(stdout);
+	                    }
+	                    resolve(files);
+	                });
+	            });
+	        }
+	    }, {
+	        key: 'fetchAll',
+	        value: function fetchAll() {
+	            var cmd = 'git fetch --all';
+	            return new Promise(function (resolve, reject) {
+	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
+	                    if (error) {
+	                        console.error(error);
+	                        reject(stderr);
+	                    }
+	                    resolve(stdout);
+	                });
+	            });
+	        }
+	    }]);
+
+	    return Git;
+	}();
+
+	exports.default = Git;
+
+/***/ },
+/* 204 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Commit = exports.Commit = function Commit(hash, username, email, date, message) {
+	    _classCallCheck(this, Commit);
+
+	    this.hash = hash;
+	    this.username = username;
+	    this.email = email;
+	    this.date = date;
+	    this.message = message;
+	    this.files = null;
+	};
+
+	var CommitFile = exports.CommitFile = function CommitFile(status, filePath) {
+	    _classCallCheck(this, CommitFile);
+
+	    this.status = status;
+	    this.filePath = filePath;
+	};
+
+/***/ },
+/* 205 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var User = function User(name, email) {
+	    _classCallCheck(this, User);
+
+	    this.name = name;
+	    this.email = email;
+	};
+
+	exports.default = User;
+
+/***/ },
 /* 206 */,
 /* 207 */,
 /* 208 */,
@@ -23616,11 +24120,564 @@
 /* 214 */,
 /* 215 */,
 /* 216 */,
-/* 217 */,
-/* 218 */,
-/* 219 */,
-/* 220 */,
-/* 221 */,
+/* 217 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Tab = exports.SelectType = exports.Select = exports.Pager = exports.Loader = exports.Button = undefined;
+
+	var _button = __webpack_require__(218);
+
+	var _button2 = _interopRequireDefault(_button);
+
+	var _loader = __webpack_require__(219);
+
+	var _loader2 = _interopRequireDefault(_loader);
+
+	var _pager = __webpack_require__(220);
+
+	var _pager2 = _interopRequireDefault(_pager);
+
+	var _select = __webpack_require__(221);
+
+	var _tab = __webpack_require__(227);
+
+	var _tab2 = _interopRequireDefault(_tab);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.Button = _button2.default;
+	exports.Loader = _loader2.default;
+	exports.Pager = _pager2.default;
+	exports.Select = _select.Select;
+	exports.SelectType = _select.SelectType;
+	exports.Tab = _tab2.default;
+
+/***/ },
+/* 218 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = function (props) {
+		var className = 'ui button ',
+		    icon = null;
+		var buttonClass = props.buttonClass;
+		var iconClass = props.iconClass;
+		var disabled = props.disabled;
+		var label = props.label;
+		var onClick = props.onClick;
+
+		if (iconClass) {
+			icon = _react2.default.createElement('i', { className: 'icon ' + iconClass });
+		}
+		if (disabled) className += 'disabled ';
+		className += buttonClass;
+		return _react2.default.createElement(
+			'button',
+			{ className: className, onClick: onClick },
+			icon,
+			' ',
+			label
+		);
+	};
+
+/***/ },
+/* 219 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = function (props) {
+		var className = props.className;
+		var isFullscreen = props.isFullscreen;
+
+		if (!isFullscreen) {
+			return _react2.default.createElement(
+				'div',
+				{ className: 'ui active centered text inline loader ' + className },
+				props.text
+			);
+		}
+
+		return _react2.default.createElement(
+			'div',
+			{ id: 'modal-loader', className: 'ui segment glv-loader-full' },
+			_react2.default.createElement(
+				'div',
+				{ className: 'ui active dimmer ' + className },
+				_react2.default.createElement(
+					'div',
+					{ className: 'ui medium text loader' },
+					props.text
+				)
+			)
+		);
+	};
+
+/***/ },
+/* 220 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _select = __webpack_require__(221);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	var Pager = function Pager(props) {
+	    var current = parseInt(props.current);
+	    var total = parseInt(props.total);
+	    var key = 0;
+	    if (current > total || current < 1 || total < 1) return null;
+	    var getItem = function getItem(text, isDisabled, isActive, target) {
+	        var className = 'item ';
+	        if (isDisabled) className += 'disabled';else if (isActive) className += 'active';
+	        if (isDisabled || isActive) {
+	            return _react2.default.createElement(
+	                'div',
+	                { key: key++, className: className },
+	                text
+	            );
+	        } else {
+	            return _react2.default.createElement(
+	                'a',
+	                { key: key++, className: className, onClick: function onClick() {
+	                        return props.changePage(target);
+	                    } },
+	                text
+	            );
+	        }
+	    };
+	    var changePageSize = function changePageSize(selected) {
+	        return props.changePageSize(selected[0]);
+	    };
+
+	    var before = void 0,
+	        after = void 0;
+
+	    if (current === 1) {
+	        before = [getItem(_react2.default.createElement('i', { className: 'left chevron icon' }), true, false)];
+	    } else {
+	        before = [getItem(_react2.default.createElement('i', { className: 'left chevron icon' }), false, false, current - 1)];
+	    }
+	    if (current > 4) {
+	        before = [].concat(_toConsumableArray(before), [getItem(1, false, false, 1), getItem('...', true, false), getItem(current - 1, false, false, current - 1)]);
+	    } else {
+	        for (var i = 1; i < current; i++) {
+	            before.push(getItem(i, false, false, i));
+	        }
+	    }
+
+	    after = [getItem(current, false, true)];
+	    if (total - current > 3) {
+	        after = [].concat(_toConsumableArray(after), [getItem(current + 1, false, false, current + 1), getItem('...', true, false), getItem(total, false, false, total)]);
+	    } else {
+	        for (var _i = current + 1; _i <= total; _i++) {
+	            after.push(getItem(_i, false, false, _i));
+	        }
+	    }
+	    if (current === total) {
+	        after.push(getItem(_react2.default.createElement('i', { className: 'right chevron icon' }), true, false));
+	    } else {
+	        after.push(getItem(_react2.default.createElement('i', { className: 'right chevron icon' }), false, false, current + 1));
+	    }
+
+	    return _react2.default.createElement(
+	        'div',
+	        { className: 'ui grid' },
+	        _react2.default.createElement(
+	            'div',
+	            { className: 'ten wide column' },
+	            _react2.default.createElement(
+	                'div',
+	                { className: 'ui pagination menu' },
+	                [].concat(_toConsumableArray(before), _toConsumableArray(after))
+	            )
+	        ),
+	        _react2.default.createElement(
+	            'div',
+	            { className: 'six wide right aligned column' },
+	            _react2.default.createElement(
+	                'label',
+	                null,
+	                'Show\xA0\xA0',
+	                _react2.default.createElement(_select.Select, {
+	                    options: props.sizes,
+	                    stringOption: true,
+	                    selectedOptions: [props.size],
+	                    onChange: changePageSize }),
+	                '\xA0\xA0items'
+	            )
+	        )
+	    );
+	};
+
+	exports.default = Pager;
+
+
+	Pager.propsType = {
+	    current: _react2.default.PropTypes.number.isRequired,
+	    total: _react2.default.PropTypes.number.isRequired,
+	    size: _react2.default.PropTypes.number.isRequired,
+	    sizes: _react2.default.PropTypes.array.isRequired,
+	    changePage: _react2.default.PropTypes.func.isRequired,
+	    changePageSize: _react2.default.PropTypes.func.isRequired
+	};
+
+/***/ },
+/* 221 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.SelectType = exports.Select = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(33);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _reactAddonsPureRenderMixin = __webpack_require__(222);
+
+	var _reactAddonsPureRenderMixin2 = _interopRequireDefault(_reactAddonsPureRenderMixin);
+
+	var _selectList = __webpack_require__(225);
+
+	var _selectList2 = _interopRequireDefault(_selectList);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var SelectType = Object.freeze({
+	    NORMAL: 0,
+	    BUTTON: 1,
+	    INLINE: 2
+	});
+
+	var Select = function (_React$Component) {
+	    _inherits(Select, _React$Component);
+
+	    function Select(props) {
+	        _classCallCheck(this, Select);
+
+	        var _this = _possibleConstructorReturn(this, (Select.__proto__ || Object.getPrototypeOf(Select)).call(this, props));
+
+	        _this.props = props;
+	        _this.state = { active: false };
+
+	        _this.getClass = _this.getClass.bind(_this);
+	        _this.renderSelected = _this.renderSelected.bind(_this);
+	        _this.renderInputText = _this.renderInputText.bind(_this);
+	        _this.renderInputSizer = _this.renderInputSizer.bind(_this);
+	        _this.renderSelectList = _this.renderSelectList.bind(_this);
+	        _this.inputChange = _this.inputChange.bind(_this);
+	        _this.onSelect = _this.onSelect.bind(_this);
+	        _this.onDeselect = _this.onDeselect.bind(_this);
+	        _this.showDropdown = _this.showDropdown.bind(_this);
+	        _this.hideDropdown = _this.hideDropdown.bind(_this);
+	        _this.shouldComponentUpdate = _reactAddonsPureRenderMixin2.default.shouldComponentUpdate.bind(_this);
+	        return _this;
+	    }
+
+	    _createClass(Select, [{
+	        key: 'render',
+	        value: function render() {
+	            return _react2.default.createElement(
+	                'div',
+	                { className: this.getClass(), onClick: this.showDropdown },
+	                this.renderSelected(),
+	                this.renderInputText(),
+	                this.renderInputSizer(),
+	                this.renderIcon(),
+	                this.renderSelectList()
+	            );
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            window.addEventListener('click', this.hideDropdown, false);
+	            if (this.props.search) {
+	                this.inputText = _reactDom2.default.findDOMNode(this.refs.inputText);
+	                if (this.props.multiple) {
+	                    this.inputSizer = _reactDom2.default.findDOMNode(this.refs.inputSizer);
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'componentWillUnmount',
+	        value: function componentWillUnmount() {
+	            window.removeEventListener('click', this.hideDropdown, false);
+	        }
+	    }, {
+	        key: 'getClass',
+	        value: function getClass() {
+	            var _props = this.props;
+	            var type = _props.type;
+	            var search = _props.search;
+	            var multiple = _props.multiple;
+
+	            var className = 'ui dropdown glv-dropdown ';
+	            if (this.state.active) className += 'active visible ';
+	            if (type === SelectType.NORMAL) {
+	                className += 'selection ';
+	                if (search) className += 'search ';
+	                if (multiple) className += 'fluid multiple ';
+	            } else if (type === SelectType.BUTTON) {
+	                className += 'button scrolling ';
+	            } else if (type === SelectType.INLINE) {
+	                className += 'inline scrolling ';
+	            }
+	            return className;
+	        }
+	    }, {
+	        key: 'renderSelected',
+	        value: function renderSelected() {
+	            var _this2 = this;
+
+	            var _props2 = this.props;
+	            var selectedOptions = _props2.selectedOptions;
+	            var placeHolder = _props2.placeHolder;
+	            var multiple = _props2.multiple;
+	            var stringOption = _props2.stringOption;
+	            var selectedAttr = _props2.selectedAttr;
+	            var valueAttr = _props2.valueAttr;
+
+	            if (selectedOptions.length === 0) {
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: 'text default', ref: 'placeHolder' },
+	                    placeHolder
+	                );
+	            } else if (!multiple) {
+	                var option = selectedOptions[0];
+	                if (!stringOption) {
+	                    option = option[selectedAttr];
+	                }
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: 'text' },
+	                    option
+	                );
+	            } else if (!stringOption) {
+	                return selectedOptions.map(function (option, i) {
+	                    return _react2.default.createElement(
+	                        'a',
+	                        { key: option[valueAttr], className: 'ui label', onClick: function onClick(e) {
+	                                return _this2.onDeselect(e, i);
+	                            } },
+	                        option[selectedAttr],
+	                        _react2.default.createElement('i', { className: 'delete icon' })
+	                    );
+	                });
+	            } else {
+	                return selectedOptions.map(function (option, i) {
+	                    return _react2.default.createElement(
+	                        'a',
+	                        { key: i, className: 'ui label', onClick: function onClick(e) {
+	                                return _this2.onDeselect(e, i);
+	                            } },
+	                        option,
+	                        _react2.default.createElement('i', { className: 'delete icon' })
+	                    );
+	                });
+	            }
+	        }
+	    }, {
+	        key: 'renderInputText',
+	        value: function renderInputText() {
+	            if (!this.props.search) return null;
+	            return _react2.default.createElement('input', { className: 'search', autoComplete: 'off', onChange: this.inputChange, ref: 'inputText' });
+	        }
+	    }, {
+	        key: 'renderInputSizer',
+	        value: function renderInputSizer() {
+	            if (!this.props.search || !this.props.multiple) return null;
+	            return _react2.default.createElement('span', { className: 'sizer glv-sizer', ref: 'inputSizer' });
+	        }
+	    }, {
+	        key: 'renderIcon',
+	        value: function renderIcon() {
+	            return _react2.default.createElement('i', { className: 'dropdown icon' });
+	        }
+	    }, {
+	        key: 'renderSelectList',
+	        value: function renderSelectList() {
+	            var _props3 = this.props;
+	            var options = _props3.options;
+	            var selectedOptions = _props3.selectedOptions;
+	            var stringOption = _props3.stringOption;
+	            var valueAttr = _props3.valueAttr;
+	            var optionAttr = _props3.optionAttr;
+
+	            if (!this.state.active) return null;
+	            return _react2.default.createElement(_selectList2.default, {
+	                options: options,
+	                selectedOptions: selectedOptions,
+	                stringOption: stringOption,
+	                onSelect: this.onSelect,
+	                valueAttr: valueAttr,
+	                optionAttr: optionAttr });
+	        }
+	    }, {
+	        key: 'inputChange',
+	        value: function inputChange() {
+	            var _props4 = this.props;
+	            var selectedOptions = _props4.selectedOptions;
+	            var placeHolder = _props4.placeHolder;
+	            var multiple = _props4.multiple;
+	            var onInputChange = _props4.onInputChange;
+
+	            var keyword = this.inputText.value;
+	            if (selectedOptions.length === 0) {
+	                var placeHolderDiv = _reactDom2.default.findDOMNode(this.refs.placeHolder);
+	                if (keyword.length === 0) {
+	                    placeHolderDiv.innerHTML = placeHolder;
+	                } else {
+	                    placeHolderDiv.innerHTML = '';
+	                }
+	            }
+	            if (multiple) {
+	                // Change the size of input element based on input text
+	                this.inputSizer.innerHTML = keyword.replace(/\s/g, '&nbsp;');
+	                this.inputText.style = 'width: ' + this.inputSizer.offsetWidth + 'px';
+	            }
+	            onInputChange(keyword);
+	        }
+	    }, {
+	        key: 'onSelect',
+	        value: function onSelect(option, selected) {
+	            var _props5 = this.props;
+	            var search = _props5.search;
+	            var multiple = _props5.multiple;
+	            var onChange = _props5.onChange;
+
+	            var selectedOptions = [].concat(_toConsumableArray(this.props.selectedOptions));
+
+	            if (search) {
+	                this.inputText.value = '';
+	                this.inputChange();
+	            }
+	            if (selected) return this.setState({ active: false });
+	            if (multiple || selectedOptions.length === 0) {
+	                selectedOptions.push(option);
+	            } else {
+	                selectedOptions[0] = option;
+	            }
+	            this.setState({ active: false });
+	            onChange(selectedOptions);
+	        }
+	    }, {
+	        key: 'onDeselect',
+	        value: function onDeselect(e, i) {
+	            e.stopPropagation();
+	            this.inputText.value = '';
+	            this.inputChange();
+	            var selectedOptions = [].concat(_toConsumableArray(this.props.selectedOptions));
+	            selectedOptions.splice(i, 1);
+	            var onChange = this.props.onChange;
+
+	            onChange(selectedOptions);
+	        }
+	    }, {
+	        key: 'showDropdown',
+	        value: function showDropdown(e) {
+	            e.stopPropagation();
+	            if (this.props.search) {
+	                this.inputText.focus();
+	            }
+	            this.setState({ active: true });
+	        }
+	    }, {
+	        key: 'hideDropdown',
+	        value: function hideDropdown() {
+	            this.setState({ active: false });
+	        }
+	    }]);
+
+	    return Select;
+	}(_react2.default.Component);
+
+	Select.defaultProps = {
+	    selectedOptions: [],
+	    type: SelectType.NORMAL,
+	    search: false,
+	    multiple: false,
+	    stringOption: false,
+	    valueAttr: 'value',
+	    optionAttr: 'text',
+	    selectedAttr: 'text',
+	    placeHolder: 'Choose an option'
+	};
+
+	Select.propTypes = {
+	    options: _react2.default.PropTypes.array.isRequired,
+	    selectedOptions: _react2.default.PropTypes.array,
+	    type: _react2.default.PropTypes.number,
+	    search: _react2.default.PropTypes.bool,
+	    multiple: _react2.default.PropTypes.bool,
+	    stringOption: _react2.default.PropTypes.bool,
+	    valueAttr: _react2.default.PropTypes.string,
+	    optionAttr: _react2.default.PropTypes.string,
+	    selectedAttr: _react2.default.PropTypes.string,
+	    placeHolder: _react2.default.PropTypes.string,
+	    onInputChange: _react2.default.PropTypes.func,
+	    onChange: _react2.default.PropTypes.func.isRequired
+	};
+
+	exports.Select = Select;
+	exports.SelectType = SelectType;
+
+/***/ },
 /* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -23712,9 +24769,179 @@
 	module.exports = shallowCompare;
 
 /***/ },
-/* 225 */,
-/* 226 */,
-/* 227 */,
+/* 225 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _selectListItem = __webpack_require__(226);
+
+	var _selectListItem2 = _interopRequireDefault(_selectListItem);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var SelectList = function SelectList(props) {
+	    if (props.options.length === 0) return null;
+	    var items = props.options.map(function (option) {
+	        var display = void 0,
+	            key = void 0,
+	            idx = void 0,
+	            selected = false;
+	        if (props.stringOption) {
+	            display = option;
+	            key = option;
+	            idx = props.selectedOptions.findIndex(function (opt) {
+	                if (opt === option) return true;
+	            });
+	        } else {
+	            display = option[props.optionAttr];
+	            key = option[props.valueAttr];
+	            idx = props.selectedOptions.findIndex(function (opt) {
+	                if (opt[props.valueAttr] === key) return true;
+	            });
+	        }
+	        if (idx !== -1) selected = true;
+	        return _react2.default.createElement(_selectListItem2.default, {
+	            key: key,
+	            selected: selected,
+	            option: option,
+	            display: display,
+	            onClick: props.onSelect });
+	    });
+	    return _react2.default.createElement(
+	        'div',
+	        { className: 'menu transition visible', tabIndex: '-1' },
+	        items
+	    );
+	};
+
+	exports.default = SelectList;
+
+
+	SelectList.defaultProps = {
+	    stringOption: false
+	};
+
+	SelectList.propsType = {
+	    options: _react2.default.PropTypes.array.isRequired,
+	    selectedOptions: _react2.default.PropTypes.array.isRequired,
+	    stringOption: _react2.default.PropTypes.bool,
+	    valueAttr: _react2.default.PropTypes.string,
+	    optionAttr: _react2.default.PropTypes.string,
+	    onSelect: _react2.default.PropTypes.func.isRequired
+	};
+
+/***/ },
+/* 226 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var SelectListItem = function SelectListItem(props) {
+		var className = 'item ';
+		if (props.selected) className += 'selected';
+		var onClick = function onClick(e) {
+			e.stopPropagation();
+			props.onClick(props.option, props.selected);
+		};
+		return _react2.default.createElement(
+			'div',
+			{ className: className, onClick: onClick },
+			props.display
+		);
+	};
+
+	exports.default = SelectListItem;
+
+
+	SelectListItem.defaultProps = {
+		selected: false
+	};
+
+	SelectListItem.propsType = {
+		option: _react2.default.PropTypes.any.isRequired,
+		display: _react2.default.PropTypes.any.isRequired,
+		selected: _react2.default.PropTypes.bool
+	};
+
+/***/ },
+/* 227 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Tab = function Tab(props) {
+		if (!props.data) return null;
+		var buttons = [],
+		    contents = [];
+
+		var _loop = function _loop(i) {
+			var tab = props.data[i];
+			var className = props.active === i ? 'active' : '';
+			buttons.push(_react2.default.createElement(
+				'a',
+				{ key: 'button' + i, className: 'item ' + className, onClick: function onClick() {
+						return props.changeTab(i);
+					} },
+				tab.name
+			));
+			contents.push(_react2.default.createElement(
+				'div',
+				{ key: 'content' + i, className: 'ui bottom attached tab segment ' + className },
+				tab.component
+			));
+		};
+
+		for (var i = 0; i < props.data.length; i++) {
+			_loop(i);
+		}
+		return _react2.default.createElement(
+			'div',
+			{ className: 'glv-margin-top' },
+			_react2.default.createElement(
+				'div',
+				{ className: 'ui top attached tabular menu' },
+				buttons
+			),
+			contents
+		);
+	};
+
+	Tab.defaultProps = {
+		active: 0
+	};
+
+	exports.default = Tab;
+
+/***/ },
 /* 228 */,
 /* 229 */,
 /* 230 */,
