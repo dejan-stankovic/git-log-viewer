@@ -26,6 +26,7 @@ export default class Modal extends React.Component {
 	selectBranch(branches) {
 		let state = { target: branches };
 		if (branches[0] !== this.props.data.currentBranch) state.ready = true;
+		else state.ready = false;
 		this.setState(state);
 	}
 }
