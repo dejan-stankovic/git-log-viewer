@@ -24068,7 +24068,7 @@
 	    }, {
 	        key: 'diff',
 	        value: function diff(file, sourceBranch, targetBranch) {
-	            var cmd = 'git diff ' + sourceBranch + ' ' + targetBranch + ' -- ';
+	            var cmd = 'git diff --ignore-space-at-eol ' + sourceBranch + ' ' + targetBranch + ' -- ';
 	            cmd += file;
 	            console.log(cmd);
 	            return new Promise(function (resolve, reject) {
@@ -24207,11 +24207,11 @@
 	exports.default = function (props) {
 		var className = 'ui button ',
 		    icon = null;
-		var buttonClass = props.buttonClass;
-		var iconClass = props.iconClass;
-		var disabled = props.disabled;
-		var label = props.label;
-		var onClick = props.onClick;
+		var buttonClass = props.buttonClass,
+		    iconClass = props.iconClass,
+		    disabled = props.disabled,
+		    label = props.label,
+		    onClick = props.onClick;
 
 		if (iconClass) {
 			icon = _react2.default.createElement('i', { className: 'icon ' + iconClass });
@@ -24244,8 +24244,8 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.default = function (props) {
-		var className = props.className;
-		var isFullscreen = props.isFullscreen;
+		var className = props.className,
+		    isFullscreen = props.isFullscreen;
 
 		if (!isFullscreen) {
 			return _react2.default.createElement(
@@ -24492,10 +24492,10 @@
 	    }, {
 	        key: 'getClass',
 	        value: function getClass() {
-	            var _props = this.props;
-	            var type = _props.type;
-	            var search = _props.search;
-	            var multiple = _props.multiple;
+	            var _props = this.props,
+	                type = _props.type,
+	                search = _props.search,
+	                multiple = _props.multiple;
 
 	            var className = 'ui dropdown glv-dropdown ';
 	            if (this.state.active) className += 'active visible ';
@@ -24515,13 +24515,13 @@
 	        value: function renderSelected() {
 	            var _this2 = this;
 
-	            var _props2 = this.props;
-	            var selectedOptions = _props2.selectedOptions;
-	            var placeHolder = _props2.placeHolder;
-	            var multiple = _props2.multiple;
-	            var stringOption = _props2.stringOption;
-	            var selectedAttr = _props2.selectedAttr;
-	            var valueAttr = _props2.valueAttr;
+	            var _props2 = this.props,
+	                selectedOptions = _props2.selectedOptions,
+	                placeHolder = _props2.placeHolder,
+	                multiple = _props2.multiple,
+	                stringOption = _props2.stringOption,
+	                selectedAttr = _props2.selectedAttr,
+	                valueAttr = _props2.valueAttr;
 
 	            if (selectedOptions.length === 0) {
 	                return _react2.default.createElement(
@@ -24583,12 +24583,12 @@
 	    }, {
 	        key: 'renderSelectList',
 	        value: function renderSelectList() {
-	            var _props3 = this.props;
-	            var options = _props3.options;
-	            var selectedOptions = _props3.selectedOptions;
-	            var stringOption = _props3.stringOption;
-	            var valueAttr = _props3.valueAttr;
-	            var optionAttr = _props3.optionAttr;
+	            var _props3 = this.props,
+	                options = _props3.options,
+	                selectedOptions = _props3.selectedOptions,
+	                stringOption = _props3.stringOption,
+	                valueAttr = _props3.valueAttr,
+	                optionAttr = _props3.optionAttr;
 
 	            if (!this.state.active) return null;
 	            return _react2.default.createElement(_selectList2.default, {
@@ -24602,11 +24602,11 @@
 	    }, {
 	        key: 'inputChange',
 	        value: function inputChange() {
-	            var _props4 = this.props;
-	            var selectedOptions = _props4.selectedOptions;
-	            var placeHolder = _props4.placeHolder;
-	            var multiple = _props4.multiple;
-	            var onInputChange = _props4.onInputChange;
+	            var _props4 = this.props,
+	                selectedOptions = _props4.selectedOptions,
+	                placeHolder = _props4.placeHolder,
+	                multiple = _props4.multiple,
+	                onInputChange = _props4.onInputChange;
 
 	            var keyword = this.inputText.value;
 	            if (selectedOptions.length === 0) {
@@ -24627,10 +24627,10 @@
 	    }, {
 	        key: 'onSelect',
 	        value: function onSelect(option, selected) {
-	            var _props5 = this.props;
-	            var search = _props5.search;
-	            var multiple = _props5.multiple;
-	            var onChange = _props5.onChange;
+	            var _props5 = this.props,
+	                search = _props5.search,
+	                multiple = _props5.multiple,
+	                onChange = _props5.onChange;
 
 	            var selectedOptions = [].concat(_toConsumableArray(this.props.selectedOptions));
 

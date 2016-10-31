@@ -126,11 +126,11 @@ webpackJsonp([1],{
 		}, {
 			key: 'process',
 			value: function process() {
-				var _props = this.props;
-				var data = _props.data;
-				var files = _props.files;
-				var target = _props.target;
-				var output = _props.output;
+				var _props = this.props,
+				    data = _props.data,
+				    files = _props.files,
+				    target = _props.target,
+				    output = _props.output;
 				var _iteratorNormalCompletion = true;
 				var _didIteratorError = false;
 				var _iteratorError = undefined;
@@ -238,13 +238,13 @@ webpackJsonp([1],{
 		_createClass(ModalMain, [{
 			key: 'render',
 			value: function render() {
-				var _props = this.props;
-				var diffType = _props.diffType;
-				var files = _props.files;
-				var target = _props.target;
-				var loading = files.loading;
-				var progress = files.progress;
-				var data = files.data;
+				var _props = this.props,
+				    diffType = _props.diffType,
+				    files = _props.files,
+				    target = _props.target;
+				var loading = files.loading,
+				    progress = files.progress,
+				    data = files.data;
 
 				return _react2.default.createElement(
 					'div',
@@ -261,9 +261,9 @@ webpackJsonp([1],{
 		}, {
 			key: 'renderLoader',
 			value: function renderLoader() {
-				var _props$files = this.props.files;
-				var loading = _props$files.loading;
-				var progress = _props$files.progress;
+				var _props$files = this.props.files,
+				    loading = _props$files.loading,
+				    progress = _props$files.progress;
 
 				if (!loading) return null;
 				return _react2.default.createElement(_common.Loader, {
@@ -282,9 +282,9 @@ webpackJsonp([1],{
 			value: function getFilesOfCommit(index) {
 				var _this2 = this;
 
-				var _props2 = this.props;
-				var updateFiles = _props2.updateFiles;
-				var setProgress = _props2.setProgress;
+				var _props2 = this.props,
+				    updateFiles = _props2.updateFiles,
+				    setProgress = _props2.setProgress;
 				var commits = this.props.data.commits;
 
 				if (index >= commits.length) {
@@ -433,9 +433,8 @@ webpackJsonp([1],{
 			key: 'updateDiffType',
 			value: function updateDiffType(diffType) {
 				return function (dispatch, getState) {
-					var _getState = getState();
-
-					var target = _getState.target;
+					var _getState = getState(),
+					    target = _getState.target;
 
 					dispatch(_common2.default.getAction('DIFF_TYPE_UPDATE', diffType));
 					dispatch(_ready2.default.setReady());
@@ -478,12 +477,11 @@ webpackJsonp([1],{
 			key: 'setReady',
 			value: function setReady() {
 				return function (dispatch, getState) {
-					var _getState = getState();
-
-					var data = _getState.data;
-					var target = _getState.target;
-					var diffType = _getState.diffType;
-					var output = _getState.output;
+					var _getState = getState(),
+					    data = _getState.data,
+					    target = _getState.target,
+					    diffType = _getState.diffType,
+					    output = _getState.output;
 
 					if (target[0] === data.currentBranch || diffType.length === 0 || output === '') {
 						dispatch(_common2.default.getAction('READY_UPDATE', false));
@@ -621,9 +619,8 @@ webpackJsonp([1],{
 			key: 'updateTarget',
 			value: function updateTarget(target) {
 				return function (dispatch, getState) {
-					var _getState = getState();
-
-					var diffType = _getState.diffType;
+					var _getState = getState(),
+					    diffType = _getState.diffType;
 
 					dispatch(_common2.default.getAction('TARGET_UPDATE', target));
 					dispatch(_ready2.default.setReady());
@@ -694,14 +691,14 @@ webpackJsonp([1],{
 		_createClass(ModalMainForm, [{
 			key: 'render',
 			value: function render() {
-				var _props = this.props;
-				var data = _props.data;
-				var files = _props.files;
-				var target = _props.target;
-				var diffType = _props.diffType;
-				var output = _props.output;
-				var branches = data.branches;
-				var currentBranch = data.currentBranch;
+				var _props = this.props,
+				    data = _props.data,
+				    files = _props.files,
+				    target = _props.target,
+				    diffType = _props.diffType,
+				    output = _props.output;
+				var branches = data.branches,
+				    currentBranch = data.currentBranch;
 
 				var lis = files.data.map(function (file, i) {
 					return _react2.default.createElement(

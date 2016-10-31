@@ -31,9 +31,7 @@ module.exports = class Report {
     }
 
     static exportHTML(diff) {
-        let jsonDiff = Diff2Html.getJsonFromDiff(diff);
-        console.log(jsonDiff);
-        let tmp = Diff2Html.getPrettyHtml(jsonDiff, { inputFormat: 'json' });
+        let tmp = Diff2Html.getPrettyHtml(diff);
         fs.writeFile('D:/test.html', tmp, () => {
             console.log('DONE!');
         });
