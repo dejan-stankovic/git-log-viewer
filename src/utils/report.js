@@ -1,5 +1,7 @@
 const path = require('path');
+const fs = require('fs');
 const { Workbook } = require('exceljs');
+const { Diff2Html } = require('diff2html');
 
 const TEMPLATE_PATH = path.resolve(require.main.filename, '../templates');
 
@@ -28,7 +30,16 @@ module.exports = class Report {
         });
     }
 
-    static exportMergeDiffReport(files, project, currentBranch, targetBranch, output) {
+    static exportHTML(diff) {
+        let jsonDiff = Diff2Html.getJsonFromDiff(diff);
+        console.log(jsonDiff);
+        let tmp = Diff2Html.getPrettyHtml(jsonDiff, { inputFormat: 'json' });
+        fs.writeFile('D:/test.html', tmp, () => {
+            console.log('DONE!');
+        });
+    }
+
+    static exportMergeDiffReport(files, project, sourceBranch, targetBranch, output) {
     	return new Promise((resolve, reject) => {
             let wb = new Workbook();
             wb.xlsx.readFile(path.resolve(TEMPLATE_PATH, 'diff.xlsx'))

@@ -6,6 +6,10 @@ module.exports = Object.freeze({
 	CHANNEL_SHOW_MODAL: 'show-modal',
 	CHANNEL_COMMITS_REPORT: 'export-commits-report',
 	CHANNEL_MERGE_DIFF_REPORT: 'export-merge-diff-report',
+
+	CHANNEL_EXPORT_HTML_DIFF: 'export-html-diff',
+
+
 	PAGER_SIZE_AVAIABLE: [50, 100, 150, 200, 300, 500],
 	PAGER_DEFAULT_SIZE: 50,
 	EXEC_OPTIONS: { maxBuffer: 1000 * 1024 }

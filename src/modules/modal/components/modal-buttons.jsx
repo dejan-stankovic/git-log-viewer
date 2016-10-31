@@ -1,5 +1,4 @@
 import React from 'react';
-import { remote } from 'electron';
 import { Button } from 'modules/common';
 
 export default props => {

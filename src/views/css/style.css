@@ -124,23 +124,22 @@ textarea,
     left: -1000px;
 }
 
+.glv-input-disabled {
+    opacity: 1 !important;
+}
+
 
 /* Modal */
 
-.glv-modal {
-    width: 100%;
-    height: 100%;
-}
-
 .glv-modal-top {
     width: 100%;
-    height: 420px;
+    height: 593px;
     padding: 10px;
     overflow: hidden;
 }
 
 .glv-modal-files {
-    height: 295px;
+    height: 355px;
     width: 100%;
     overflow-y: scroll;
     word-break: break-all;

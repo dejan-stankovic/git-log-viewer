@@ -78,8 +78,8 @@ ipcMain.on(AppConst.CHANNEL_SHOW_MODAL, (event, data) => {
         show: true,
         frame: false,
         resizable: false,
-        width: 640,
-        height: 480
+        width: 800,
+        height: 650
     });
     // child.webContents.openDevTools();
     child.data = data;
@@ -106,4 +106,8 @@ ipcMain.on(AppConst.CHANNEL_MERGE_DIFF_REPORT, (event, data) => {
                 dialog.showErrorBox('Error', 'Could not create report');
             });
     });
+});
+
+ipcMain.on(AppConst.CHANNEL_EXPORT_HTML_DIFF, (event, diff) => {
+    Report.exportHTML(diff)
 });

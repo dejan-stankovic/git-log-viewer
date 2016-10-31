@@ -180,4 +180,19 @@ export default class Git {
             });
         });
     }
+
+    static diff(file, sourceBranch, targetBranch) {
+        let cmd = `git diff --ignore-space-at-eol ${sourceBranch} ${targetBranch} -- `;
+        cmd += file;
+        console.log(cmd);
+        return new Promise((resolve, reject) => {
+            exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(error);
+                    reject(stderr);
+                }
+                resolve(stdout);
+            });
+        });
+    }
 }

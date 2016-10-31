@@ -1,55 +1,28 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import Git from 'utils/git.js';
-import { Loader, Select } from 'modules/common';
+import { Loader } from 'modules/common';
+import { FilesAction } from 'modules/modal/actions';
+import ModalMainForm from 'modules/modal/components/modal-main-form.jsx';
 
-export default class ModalMain extends React.Component {
+class ModalMain extends React.Component {
 	constructor(props) {
 		super(props);
 		this.props = props;
-		this.state = {
-			loading: true,
-			progress: 0
-		}
 		this.files = [];
+
+		this.renderLoader = this.renderLoader.bind(this);
+		this.renderForm = this.renderForm.bind(this);
 		this.getFilesOfCommit = this.getFilesOfCommit.bind(this);
 	}
 
 	render() {
-		let loader = null, form = null;
-		let { loading, progress } = this.state;
-		let { currentBranch, branches } = this.props.data;
-		let { target, selectBranch } = this.props;
-		if (loading) {
-			loader = <Loader isFullscreen={true} className="inverted" text={`Loadng ${progress}%...`}/>;
-		} else {
-			let lis = this.files.map((file, i) => {
-				return <li key={i} className="item">{file.filePath}</li>;
-			})
-			form = (
-				<form className="ui form">
-					<div className="field">
-						<label>Current branch: {currentBranch}</label>
-					</div>
-	                <div className="field">
-	                    <label>Target branch:</label>
-	                    <Select
-	                    	options={branches}
-	                    	selectedOptions={target}
-	                    	stringOption={true}
-	                    	placeHolder="Pick target branch"
-	                    	onChange={selectBranch}/>
-	                </div>
-	                <div className="field">
-	                    <label>List files to diff:</label>
-	                    <ol className="glv-modal-files">{lis}</ol>
-	                </div>
-	            </form>
-			)
-		}
+		let { diffType, files, target } = this.props;
+		let { loading, progress, data } = files;
 		return (
 			<div className="glv-modal-top">
-				{loader}
-				{form}
+				{this.renderLoader()}
+				{this.renderForm()}
 			</div>
 		)
 	}
@@ -58,13 +31,28 @@ export default class ModalMain extends React.Component {
 		this.getFilesOfCommit(0);
 	}
 
+	renderLoader() {
+		let { loading, progress } = this.props.files;
+		if (!loading) return null;
+		return <Loader
+					isFullscreen={true}
+					className="inverted"
+					text={`Loadng ${progress}%...`}/>;
+	}
+
+	renderForm() {
+		if (this.props.files.loading) return null;
+		return <ModalMainForm/>
+	}
+
 	getFilesOfCommit(index) {
+		let { updateFiles, setProgress } = this.props;
 		let { commits } = this.props.data;
 		if (index >= commits.length) {
-			this.props.onLoaded(this.files);
-			return this.setState({
+			return updateFiles({
 				loading: false,
-				progress: 100
+				progress: 100,
+				data: this.files
 			});
 		}
 		Git.getFilesByCommitHash(commits[index].hash)
@@ -75,11 +63,28 @@ export default class ModalMain extends React.Component {
 					});
 					if (!f) this.files.push(file);
 				}
-				this.setState({ progress: Math.ceil((index + 1) / commits.length * 100) });
+				setProgress(Math.ceil((index + 1) / commits.length * 100));
 				this.getFilesOfCommit(index + 1);
 			})
 			.catch(err => {
+				throw err;
 				console.error(err);
 			});
 	}
 }
+
+const mapStateToProps = state => {
+	return {
+		data: state.data,
+		diffType: state.diffType,
+		files: state.files,
+		target: state.target
+	};
+}
+const mapDispatchToProps = dispatch => {
+	return {
+		updateFiles: files => dispatch(FilesAction.updateFiles(files)),
+		setProgress: progress => dispatch(FilesAction.setProgress(progress))
+	};
+}
+export default connect(mapStateToProps, mapDispatchToProps)(ModalMain);
