@@ -40,10 +40,12 @@ module.exports = class Report {
                     fse.copySync(TEMPLATE_HTML_ASSETS, outputPath);
                 }
             } catch (err) {
-                reject(err);
+                return reject(err);
             }
 
-            if (diff.trim().length === '0') resolve('');
+            if (diff.trim().length === 0) {
+                return resolve('');
+            }
             let config = {};
             if (isSideBySide) config.outputFormat = 'side-by-side';
             let htmlDiff = Diff2Html.getPrettyHtml(diff, config);
@@ -83,12 +85,16 @@ module.exports = class Report {
                     let sheet = wb.getWorksheet(1);
                     
                     for (let i = 0; i < files.length; i++) {
-                        let html = htmls[i];
+                        let html = htmls[i], hasDiff = 'YES';
+                        if (html === '') {
+                            html = 'N/A';
+                            hasDiff = 'NO';
+                        }
                         let row = sheet.getRow(i + 2);
                         row.getCell('A').value = i + 1;
                         row.getCell('B').value = project;
                         row.getCell('C').value = files[i].filePath;
-                        row.getCell('D').value = html === '' ? '' : 'YES';
+                        row.getCell('D').value = hasDiff;
                         row.getCell('E').value = html;
                     }
                     return wb.xlsx.writeFile(outputFile);

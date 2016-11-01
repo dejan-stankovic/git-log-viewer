@@ -51,7 +51,7 @@ class Modal extends React.Component {
     }
 
     exportDiff(event, index, outputName) {
-        if (outputName) this.outputNames.push(outputName);
+        if (typeof outputName !== 'undefined') this.outputNames.push(outputName);
         let { data, files, target, diffType, output, exporting, setReady, updateExporting } = this.props;
         if (index >= files.data.length) {
             ipcRenderer.send(AppConst.CHANNEL_EXPORT_DIFF_REPORT, data.project, files.data, this.outputNames, output);

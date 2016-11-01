@@ -9,7 +9,6 @@ class ModalMainExport extends React.Component {
 
 	render() {
 		let { progress, current, log } = this.props.exporting;
-		console.log(log);
 		let style = {
 			transitionDuration: '300ms',
 			width: progress + '%'
@@ -24,7 +23,7 @@ class ModalMainExport extends React.Component {
 				</div>
 				<div className="ui form">
 					<div className="field">
-						<textarea className="glv-modal-log" value={log} readonly></textarea>
+						<textarea className="glv-modal-log" value={log} readOnly></textarea>
 					</div>
 				</div>
 			</div>

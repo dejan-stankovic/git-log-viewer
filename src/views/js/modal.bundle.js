@@ -158,7 +158,7 @@ webpackJsonp([1],{
 	        value: function exportDiff(event, index, outputName) {
 	            var _this2 = this;
 
-	            if (outputName) this.outputNames.push(outputName);
+	            if (typeof outputName !== 'undefined') this.outputNames.push(outputName);
 	            var _props3 = this.props;
 	            var data = _props3.data;
 	            var files = _props3.files;
@@ -989,7 +989,6 @@ webpackJsonp([1],{
 				var current = _props$exporting.current;
 				var log = _props$exporting.log;
 
-				console.log(log);
 				var style = {
 					transitionDuration: '300ms',
 					width: progress + '%'
@@ -1021,7 +1020,7 @@ webpackJsonp([1],{
 						_react2.default.createElement(
 							'div',
 							{ className: 'field' },
-							_react2.default.createElement('textarea', { className: 'glv-modal-log', value: log, readonly: true })
+							_react2.default.createElement('textarea', { className: 'glv-modal-log', value: log, readOnly: true })
 						)
 					)
 				);
