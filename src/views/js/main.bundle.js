@@ -190,7 +190,6 @@ webpackJsonp([0],{
 	                    _react2.default.createElement(_detail2.default, null)
 	                ));
 	            }).catch(function (err) {
-	                throw err;
 	                _common2.default.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
 	                _this2.hideLoader();
 	            });

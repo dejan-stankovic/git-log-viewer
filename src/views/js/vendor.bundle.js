@@ -23832,9 +23832,9 @@
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(error);
+	                        return reject(error);
 	                    }
-	                    resolve(stdout);
+	                    return resolve(stdout);
 	                });
 	            });
 	        }
@@ -23846,9 +23846,9 @@
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(error);
+	                        return reject(error);
 	                    }
-	                    resolve(stdout.replace(/[\r\n]+/g, ''));
+	                    return resolve(stdout.replace(/[\r\n]+/g, ''));
 	                });
 	            });
 	        }
@@ -23860,7 +23860,7 @@
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(error);
+	                        return reject(error);
 	                    }
 	                    var branches = stdout.split(/[\r\n]+/g);
 	                    var result = [];
@@ -23894,7 +23894,7 @@
 	                        }
 	                    }
 
-	                    resolve(result);
+	                    return resolve(result);
 	                });
 	            });
 	        }
@@ -23909,7 +23909,7 @@
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(error);
+	                        return reject(error);
 	                    }
 	                    var regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
 	                    var match = regexp.exec(stdout);
@@ -23923,7 +23923,7 @@
 	                        }
 	                        match = regexp.exec(stdout);
 	                    }
-	                    resolve(users);
+	                    return resolve(users);
 	                });
 	            });
 	        }
@@ -23976,10 +23976,10 @@
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(error);
+	                        return reject(error);
 	                    }
 	                    var lines = stdout.split(/[\r\n]+/g);
-	                    resolve(lines.length);
+	                    return resolve(lines.length);
 	                });
 	            });
 	        }
@@ -24041,7 +24041,7 @@
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(error);
+	                        return reject(error);
 	                    }
 	                    var commits = [];
 	                    var regexp = /\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+)\][\r\n]+/g;
@@ -24051,7 +24051,7 @@
 	                        commits.push(commit);
 	                        match = regexp.exec(stdout);
 	                    }
-	                    resolve(commits);
+	                    return resolve(commits);
 	                });
 	            });
 	        }
@@ -24063,7 +24063,7 @@
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(error);
+	                        return reject(error);
 	                    }
 	                    var files = [];
 	                    var regexp = /(\w+)\s+(\S+)(\s+(\S+))?[\r\n]+/g;
@@ -24073,7 +24073,7 @@
 	                        files.push(file);
 	                        match = regexp.exec(stdout);
 	                    }
-	                    resolve(files);
+	                    return resolve(files);
 	                });
 	            });
 	        }
@@ -24085,24 +24085,24 @@
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(stderr);
+	                        return reject(stderr);
 	                    }
-	                    resolve(stdout);
+	                    return resolve(stdout);
 	                });
 	            });
 	        }
 	    }, {
 	        key: 'diff',
 	        value: function diff(file, sourceBranch, targetBranch) {
-	            var cmd = 'git diff --ignore-space-at-eol ' + sourceBranch + ' ' + targetBranch + ' -- ';
+	            var cmd = 'git diff --ignore-all-space ' + sourceBranch + ' ' + targetBranch + ' -- ';
 	            cmd += file;
 	            return new Promise(function (resolve, reject) {
 	                (0, _child_process.exec)(cmd, _app2.default.EXEC_OPTIONS, function (error, stdout, stderr) {
 	                    if (error) {
 	                        console.error(error);
-	                        reject(stderr);
+	                        return reject(stderr);
 	                    }
-	                    resolve(stdout);
+	                    return resolve(stdout);
 	                });
 	            });
 	        }

@@ -10,9 +10,9 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(error);
+                    return reject(error);
                 }
-                resolve(stdout);
+                return resolve(stdout);
             });
         });
     }
@@ -23,9 +23,9 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(error);
+                    return reject(error);
                 }
-                resolve(stdout.replace(/[\r\n]+/g, ''));
+                return resolve(stdout.replace(/[\r\n]+/g, ''));
             });
         });
     }
@@ -36,7 +36,7 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(error);
+                    return reject(error);
                 }
                 let branches = stdout.split(/[\r\n]+/g);
                 let result = [];
@@ -48,7 +48,7 @@ export default class Git {
                     }
                     result.push(branch);
                 }
-                resolve(result);
+                return resolve(result);
             });
         });
     }
@@ -60,7 +60,7 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(error);
+                    return reject(error);
                 }
                 let regexp = /\[(.+?)\]\[(.+?)\][\r\n]+/g;
                 let match = regexp.exec(stdout);
@@ -74,7 +74,7 @@ export default class Git {
                     }
                     match = regexp.exec(stdout);
                 }
-                resolve(users);
+                return resolve(users);
             });
         });
     }
@@ -98,10 +98,10 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(error);
+                    return reject(error);
                 }
                 let lines = stdout.split(/[\r\n]+/g);
-                resolve(lines.length);
+                return resolve(lines.length);
             });
         });
     }
@@ -132,7 +132,7 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(error);
+                    return reject(error);
                 }
                 let commits = [];
                 let regexp = /\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+?)\]\[(.+)\][\r\n]+/g;
@@ -142,7 +142,7 @@ export default class Git {
                     commits.push(commit);
                     match = regexp.exec(stdout);
                 }
-                resolve(commits);
+                return resolve(commits);
             });
         });
     }
@@ -153,7 +153,7 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(error);
+                    return reject(error);
                 }
                 let files = [];
                 let regexp = /(\w+)\s+(\S+)(\s+(\S+))?[\r\n]+/g;
@@ -163,7 +163,7 @@ export default class Git {
                     files.push(file);
                     match = regexp.exec(stdout);
                 }
-                resolve(files);
+                return resolve(files);
             });
         });
     }
@@ -174,23 +174,23 @@ export default class Git {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(stderr);
+                    return reject(stderr);
                 }
-                resolve(stdout);
+                return resolve(stdout);
             });
         });
     }
 
     static diff(file, sourceBranch, targetBranch) {
-        let cmd = `git diff --ignore-space-at-eol ${sourceBranch} ${targetBranch} -- `;
+        let cmd = `git diff --ignore-all-space ${sourceBranch} ${targetBranch} -- `;
         cmd += file;
         return new Promise((resolve, reject) => {
             exec(cmd, AppConst.EXEC_OPTIONS, (error, stdout, stderr) => {
                 if (error) {
                     console.error(error);
-                    reject(stderr);
+                    return reject(stderr);
                 }
-                resolve(stdout);
+                return resolve(stdout);
             });
         });
     }

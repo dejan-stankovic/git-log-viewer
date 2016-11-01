@@ -77,7 +77,6 @@ export default class Home extends React.Component {
             let store = createStore(detailReducer, initialState, applyMiddleware(thunk));
             Common.renderPage(<Provider store={store}><Detail/></Provider>);
         }).catch(err => {
-            throw err;
             Common.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
             this.hideLoader();
         });
