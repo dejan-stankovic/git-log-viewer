@@ -493,12 +493,11 @@ webpackJsonp([0],{
 	            return function (dispatch, getState) {
 	                dispatch(_this.startGetCommits());
 
-	                var _getState = getState(),
-	                    repository = _getState.repository,
-	                    pager = _getState.pager,
-	                    filter = _getState.filter,
-	                    promise = void 0;
+	                var _getState = getState();
 
+	                var repository = _getState.repository;
+	                var pager = _getState.pager;
+	                var filter = _getState.filter;var promise = void 0;
 	                if (isUpdateTotalPage) {
 	                    promise = _git2.default.getCommitsCount(repository.currentBranch, filter.users, filter.message, filter.fromDate, filter.toDate);
 	                } else {
@@ -576,9 +575,10 @@ webpackJsonp([0],{
 	        key: 'changePageSize',
 	        value: function changePageSize(size) {
 	            return function (dispatch, getState) {
-	                var _getState = getState(),
-	                    repository = _getState.repository,
-	                    pager = _getState.pager;
+	                var _getState = getState();
+
+	                var repository = _getState.repository;
+	                var pager = _getState.pager;
 
 	                if (size === pager.size) return;
 	                dispatch(_common2.default.getAction('CHANGE_PAGE_SIZE', size));
@@ -629,9 +629,10 @@ webpackJsonp([0],{
 			key: 'toggleSelectAll',
 			value: function toggleSelectAll() {
 				return function (dispatch, getState) {
-					var _getState = getState(),
-					    commits = _getState.commits,
-					    selection = _getState.selection;
+					var _getState = getState();
+
+					var commits = _getState.commits;
+					var selection = _getState.selection;
 
 					var indexes = [],
 					    isAll = false;
@@ -648,9 +649,10 @@ webpackJsonp([0],{
 			key: 'toggleSelect',
 			value: function toggleSelect(index) {
 				return function (dispatch, getState) {
-					var _getState2 = getState(),
-					    commits = _getState2.commits,
-					    selection = _getState2.selection;
+					var _getState2 = getState();
+
+					var commits = _getState2.commits;
+					var selection = _getState2.selection;
 
 					var indexes = [].concat(_toConsumableArray(selection.indexes)),
 					    isAll = selection.isAll;
@@ -775,8 +777,9 @@ webpackJsonp([0],{
 	        key: 'setUserInput',
 	        value: function setUserInput(keyword) {
 	            return function (dispatch, getState) {
-	                var _getState = getState(),
-	                    filter = _getState.filter;
+	                var _getState = getState();
+
+	                var filter = _getState.filter;
 
 	                var key = keyword.toLowerCase();
 	                var filteredUsers = filter.allUsers.filter(function (user) {
@@ -937,8 +940,9 @@ webpackJsonp([0],{
 	                dispatch(_loading2.default.startLoading());
 	                var promises = [];
 
-	                var _getState = getState(),
-	                    repository = _getState.repository;
+	                var _getState = getState();
+
+	                var repository = _getState.repository;
 
 	                promises.push(_git2.default.getBranches());
 	                promises.push(_git2.default.getUsers(repository.currentBranch));
@@ -1199,11 +1203,11 @@ webpackJsonp([0],{
 		_createClass(CommitsControl, [{
 			key: 'render',
 			value: function render() {
-				var _props = this.props,
-				    filter = _props.filter,
-				    selection = _props.selection,
-				    toggleFilter = _props.toggleFilter,
-				    toggleSelectAll = _props.toggleSelectAll;
+				var _props = this.props;
+				var filter = _props.filter;
+				var selection = _props.selection;
+				var toggleFilter = _props.toggleFilter;
+				var toggleSelectAll = _props.toggleSelectAll;
 
 				var filterBtn = filter.active ? 'Hide filter' : 'Show filter';
 				var selectBtn = selection.isAll ? 'Deselect All' : 'Select All';
@@ -1245,13 +1249,13 @@ webpackJsonp([0],{
 			key: 'doAction',
 			value: function doAction(opts) {
 				var type = opts[0].value;
-				var _props2 = this.props,
-				    commits = _props2.commits,
-				    control = _props2.control,
-				    repository = _props2.repository,
-				    selection = _props2.selection,
-				    startAction = _props2.startAction,
-				    stopAction = _props2.stopAction;
+				var _props2 = this.props;
+				var commits = _props2.commits;
+				var control = _props2.control;
+				var repository = _props2.repository;
+				var selection = _props2.selection;
+				var startAction = _props2.startAction;
+				var stopAction = _props2.stopAction;
 
 				var selectedCommits = [];
 				for (var i = 0; i < commits.data.length; i++) {
@@ -1262,7 +1266,7 @@ webpackJsonp([0],{
 				} else if (type === 2) {
 					var data = {
 						gitdir: process.cwd(),
-						project: _path2.default.basename(repository.url),
+						project: _path2.default.basename(repository.url, _path2.default.extname(repository.url)),
 						branches: repository.branches,
 						currentBranch: repository.currentBranch,
 						commits: selectedCommits
@@ -1359,17 +1363,17 @@ webpackJsonp([0],{
 	    _createClass(CommitsFilter, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props,
-	                active = _props.active,
-	                filter = _props.filter,
-	                repository = _props.repository,
-	                setUserInput = _props.setUserInput,
-	                setUsers = _props.setUsers,
-	                setMessage = _props.setMessage,
-	                setFromDate = _props.setFromDate,
-	                setToDate = _props.setToDate,
-	                search = _props.search,
-	                reset = _props.reset;
+	            var _props = this.props;
+	            var active = _props.active;
+	            var filter = _props.filter;
+	            var repository = _props.repository;
+	            var setUserInput = _props.setUserInput;
+	            var setUsers = _props.setUsers;
+	            var setMessage = _props.setMessage;
+	            var setFromDate = _props.setFromDate;
+	            var setToDate = _props.setToDate;
+	            var search = _props.search;
+	            var reset = _props.reset;
 
 	            if (!filter.active) return null;
 
@@ -1460,9 +1464,9 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'componentWillMount',
 	        value: function componentWillMount() {
-	            var _props2 = this.props,
-	                repository = _props2.repository,
-	                updateFilter = _props2.updateFilter;
+	            var _props2 = this.props;
+	            var repository = _props2.repository;
+	            var updateFilter = _props2.updateFilter;
 
 	            var users = repository.users.map(function (user) {
 	                return Object.assign({}, user, {
@@ -1578,10 +1582,10 @@ webpackJsonp([0],{
 	    _createClass(CommitsList, [{
 	        key: 'render',
 	        value: function render() {
-	            var _props = this.props,
-	                commits = _props.commits,
-	                selection = _props.selection,
-	                toggleSelect = _props.toggleSelect;
+	            var _props = this.props;
+	            var commits = _props.commits;
+	            var selection = _props.selection;
+	            var toggleSelect = _props.toggleSelect;
 
 	            if (commits.loading) {
 	                return _react2.default.createElement(_common.Loader, { text: 'Getting Commit Logs' });
@@ -1683,14 +1687,14 @@ webpackJsonp([0],{
 	        value: function render() {
 	            var _this2 = this;
 
-	            var _props = this.props,
-	                commit = _props.commit,
-	                checked = _props.checked,
-	                onChange = _props.onChange;
-	            var _state = this.state,
-	                loading = _state.loading,
-	                expanded = _state.expanded,
-	                files = _state.files;
+	            var _props = this.props;
+	            var commit = _props.commit;
+	            var checked = _props.checked;
+	            var onChange = _props.onChange;
+	            var _state = this.state;
+	            var loading = _state.loading;
+	            var expanded = _state.expanded;
+	            var files = _state.files;
 
 	            if (commit === null) return null;
 	            var loadingClass = loading ? ' loading' : '';
@@ -1819,10 +1823,10 @@ webpackJsonp([0],{
 	        value: function toggle() {
 	            var _this3 = this;
 
-	            var _state2 = this.state,
-	                loading = _state2.loading,
-	                expanded = _state2.expanded,
-	                files = _state2.files;
+	            var _state2 = this.state;
+	            var loading = _state2.loading;
+	            var expanded = _state2.expanded;
+	            var files = _state2.files;
 
 	            if (loading) return;
 	            if (expanded) return this.setState({ expanded: false, loading: false });

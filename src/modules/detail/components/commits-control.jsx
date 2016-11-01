@@ -70,7 +70,7 @@ class CommitsControl extends React.Component {
 		} else if (type === 2) {
 			let data = {
 				gitdir: process.cwd(),
-				project: path.basename(repository.url),
+				project: path.basename(repository.url, path.extname(repository.url)),
 				branches: repository.branches,
 				currentBranch: repository.currentBranch,
 				commits: selectedCommits

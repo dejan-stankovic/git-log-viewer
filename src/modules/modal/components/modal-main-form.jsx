@@ -5,11 +5,6 @@ import AppConst from 'constants/app.js';
 import { Button, Select } from 'modules/common';
 import { DiffTypeAction, OutputAction, TargetAction } from 'modules/modal/actions';
 
-const DIFF_TYPES = [
-	{ value: 1, text: 'Line by line' },
-	{ value: 2, text: 'Side by side' }
-];
-
 class ModalMainForm extends React.Component {
 	constructor(props) {
 		super(props);
@@ -44,7 +39,7 @@ class ModalMainForm extends React.Component {
 					<div className="field">
 	                    <label>Diff type:</label>
 	                    <Select
-	                    	options={DIFF_TYPES}
+	                    	options={AppConst.DIFF_TYPES}
 	                    	selectedOptions={diffType}
 	                    	placeHolder="Select diff type"
 	                    	onChange={this.selectDiffType}/>

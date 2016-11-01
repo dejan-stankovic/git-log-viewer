@@ -86,28 +86,30 @@ ipcMain.on(AppConst.CHANNEL_SHOW_MODAL, (event, data) => {
     child.loadURL(`file://${__dirname}/src/views/modal.html`);
 });
 
-ipcMain.on(AppConst.CHANNEL_MERGE_DIFF_REPORT, (event, data) => {
-    dialog.showSaveDialog({
-        filters: [{ name: 'Excel Document', extensions: ['xlsx'] }]
-    }, (file) => {
-        if (!file) return;
-        Report.exportMergeDiffReport(data.files, data.project, data.currentBranch, data.targetBranch, file)
-            .then(() => {
-                dialog.showMessageBox(mainWindow, {
-                    type: 'info',
-                    title: 'Done',
-                    buttons: ['OK'],
-                    message: 'Report has been successfully created',
-                    detail: 'Path: ' + file
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                dialog.showErrorBox('Error', 'Could not create report');
+ipcMain.on(AppConst.CHANNEL_EXPORT_DIFF_REPORT, (event, project, files, htmls, output) => {
+    Report.exportDiffReport(project, files, htmls, output)
+        .then(outputFile => {
+            dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'Done',
+                buttons: ['OK'],
+                message: 'Report has been successfully created',
+                detail: 'Path: ' + outputFile
             });
-    });
+        })
+        .catch(err => {
+            console.error(err);
+            dialog.showErrorBox('Error', 'Could not create report');
+        });
 });
 
-ipcMain.on(AppConst.CHANNEL_EXPORT_HTML_DIFF, (event, diff) => {
-    Report.exportHTML(diff)
+ipcMain.on(AppConst.CHANNEL_EXPORT_HTML_DIFF, (event, diff, file, output, isSideBySide, index) => {
+    let isCopyAsset = index === 0;
+    Report.exportDiffHTML(diff, file, output, isSideBySide, isCopyAsset)
+        .then(outputName => {
+            event.sender.send(AppConst.CHANNEL_EXPORT_HTML_DIFF_DONE, index + 1, outputName);
+        })
+        .catch(err => {
+            throw err;
+        });
 });

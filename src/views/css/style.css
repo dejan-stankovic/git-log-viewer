@@ -154,3 +154,10 @@ textarea,
     padding: 10px;
     border-top: 1px solid #D4D4D5;
 }
+
+.glv-modal-log {
+    height: 510px !important;
+    max-height: 510px !important;
+    resize: none !important;
+    font-family: Consolas, monospace;
+}

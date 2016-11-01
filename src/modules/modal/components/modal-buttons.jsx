@@ -12,7 +12,7 @@ export default props => {
 				buttonClass="positive right labeled icon"
 				disabled={props.disabled}
 				iconClass="checkmark"
-				label="Let's do it"
+				label={props.label}
 				onClick={props.process}/>
         </div>
 	)

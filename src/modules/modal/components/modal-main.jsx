@@ -4,6 +4,7 @@ import Git from 'utils/git.js';
 import { Loader } from 'modules/common';
 import { FilesAction } from 'modules/modal/actions';
 import ModalMainForm from 'modules/modal/components/modal-main-form.jsx';
+import ModalMainExport from 'modules/modal/components/modal-main-export.jsx';
 
 class ModalMain extends React.Component {
 	constructor(props) {
@@ -12,7 +13,7 @@ class ModalMain extends React.Component {
 		this.files = [];
 
 		this.renderLoader = this.renderLoader.bind(this);
-		this.renderForm = this.renderForm.bind(this);
+		this.renderContent = this.renderContent.bind(this);
 		this.getFilesOfCommit = this.getFilesOfCommit.bind(this);
 	}
 
@@ -22,7 +23,7 @@ class ModalMain extends React.Component {
 		return (
 			<div className="glv-modal-top">
 				{this.renderLoader()}
-				{this.renderForm()}
+				{this.renderContent()}
 			</div>
 		)
 	}
@@ -40,8 +41,9 @@ class ModalMain extends React.Component {
 					text={`Loadng ${progress}%...`}/>;
 	}
 
-	renderForm() {
+	renderContent() {
 		if (this.props.files.loading) return null;
+		if (this.props.exporting.status) return <ModalMainExport/>;
 		return <ModalMainForm/>
 	}
 
@@ -78,7 +80,8 @@ const mapStateToProps = state => {
 		data: state.data,
 		diffType: state.diffType,
 		files: state.files,
-		target: state.target
+		target: state.target,
+		exporting: state.exporting
 	};
 }
 const mapDispatchToProps = dispatch => {
