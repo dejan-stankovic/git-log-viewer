@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { execSync } from 'child_process';
 import { ipcRenderer } from 'electron';
 import AppConst from 'constants/app.js';
 import ActionType from 'constants/actiontype.js';

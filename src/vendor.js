@@ -1,0 +1,9 @@
+require('electron');
+require('react');
+require('react-addons-pure-render-mixin');
+require('react-dom');
+require('react-redux');
+require('redux');
+require('redux-seamless-immutable');
+require('redux-thunk');
+require('seamless-immutable');

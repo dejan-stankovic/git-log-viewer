@@ -1,7 +1,6 @@
 import ActionType from 'constants/actiontype.js';
 
 export default (state = {}, action) => {
-    let newStateProp;
     switch (action.type) {
         case ActionType.CHANGE_PAGE:
             return state.set('current', action.data);

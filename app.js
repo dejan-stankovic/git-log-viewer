@@ -12,6 +12,8 @@ function createMainWindow() {
     const win = new BrowserWindow({
         width: 1024,
         height: 768,
+        minWidth: 1024,
+        minHeight: 768,
         title: "Git Log Viewer"
     });
     win.loadURL(`file://${__dirname}/src/views/index.html`);
@@ -110,6 +112,7 @@ ipcMain.on(AppConst.CHANNEL_EXPORT_HTML_DIFF, (event, diff, file, output, isSide
             event.sender.send(AppConst.CHANNEL_EXPORT_HTML_DIFF_DONE, index + 1, outputName);
         })
         .catch(err => {
-            throw err;
+            console.error(err);
+            dialog.showErrorBox('Error', 'Could not create report');
         });
 });

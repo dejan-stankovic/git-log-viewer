@@ -31,6 +31,9 @@ module.exports = {
         modulesDirectories: ['node_modules']
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify('production')
+        }),
         new webpack.DllReferencePlugin({
             context: path.resolve(__dirname, 'src/views/js'),
             manifest: require('./src/views/js/vendor-manifest.json')
@@ -38,7 +41,10 @@ module.exports = {
         new webpack.optimize.CommonsChunkPlugin({
             name: 'common',
             filename: 'common.bundle.js'
-        })
+        }),
+        new webpack.optimize.DedupePlugin(),
+        new webpack.optimize.UglifyJsPlugin(),
+        new webpack.optimize.AggressiveMergingPlugin()
     ],
     target: 'electron-renderer'
 };

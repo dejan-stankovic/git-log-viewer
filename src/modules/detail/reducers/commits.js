@@ -1,7 +1,6 @@
 import ActionType from 'constants/actiontype.js';
 
 export default (state = { loading: true, data: [] }, action) => {
-    let newStateProp;
     switch (action.type) {
         case ActionType.START_GET_COMMITS:
             return state.set('loading', true);

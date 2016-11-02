@@ -5,7 +5,9 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack --progress --color && electron ."
+    "start": "webpack --progress --color && electron .",
+    "prebuild": "webpack -p --config ./webpack.config.prebuild.js",
+    "build": "webpack -p --progress --color --config ./webpack.config.production.js"
   },
   "author": "trungvq",
   "license": "MIT",

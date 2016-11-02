@@ -79,6 +79,7 @@ export default class Home extends React.Component {
         }).catch(err => {
             Common.showErrorBox('Invalid directory', 'Your directory is not a Git directory.\nPlease try again.');
             this.hideLoader();
+            throw err;
         });
     }
 

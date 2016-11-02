@@ -11,7 +11,7 @@ class CommitsFilter extends React.Component {
     }
 
     render() {
-        let { active, filter, repository, setUserInput, setUsers, setMessage, 
+        let { active, filter, setUserInput, setUsers, setMessage, 
             setFromDate, setToDate, search, reset } = this.props;
         if (!filter.active) return null;
 

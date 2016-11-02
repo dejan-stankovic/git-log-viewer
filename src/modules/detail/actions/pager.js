@@ -11,7 +11,7 @@ export default class PagerAction {
 
     static changePageSize(size) {
         return (dispatch, getState) => {
-            let { repository, pager } = getState();
+            let { pager } = getState();
             if (size === pager.size) return;
             dispatch(Common.getAction('CHANGE_PAGE_SIZE', size));
             dispatch(CommitsAction.getCommits(true));

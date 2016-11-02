@@ -18,8 +18,6 @@ class ModalMain extends React.Component {
 	}
 
 	render() {
-		let { diffType, files, target } = this.props;
-		let { loading, progress, data } = files;
 		return (
 			<div className="glv-modal-top">
 				{this.renderLoader()}
@@ -69,7 +67,6 @@ class ModalMain extends React.Component {
 				this.getFilesOfCommit(index + 1);
 			})
 			.catch(err => {
-				throw err;
 				console.error(err);
 			});
 	}
