@@ -1,6 +1,6 @@
 {
   "name": "git-log-viewer",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Simple Git Log Viewer built with Electron, React & Semantic UI",
   "main": "app.js",
   "scripts": {
