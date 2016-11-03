@@ -1,3 +1,4 @@
+require('clipboard');
 require('electron');
 require('react');
 require('react-addons-pure-render-mixin');

@@ -56,18 +56,23 @@ const Pager = (props) => {
         after.push(getItem(<i className="right chevron icon"></i>, false, false, current + 1));
     }
 
+    let style = {
+        marginLeft: '5px',
+        marginRight: '5px'
+    };
     return (
         <div className="ui grid">
     		<div className="ten wide column"><div className="ui pagination menu">{[...before, ...after]}</div></div>
     		<div className="six wide right aligned column">
                 <label>
-                    Show&nbsp;&nbsp;
+                    Show
 					<Select
+                        style={style}
 						options={props.sizes}
 						stringOption={true}
 						selectedOptions={[props.size]}
 						onChange={changePageSize}/>
-                    &nbsp;&nbsp;items
+                    items
                 </label>
             </div>
     	</div>

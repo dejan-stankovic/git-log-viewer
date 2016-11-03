@@ -31,7 +31,7 @@ class Select extends React.Component {
 
     render() {
         return (
-            <div className={this.getClass()} onClick={this.showDropdown}>
+            <div className={this.getClass()} style={this.props.style} onClick={this.showDropdown}>
                 {this.renderSelected()}
                 {this.renderInputText()}
                 {this.renderInputSizer()}

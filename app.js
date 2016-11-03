@@ -18,7 +18,6 @@ function createMainWindow() {
     });
     win.loadURL(`file://${__dirname}/src/views/index.html`);
     win.setMenu(null);
-    win.webContents.openDevTools();
     win.on('closed', onClosed);
     return win;
 }
@@ -83,7 +82,6 @@ ipcMain.on(AppConst.CHANNEL_SHOW_MODAL, (event, data) => {
         width: 800,
         height: 650
     });
-    // child.webContents.openDevTools();
     child.data = data;
     child.loadURL(`file://${__dirname}/src/views/modal.html`);
 });

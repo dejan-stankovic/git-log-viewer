@@ -12,6 +12,7 @@
   "author": "trungvq",
   "license": "MIT",
   "dependencies": {
+    "clipboard": "^1.5.15",
     "diff2html": "^2.0.10",
     "electron": "^1.4.3",
     "exceljs": "^0.2.31",
